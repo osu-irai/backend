@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using osuRequestor.Apis.OsuApi;
+using osuRequestor.Apis.OsuApi.Interfaces;
+using osuRequestor.Configuration;
 using osuRequestor.Data;
 
 namespace osuRequestor;
@@ -15,6 +18,7 @@ public static class Program
         builder.Services.AddHttpLogging(o => { });
 
         var dbConfig = builder.Configuration.GetSection("Database");
+        var osuConfig = builder.Configuration.GetSection("osuApi");
 
         var connectionString = new NpgsqlConnectionStringBuilder
         {
@@ -28,6 +32,10 @@ public static class Program
         // Add a database
         builder.Services.AddDbContext<DatabaseContext>(options =>
             options.UseNpgsql(connectionString.ConnectionString));
+        builder.Services.Configure<OsuApiConfig>(osuConfig);
+        // TODO: Add rate limiting
+        builder.Services.AddHttpClient<OsuApiProvider>();
+        builder.Services.AddSingleton<IOsuApiProvider, OsuApiProvider>();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
