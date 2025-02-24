@@ -22,7 +22,7 @@ public class OsuApiProvider : IOsuApiProvider
     private const string api_user_link = "api/v2/users/{0}";
     private const string api_token_link = "oauth/token";
     private const string map_download_link = "osu/{0}";
-        private readonly HttpClient _httpClient;
+    private readonly HttpClient _httpClient;
     private readonly OsuApiConfig _config;
     private readonly ILogger<OsuApiProvider> _logger;
 
