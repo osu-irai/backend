@@ -12,16 +12,7 @@ public class RequestModel
     [DataType(DataType.DateTime)]
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime Date { get; set; }
-    public BeatmapModel Beatmap { get; set; }
-    public UserModel RequestedTo { get; set; }
-    public UserModel RequestedFrom { get; set; }
-
-    public RequestModel() { }
-
-    public RequestModel(BeatmapModel beatmap, UserModel requestedFrom, UserModel requestedTo)
-    {
-        Beatmap = beatmap;
-        RequestedFrom = requestedFrom;
-        RequestedTo = requestedTo;
-    }
+    public required BeatmapModel Beatmap { get; set; }
+    public required UserModel RequestedTo { get; set; }
+    public required UserModel RequestedFrom { get; set; }
 }
