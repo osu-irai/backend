@@ -1,0 +1,21 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  osurequestor:
+    build:
+      context: "/home/chiffa/Dev/Projects/osuRequestor/osuRequestor"
+      dockerfile: "Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/osuRequestor.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "osurequestor:dev"
+    ports: []
+    volumes:
+    - "/home/chiffa/Dev/Projects/osuRequestor/osuRequestor:/app:rw"
+    - "/home/chiffa/Dev/Projects/osuRequestor/osuRequestor:/src:rw"
+    - "/home/chiffa/.nuget/packages:/home/app/.nuget/packages"
+    working_dir: "/app"
