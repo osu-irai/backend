@@ -20,8 +20,4 @@
         <PackageReference Include="ppy.osu.Game.Rulesets.Osu" Version="2025.221.0" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Migrations\" />
-    </ItemGroup>
-
 </Project>

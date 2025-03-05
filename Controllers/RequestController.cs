@@ -33,7 +33,11 @@ public class RequestController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetRequests(int? playerId)
     {
-        if (playerId == null) return BadRequest();
+        if (playerId == null)
+        {
+            _logger.LogInformation($"Posted null ID");
+            return BadRequest();
+        }
 
         var requests = await _databaseContext
             .Requests
@@ -55,7 +59,7 @@ public class RequestController : ControllerBase
     /// <summary>
     /// Creates a request to a player
     /// </summary>
-    /// <param name="sourceId">ID of the player making a request</param>
+    /// <param name="sourceToken">ID of the player making a request</param>
     /// <param name="destinationId">ID of the player receiving the request</param>
     /// <param name="beatmapId">ID of the beatmap requested</param>
     /// <returns>HTTP 200 on success, HTTP 400 on missing parameters</returns>
@@ -63,26 +67,29 @@ public class RequestController : ControllerBase
     [ProducesDefaultResponseType]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> PostRequest(int? sourceId,
+    public async Task<IActionResult> PostRequest(string? sourceToken,
         int? destinationId,
         int? beatmapId)
     {
-        if (sourceId == null || destinationId == null || beatmapId == null) return BadRequest();
+        if (sourceToken == null || destinationId == null || beatmapId == null) return BadRequest();
 
-        var source = await _databaseContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == sourceId);
+        var source = await _databaseContext.Tokens.AsNoTracking()
+            .Where(s => s.AccessToken == sourceToken)
+            .Select(s => s.User)
+            .FirstOrDefaultAsync();
         var dest = await _databaseContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == destinationId);
         var beatmap = await _databaseContext.Beatmaps.AsNoTracking().FirstOrDefaultAsync(b => b.Id == beatmapId);
 
         if (source == null)
         {
-            _logger.LogWarning($"Could not find source player: {sourceId}");
-            var apiResponse = await _osuApiProvider.GetUser(sourceId.Value);
+            _logger.LogWarning($"Could not find source player with token");
+            var apiResponse = await _osuApiProvider.GetSelfUser(sourceToken);
             if (apiResponse is null)
             {
-                _logger.LogWarning($"Player not found in osu!api: {sourceId}");
+                _logger.LogWarning($"Player not found in osu!api with token");
                 return BadRequest();
             };
-            _logger.LogWarning($"Found source player: {sourceId} ({apiResponse.Username})");
+            _logger.LogWarning($"Found source player: ({apiResponse.Username})");
             source = apiResponse.IntoModel();
             _databaseContext.Users.Add(source);
         }
@@ -123,7 +130,7 @@ public class RequestController : ControllerBase
         };
         _databaseContext.Requests.Add(request);
         await _databaseContext.SaveChangesAsync();
-        _logger.LogInformation($"Created request for {sourceId}");
+        _logger.LogInformation($"Created request for {sourceToken}");
 
         return Ok(request);
     }
