@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using osuRequestor.Models;
 
 namespace osuRequestor.Apis.OsuApi.Models
 {
@@ -15,5 +16,16 @@ namespace osuRequestor.Apis.OsuApi.Models
 
         [JsonPropertyName("avatar_url")]
         public string AvatarUrl { get; set; } = null!;
+
+        public UserModel IntoModel()
+        {
+            return new UserModel
+            {
+                Id = Id,
+                Username = Username,
+                CountryCode = CountryCode,
+                AvatarUrl = AvatarUrl,
+            };
+        }
     }
 }

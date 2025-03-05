@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Apis.OsuApi.Models;
 using osuRequestor.Configuration;
+using osuRequestor.Models;
 
 namespace osuRequestor.Apis.OsuApi;
 
@@ -22,6 +23,8 @@ public class OsuApiProvider : IOsuApiProvider
     private const string api_user_link = "api/v2/users/{0}";
     private const string api_token_link = "oauth/token";
     private const string map_download_link = "osu/{0}";
+    private const string api_me_link = "api/v2/me/";
+    private const string api_friends_link = "api/v2/friends/";
     private readonly HttpClient _httpClient;
     private readonly OsuApiConfig _config;
     private readonly ILogger<OsuApiProvider> _logger;
@@ -85,6 +88,29 @@ public class OsuApiProvider : IOsuApiProvider
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadFromJsonAsync<Beatmap>();
+    }
+
+    public async Task<BeatmapModel?> GetBeatmapModel(int id)
+    {
+        await RefreshUserlessToken();
+
+        var requestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(osu_base + string.Format(api_beatmap_link, id)),
+            Headers = { Authorization = new AuthenticationHeaderValue("Bearer", _userlessToken!.AccessToken) }
+        };
+        requestMessage.Headers.Add("x-api-version", "99999999");
+
+        var response = await _httpClient.SendAsync(requestMessage);
+        if (response is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<BeatmapModel>();
     }
 
     public async Task<Score?> GetScore(long id)
@@ -153,6 +179,61 @@ public class OsuApiProvider : IOsuApiProvider
         return await response.Content.ReadFromJsonAsync<User>();
     }
 
+    public async Task<UserModel?> GetUserModel(int id)
+    {
+        await RefreshUserlessToken();
+
+        var requestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(osu_base + string.Format(api_user_link, id)),
+            Headers = { Authorization = new AuthenticationHeaderValue("Bearer", _userlessToken!.AccessToken) }
+        };
+        requestMessage.Headers.Add("x-api-version", "99999999");
+
+        var response = await _httpClient.SendAsync(requestMessage);
+        if (response is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<UserModel>();
+    }
+
+    public async Task<User?> GetSelfUser(string token)
+    {
+        var requestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(osu_base + api_me_link),
+            Headers = { Authorization = new AuthenticationHeaderValue("Bearer", token) }
+        };
+
+        var response = await _httpClient.SendAsync(requestMessage);
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<User>();
+    }
+
+    public async Task<User[]?> GetFriends(string token)
+    {
+        var requestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(osu_base + api_friends_link),
+            Headers = { Authorization = new AuthenticationHeaderValue("Bearer", token) }
+        };
+
+        var response = await _httpClient.SendAsync(requestMessage);
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<User[]>();
+    }
+
     public async Task<bool> DownloadMap(int id, string path)
     {
         var requestMessage = new HttpRequestMessage
@@ -170,6 +251,32 @@ public class OsuApiProvider : IOsuApiProvider
         await File.WriteAllBytesAsync(path, await response.Content.ReadAsByteArrayAsync());
 
         return true;
+    }
+
+    public async Task<TokenResponse?> RefreshToken(string refreshToken, string accessToken)
+    {
+        var config = new RefreshTokenRequest
+        {
+            ClientId = _config.ClientId,
+            ClientSecret = _config.ClientSecret,
+            RefreshToken = refreshToken,
+            AccessToken = accessToken
+        };
+
+        var requestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Post,
+            RequestUri = new Uri(osu_base + api_token_link),
+            Content = new StringContent(JsonSerializer.Serialize(config), null, "application/json"),
+            Headers = { Accept = { new MediaTypeWithQualityHeaderValue("application/json") }}
+        };
+
+        var response = await _httpClient.SendAsync(requestMessage);
+
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        return await response.Content.ReadFromJsonAsync<TokenResponse>();
     }
 
     private async Task RefreshUserlessToken()

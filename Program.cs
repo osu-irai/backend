@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using osuRequestor.Apis.OsuApi;
@@ -40,7 +42,60 @@ public static class Program
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
         builder.Services.AddControllers();
-        
+
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddAuthentication("InternalCookies")
+            .AddCookie("InternalCookies", options =>
+            {
+                // set some paths to empty to make auth not redirect API calls
+                options.LoginPath = string.Empty;
+                options.AccessDeniedPath = string.Empty;
+                options.LogoutPath = string.Empty;
+                options.Cookie.Path = "/";
+                options.SlidingExpiration = true;
+                options.Events.OnValidatePrincipal = context =>
+                {
+                    var name = context.Principal?.Identity?.Name;
+                    if (string.IsNullOrEmpty(name) || !long.TryParse(name, out _))
+                    {
+                        context.RejectPrincipal();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    }
+
+                    return Task.CompletedTask;
+                };
+
+                static Task UnauthorizedRedirect(RedirectContext<CookieAuthenticationOptions> context)
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+                    return Task.CompletedTask;
+                }
+
+                options.Events.OnRedirectToLogin = UnauthorizedRedirect;
+                options.Events.OnRedirectToAccessDenied = UnauthorizedRedirect;
+            })
+            .AddCookie("ExternalCookies")
+            .AddOAuth("osu", options =>
+            {
+                options.SignInScheme = "ExternalCookies";
+
+                options.TokenEndpoint = "https://osu.ppy.sh/oauth/token";
+                options.AuthorizationEndpoint = "https://osu.ppy.sh/oauth/authorize";
+                options.ClientId = osuConfig["ClientID"]!;
+                options.ClientSecret = osuConfig["ClientSecret"]!;
+                options.CallbackPath = osuConfig["CallbackUrl"];
+                options.Scope.Add("public");
+                options.Scope.Add("friends.read");
+
+                options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+
+                options.SaveTokens = true;
+
+                options.Validate();
+            });
+
+
         var app = builder.Build();
 
         app.UseHttpLogging();
@@ -54,6 +109,7 @@ public static class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
+        app.UseAuthentication();
 
         app.Run();
     }

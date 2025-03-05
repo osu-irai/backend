@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using osuRequestor.Models;
 
 namespace osuRequestor.Apis.OsuApi.Models
 {
@@ -15,5 +16,16 @@ namespace osuRequestor.Apis.OsuApi.Models
 
         [JsonPropertyName("user_id")]
         public int CreatorId { get; set; }
+
+        public BeatmapSetModel IntoModel()
+        {
+            return new BeatmapSetModel
+            {
+                Id = this.Id,
+                Artist = this.Artist,
+                Title = this.Title,
+                CreatorId = this.CreatorId,
+            };
+        }
     }
 }

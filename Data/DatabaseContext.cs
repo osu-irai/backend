@@ -6,7 +6,10 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 {
     public DbSet<Models.RequestModel> Requests { get; set; } = null!;
     public DbSet<Models.BeatmapModel> Beatmaps { get; set; } = null!;
+    public DbSet<Models.BeatmapSetModel> BeatmapSets { get; set; } = null!;
     public DbSet<Models.UserModel> Users { get; set; } = null!;
+
+    public DbSet<Models.TokenModel> Tokens { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -15,9 +18,10 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             .HasDefaultValueSql("now()");
 
         modelBuilder.Entity<Models.BeatmapModel>()
-            .Property(item => item.BeatmapSetId)
+            .Property(item => item.Id)
             .IsRequired();
 
         modelBuilder.Entity<Models.UserModel>();
+
     }
 }

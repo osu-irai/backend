@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using osuRequestor.Models;
 
 namespace osuRequestor.Apis.OsuApi.Models
 {
@@ -7,7 +8,7 @@ namespace osuRequestor.Apis.OsuApi.Models
         [JsonPropertyName("id")]
         public int Id { get; set; }
 
-        [JsonPropertyName("beatmapset")] 
+        [JsonPropertyName("beatmapset")]
         public BeatmapSet BeatmapSet { get; set; } = null!;
 
         [JsonPropertyName("version")]
@@ -49,5 +50,33 @@ namespace osuRequestor.Apis.OsuApi.Models
 
         [JsonPropertyName("mode_int")]
         public Mode Mode { get; set; }
+
+        public BeatmapModel IntoModel()
+        {
+            return new BeatmapModel
+            {
+                Id = this.Id,
+                BeatmapSet = new BeatmapSetModel
+                {
+                    Id = this.BeatmapSet.Id,
+                    Artist = this.BeatmapSet.Artist,
+                    Title = this.BeatmapSet.Title,
+                    CreatorId = this.BeatmapSet.CreatorId,
+                },
+                Version = this.Version,
+                ApproachRate = this.ApproachRate,
+                OverallDifficulty = this.OverallDifficulty,
+                CircleSize = this.CircleSize,
+                HealthDrain = this.HealthDrain,
+                BeatsPerMinute = this.BeatsPerMinute,
+                Circles = this.Circles,
+                Sliders = this.Sliders,
+                Spinners = this.Spinners,
+                StarRating = this.StarRating,
+                Status = this.Status,
+                MaxCombo = this.MaxCombo,
+                Mode = this.Mode,
+            };
+        }
     }
 }
