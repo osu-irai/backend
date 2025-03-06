@@ -11,19 +11,24 @@ namespace osuRequestor.Controllers;
 
 [ApiController]
 [Route("api/oauth")]
-public class OAuthController : Controller
+public class OAuthController : ControllerBase
 {
     private readonly ILogger<OAuthController> _logger;
-    private readonly IOsuApiProvider _apiProvider;
+    private readonly IOsuApiProvider _osuApiDataService;
     private readonly DatabaseContext _databaseContext;
 
-    public OAuthController(ILogger<OAuthController> logger, IOsuApiProvider apiProvider, DatabaseContext databaseContext)
+    public OAuthController(ILogger<OAuthController> logger, 
+    IOsuApiProvider osuApiDataService,
+    DatabaseContext databaseContext)
     {
         _logger = logger;
-        _apiProvider = apiProvider;
+        _osuApiDataService = osuApiDataService;
         _databaseContext = databaseContext;
     }
 
+    /// <summary>
+    ///     osu! API authentication.
+    /// </summary>
     [HttpGet("auth")]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public IActionResult Authenticate()
@@ -37,25 +42,27 @@ public class OAuthController : Controller
     }
 
     [HttpGet("complete")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> CompleteAuthentication()
     {
         var authResult = await HttpContext.AuthenticateAsync("ExternalCookies");
         if (!authResult.Succeeded)
+        {
             return Forbid();
+        }
 
-        var accessToken = await HttpContext.GetTokenAsync("access_token");
-        var refreshToken = await HttpContext.GetTokenAsync("refresh_token");
+        var accessToken = await HttpContext.GetTokenAsync("ExternalCookies", "access_token");
+        var refreshToken = await HttpContext.GetTokenAsync("ExternalCookies", "refresh_token");
 
         User? user;
-
         try
         {
-            user = await _apiProvider.GetSelfUser(accessToken!);
+            user = await _osuApiDataService.GetSelfUser(accessToken!);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "osu!api provider error");
+            _logger.LogError(e, "osu!api provider error!");
             return Forbid();
         }
 
@@ -76,12 +83,12 @@ public class OAuthController : Controller
         {
             _logger.LogInformation("User with id {Id} found", user.Id);
             existingUser.Username = user.Username;
+            existingUser.CountryCode = user.CountryCode;
+
             _databaseContext.Users.Update(existingUser);
         }
 
-        var tokenExpiration =
-            authResult.Properties?.ExpiresUtc?.DateTime.ToUniversalTime()
-                              ?? DateTime.UtcNow.AddDays(1);
+        var tokenExpiration = authResult.Properties?.ExpiresUtc?.DateTime.ToUniversalTime() ?? DateTime.UtcNow.AddDays(1);
 
         var existingTokens = await _databaseContext.Tokens.FindAsync(user.Id);
         if (existingTokens is not null)
@@ -96,10 +103,10 @@ public class OAuthController : Controller
         {
             await _databaseContext.Tokens.AddAsync(new TokenModel
             {
+                UserId = user.Id,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
-                Expires = tokenExpiration,
-                UserId = user.Id
+                Expires = tokenExpiration
             });
         }
 
@@ -107,26 +114,29 @@ public class OAuthController : Controller
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.Id.ToString()),
+            new(ClaimTypes.Name, user.Id.ToString()),
         };
 
         var id = new ClaimsIdentity(claims, "InternalCookies");
         var authProperties = new AuthenticationProperties
         {
             IsPersistent = true,
-            ExpiresUtc = authResult.Properties?.ExpiresUtc,
+            ExpiresUtc = authResult.Properties?.ExpiresUtc
         };
 
         await HttpContext.SignInAsync("InternalCookies", new ClaimsPrincipal(id), authProperties);
         await HttpContext.SignOutAsync("ExternalCookies");
 
-        _logger.LogInformation("User with id {Id} logged in", user.Id);
-
+        _logger.LogInformation("User {Username} logged in, toke expires on {TokenExpiration}", user.Username, tokenExpiration);
+        
         return Redirect($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/");
     }
 
+    /// <summary>
+    ///     Sign out from current user.
+    /// </summary>
     [Authorize]
-    [HttpGet("logout")]
+    [HttpGet("signout")]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> Logout()
     {
@@ -134,5 +144,4 @@ public class OAuthController : Controller
 
         return Redirect($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/");
     }
-
 }

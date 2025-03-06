@@ -87,6 +87,7 @@ public static class Program
                 options.CallbackPath = osuConfig["CallbackUrl"];
                 options.Scope.Add("public");
                 options.Scope.Add("friends.read");
+                options.Scope.Add("identify");
 
                 options.CorrelationCookie.SameSite = SameSiteMode.Lax;
 
@@ -99,6 +100,7 @@ public static class Program
         var app = builder.Build();
 
         app.UseHttpLogging();
+        app.UseCors(x => x.WithOrigins("http://localhost:5076").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
