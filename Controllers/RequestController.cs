@@ -8,7 +8,7 @@ using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Apis.OsuApi.Models;
 using osuRequestor.Data;
 using osuRequestor.Models;
-
+using osuRequestor.DTO;
 namespace osuRequestor.Controllers;
 
 [Route("api/requests")]
@@ -29,9 +29,9 @@ public class RequestController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(RequestResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetRequests(int? playerId)
+    public async Task<ActionResult<RequestResponse>> GetRequests(int? playerId)
     {
         if (playerId == null)
         {
@@ -46,12 +46,26 @@ public class RequestController : ControllerBase
             .Include(requestModel => requestModel.Beatmap)
             .Include(requestModel => requestModel.RequestedTo)
             .OrderByDescending(i => i.Id)
-            .Take(10).ToListAsync();
-        if (requests.Count == 0)
-        {
-            _logger.LogInformation("No requests found");
-            return NotFound();
-        }
+            .Select(x => new RequestResponse
+            {
+                Id = x.Id,
+                Beatmap = new BeatmapDTO
+                {
+                    BeatmapId = x.Beatmap.Id,
+                    BeatmapsetId = x.Beatmap.BeatmapSet.Id,
+                    Artist = x.Beatmap.BeatmapSet.Artist,
+                    Title = x.Beatmap.BeatmapSet.Title,
+                    Difficulty = x.Beatmap.Version,
+                    Stars = x.Beatmap.StarRating
+                },
+                From = new UserDTO
+                {
+                    Id = x.RequestedFrom.Id,
+                    Username = x.RequestedFrom.Username,
+                    AvatarUrl = x.RequestedFrom.AvatarUrl
+                }
+            })
+            .Take(50).ToListAsync();
         _logger.LogInformation($"Found requests for {playerId}: {requests.Count}");
         return Ok(requests);
     }
