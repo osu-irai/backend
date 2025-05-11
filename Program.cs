@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using osuRequestor.Apis.OsuApi;
@@ -40,8 +41,9 @@ public static class Program
         builder.Services.AddSingleton<IOsuApiProvider, OsuApiProvider>();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddOpenApi();
         builder.Services.AddControllers();
+        
+        builder.Services.AddOpenApi();
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddAuthentication("InternalCookies")
@@ -87,7 +89,6 @@ public static class Program
                 options.CallbackPath = osuConfig["CallbackUrl"];
                 options.Scope.Add("public");
                 options.Scope.Add("friends.read");
-                options.Scope.Add("identify");
 
                 options.CorrelationCookie.SameSite = SameSiteMode.Lax;
 
@@ -100,19 +101,25 @@ public static class Program
         var app = builder.Build();
 
         app.UseHttpLogging();
-        app.UseCors(x => x.WithOrigins("http://localhost:5076").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+
+        app.MapControllers();
+        app.UseCors(options =>
+        {
+            options.AllowAnyHeader();
+            options.WithOrigins("http://localhost:5077", "http://localhost:5076", "http://127.0.0.1:5077", "http://127.0.0.1:5076");
+            options.AllowAnyMethod();
+            options.AllowCredentials();
+        });
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
         }
 
-        app.MapControllers();
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
         app.UseAuthentication();
-
+        app.UseAuthorization();
+        
         app.Run();
     }
 }

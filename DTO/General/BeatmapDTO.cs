@@ -1,4 +1,4 @@
-namespace osuRequestor.DTO;
+namespace osuRequestor.DTO.General;
 
 public class BeatmapDTO
 {
