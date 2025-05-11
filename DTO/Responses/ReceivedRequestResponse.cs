@@ -1,9 +1,9 @@
-using System.Text.Json;
+using osuRequestor.DTO.General;
 
-namespace osuRequestor.DTO;
+namespace osuRequestor.DTO.Responses;
 
 
-public class RequestResponse
+public class ReceivedRequestResponse
 {
     public required int Id { get; set; }
 

@@ -30,6 +30,7 @@ public class OAuthController : ControllerBase
     ///     osu! API authentication.
     /// </summary>
     [HttpGet("auth")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public IActionResult Authenticate()
     {
@@ -46,9 +47,11 @@ public class OAuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> CompleteAuthentication()
     {
+        _logger.LogError($"Logging in user");
         var authResult = await HttpContext.AuthenticateAsync("ExternalCookies");
         if (!authResult.Succeeded)
         {
+            _logger.LogError($"Auth failed");
             return Forbid();
         }
 
@@ -129,7 +132,7 @@ public class OAuthController : ControllerBase
 
         _logger.LogInformation("User {Username} logged in, toke expires on {TokenExpiration}", user.Username, tokenExpiration);
         
-        return Redirect($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/");
+        return Redirect($"/");
     }
 
     /// <summary>
@@ -142,6 +145,6 @@ public class OAuthController : ControllerBase
     {
         await HttpContext.SignOutAsync("InternalCookies");
 
-        return Redirect($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/");
+        return Redirect($"/");
     }
 }

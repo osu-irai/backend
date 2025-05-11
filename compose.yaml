@@ -1,11 +1,11 @@
 ﻿services:
-  osurequestor:
-    image: osurequestor
-    build:
-      context: .
-      dockerfile: Dockerfile
-    networks:
-      - requestor-net
+  # osurequestor:
+  #   image: osurequestor
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   networks:
+  #     - requestor-net
   request_db:
     image: postgres:alpine
     restart: unless-stopped
