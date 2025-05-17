@@ -12,7 +12,7 @@ public class UserModel
 
     public string Username { get; set; } = null!;
 
-    public string CountryCode { get; set; } = null!;
+    public string CountryCode { get; set; }
 
     public string AvatarUrl { get; set; } = null!;
 

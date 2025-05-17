@@ -30,7 +30,6 @@ public class OAuthController : ControllerBase
     ///     osu! API authentication.
     /// </summary>
     [HttpGet("auth")]
-    [ApiExplorerSettings(IgnoreApi = true)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public IActionResult Authenticate()
     {
@@ -47,11 +46,9 @@ public class OAuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> CompleteAuthentication()
     {
-        _logger.LogError($"Logging in user");
         var authResult = await HttpContext.AuthenticateAsync("ExternalCookies");
         if (!authResult.Succeeded)
         {
-            _logger.LogError($"Auth failed");
             return Forbid();
         }
 
@@ -71,7 +68,8 @@ public class OAuthController : ControllerBase
 
         if (user is null || accessToken is null || refreshToken is null)
             return Forbid();
-
+        
+        _logger.LogError($"{user}");
         var existingUser = await _databaseContext.Users.FindAsync(user.Id);
         if (existingUser is null)
         {
@@ -80,6 +78,8 @@ public class OAuthController : ControllerBase
             {
                 Id = user.Id,
                 Username = user.Username,
+                AvatarUrl = user.AvatarUrl,
+                CountryCode = user.CountryCode,
             });
         }
         else

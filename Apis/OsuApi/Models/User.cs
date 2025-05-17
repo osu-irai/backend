@@ -23,7 +23,6 @@ namespace osuRequestor.Apis.OsuApi.Models
             {
                 Id = Id,
                 Username = Username,
-                CountryCode = CountryCode,
                 AvatarUrl = AvatarUrl,
             };
         }

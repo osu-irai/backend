@@ -12,8 +12,8 @@ using osuRequestor.Data;
 namespace osuRequestor.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250305170031_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250511200033_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -174,7 +174,6 @@ namespace osuRequestor.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("CountryCode")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Username")

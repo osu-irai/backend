@@ -54,6 +54,7 @@ public static class Program
                 options.AccessDeniedPath = string.Empty;
                 options.LogoutPath = string.Empty;
                 options.Cookie.Path = "/";
+                options.Cookie.Name = "osuToken";
                 options.SlidingExpiration = true;
                 options.Events.OnValidatePrincipal = context =>
                 {
@@ -89,6 +90,7 @@ public static class Program
                 options.CallbackPath = osuConfig["CallbackUrl"];
                 options.Scope.Add("public");
                 options.Scope.Add("friends.read");
+                options.Scope.Add("identify");
 
                 options.CorrelationCookie.SameSite = SameSiteMode.Lax;
 

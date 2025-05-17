@@ -171,7 +171,6 @@ namespace osuRequestor.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("CountryCode")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Username")

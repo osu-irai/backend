@@ -1,18 +1,12 @@
-using System.Diagnostics;
-using System.Text.Encodings.Web;
-using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Entity.Migrations;
 using osuRequestor.Apis.OsuApi.Interfaces;
-using osuRequestor.Apis.OsuApi.Models;
 using osuRequestor.Data;
-using osuRequestor.Models;
-using osuRequestor.DTO;
 using osuRequestor.DTO.General;
 using osuRequestor.DTO.Responses;
+using osuRequestor.Models;
 
-namespace osuRequestor.Controllers;
+namespace osuRequestor.Controllers.Requests;
 
 [ApiController]
 [Route("api/requests")]
@@ -22,14 +16,13 @@ public class RequestController : ControllerBase
     private readonly IOsuApiProvider _osuApiProvider;
     private readonly ILogger<RequestController> _logger;
 
-    private int _claim => int.Parse(HttpContext.User.Identity!.Name!);
-
     public RequestController(DatabaseContext databaseContext, IOsuApiProvider osuApiProvider, ILogger<RequestController> logger)
     {
         _databaseContext = databaseContext;
         _osuApiProvider = osuApiProvider;
         _logger = logger;
     }
+    
     /// <summary>
     /// Returns a list of beatmaps requested to a player
     /// </summary>
@@ -76,77 +69,10 @@ public class RequestController : ControllerBase
         _logger.LogInformation($"Found requests for {playerId}: {requests.Count}");
         return Ok(requests);
     }
+    
 
-    /// <summary>
-    /// Creates a request to a player using your oauth token
-    /// </summary>
-    /// <param name="destinationId">ID of the player receiving the request</param>
-    /// <param name="beatmapId">ID of the beatmap requested</param>
-    /// <returns>HTTP 200 on success, HTTP 400 on missing parameters</returns>
-    [HttpPost("/self")]
-    [ProducesDefaultResponseType]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> PostSelfRequest(
-        int? destinationId,
-        int? beatmapId)
-    {
-        if (destinationId == null || beatmapId == null) return BadRequest();
-        
-        var source = await _databaseContext.Tokens.AsNoTracking()
-            .Where(s => s.UserId == _claim)
-            .Select(s => s.User)
-            .FirstOrDefaultAsync();
-        var destination = await _databaseContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == destinationId);
-        var beatmap = await _databaseContext.Beatmaps.AsNoTracking().FirstOrDefaultAsync(b => b.Id == beatmapId);
-        
-        if (source == null)
-        {
-            _logger.LogWarning($"Could not find source player with token");
-            return Forbid();
-        }
-        
-        if (destination == null)
-        {
-            _logger.LogWarning($"Could not find destination player: {destinationId}");
-            var apiResponse = await _osuApiProvider.GetUser(destinationId.Value);
-            if (apiResponse is null)
-            {
-                _logger.LogWarning($"Destination player not found in osu!api: {destinationId}");
-                return BadRequest();
-            };
-            _logger.LogWarning($"Found destination player: {destinationId} ({apiResponse.Username})");
-            destination = apiResponse.IntoModel();
-            _databaseContext.Users.Add(destination);
-        }
-        
-        if (beatmap == null)
-        {
-            _logger.LogWarning($"Could not find beatmap: {beatmapId}");
-            var apiResponse = await _osuApiProvider.GetBeatmap(beatmapId.Value);
-            if (apiResponse is null)
-            {
-                _logger.LogWarning($"Beatmap not found in osu!api: {beatmapId}");
-                return BadRequest();
-            }
-            _logger.LogWarning($"Found beatmap: {beatmapId}");
-            beatmap = apiResponse.IntoModel();
-            _databaseContext.Beatmaps.Add(beatmap);
-        }
-        await _databaseContext.SaveChangesAsync();
-        var request = new RequestModel
-        {
-            Beatmap = beatmap,
-            RequestedFrom = source,
-            RequestedTo = destination,
-        };
-        _databaseContext.Requests.Add(request);
-        await _databaseContext.SaveChangesAsync();
-        _logger.LogInformation($"Created request for {destination.Id}");
-        
-        return Ok(request);
-    }
 
+    // FIXME: Remove this bs when going to production LOL
     [HttpPost]
     [ProducesDefaultResponseType]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -163,42 +89,42 @@ public class RequestController : ControllerBase
 
         if (source is null)
         {
-            _logger.LogWarning($"Could not find destination player: {sourceId}");
+            _logger.LogInformation("Could not find destination player: {SourceId}", sourceId);
             var apiResponse = await _osuApiProvider.GetUser(sourceId.Value);
             if (apiResponse is null)
             {
                 _logger.LogWarning($"Destination player not found in osu!api: {sourceId}");
                 return BadRequest();
             };
-            _logger.LogWarning($"Found destination player: {sourceId} ({apiResponse.Username})");
+            _logger.LogInformation($"Found destination player: {sourceId} ({apiResponse.Username})");
             source = apiResponse.IntoModel();
             _databaseContext.Users.Add(source);
         }
 
         if (destination is null && destinationId != sourceId)
         {
-            _logger.LogWarning($"Could not find destination player: {destinationId}");
+            _logger.LogInformation($"Could not find destination player: {destinationId}");
             var apiResponse = await _osuApiProvider.GetUser(destinationId.Value);
             if (apiResponse is null)
             {
                 _logger.LogWarning($"Destination player not found in osu!api: {destinationId}");
                 return BadRequest();
             };
-            _logger.LogWarning($"Found destination player: {destinationId} ({apiResponse.Username})");
+            _logger.LogInformation($"Found destination player: {destinationId} ({apiResponse.Username})");
             destination = apiResponse.IntoModel();
             _databaseContext.Users.Add(destination);
         }
 
         if (beatmap is null)
         {
-            _logger.LogWarning($"Could not find beatmap: {beatmapId}");
+            _logger.LogInformation($"Could not find beatmap: {beatmapId}");
             var apiResponse = await _osuApiProvider.GetBeatmap(beatmapId.Value);
             if (apiResponse is null)
             {
                 _logger.LogWarning($"Beatmap not found in osu!api: {beatmapId}");
                 return BadRequest();
             }
-            _logger.LogWarning($"Found beatmap: {beatmapId}");
+            _logger.LogInformation($"Found beatmap: {beatmapId}");
             beatmap = apiResponse.IntoModel();
             _databaseContext.Beatmaps.Add(beatmap);
         }
