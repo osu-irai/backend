@@ -21,6 +21,8 @@
         <PackageReference Include="OneOf.Monads" Version="1.21.0" />
         <PackageReference Include="ppy.osu.Game" Version="2025.221.0" />
         <PackageReference Include="ppy.osu.Game.Rulesets.Osu" Version="2025.221.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.3" />
     </ItemGroup>
 
 </Project>

@@ -37,6 +37,7 @@ public class SelfUserController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(typeof(SelfUserResponse), 200)]
     public async Task<ActionResult<SelfUserResponse>> SelfUserGet()
     {
         var claim = _claim();

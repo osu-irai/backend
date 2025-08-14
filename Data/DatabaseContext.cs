@@ -16,12 +16,14 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
         modelBuilder.Entity<Models.RequestModel>()
             .Property(request => request.Date)
             .HasDefaultValueSql("now()");
-
+        
         modelBuilder.Entity<Models.BeatmapModel>()
             .Property(item => item.Id)
             .IsRequired();
 
-        modelBuilder.Entity<Models.UserModel>();
+        modelBuilder.Entity<Models.UserModel>()
+            .Property(item => item.CountryCode)
+            .IsRequired(false);
 
     }
 }

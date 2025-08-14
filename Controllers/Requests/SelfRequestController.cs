@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OneOf;
-using OneOf.Types;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Data;
 using osuRequestor.DTO.General;
+using osuRequestor.DTO.Requests;
 using osuRequestor.DTO.Responses;
 using osuRequestor.Models;
 
@@ -83,23 +82,21 @@ public class SelfRequestController : ControllerBase
         _logger.LogInformation($"Found requests for {claim}: {requests.Count}");
         return Ok(requests);
     }
-    
-    
+
 
     /// <summary>
     /// Creates a request to a player using your oauth token
-    /// </summary>
-    /// <param name="destinationId">ID of the player receiving the request</param>
-    /// <param name="beatmapId">ID of the beatmap requested</param>
+    /// </summary> >
+    /// <param name="postSelfRequest"><see cref="PostSelfRequestRequest"/></param>
     /// <returns>HTTP 200 on success, HTTP 400 on missing parameters</returns>
     [HttpPost]
     [ProducesDefaultResponseType]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PostSelfRequest(
-        int? destinationId,
-        int? beatmapId)
+        [FromBody] PostSelfRequestRequest postSelfRequest)
     {
+        var (destinationId, beatmapId) = postSelfRequest;
         if (destinationId == null || beatmapId == null) return BadRequest();
         var claim = _claim();
         if (claim is null)

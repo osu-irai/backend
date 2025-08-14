@@ -2,7 +2,7 @@ using osuRequestor.DTO.General;
 
 namespace osuRequestor.DTO.Responses;
 
-public class SelfUserResponse
+public record SelfUserResponse
 {
     public required UserDTO User { get; set; }
 

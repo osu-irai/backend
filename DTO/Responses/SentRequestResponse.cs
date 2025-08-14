@@ -2,7 +2,7 @@ using osuRequestor.DTO.General;
 
 namespace osuRequestor.DTO.Responses;
 
-public class SentRequestResponse
+public record SentRequestResponse
 {
     public required int Id { get; set; }
 

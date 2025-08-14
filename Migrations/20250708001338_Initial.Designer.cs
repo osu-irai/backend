@@ -12,7 +12,7 @@ using osuRequestor.Data;
 namespace osuRequestor.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250511200033_Initial")]
+    [Migration("20250708001338_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -181,6 +181,8 @@ namespace osuRequestor.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Username");
 
                     b.ToTable("Users");
                 });

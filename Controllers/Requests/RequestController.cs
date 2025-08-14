@@ -3,13 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Data;
 using osuRequestor.DTO.General;
+using osuRequestor.DTO.Requests;
 using osuRequestor.DTO.Responses;
 using osuRequestor.Models;
 
 namespace osuRequestor.Controllers.Requests;
 
 [ApiController]
-[Route("api/requests")]
+[Route("api/request")]
 public class RequestController : ControllerBase
 {
     private readonly DatabaseContext _databaseContext;
@@ -78,10 +79,10 @@ public class RequestController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PostRequest(
-        int? sourceId,
-        int? destinationId,
-        int? beatmapId)
+        [FromBody] PostRequestRequest postRequest)
     {
+        // TODO: Change everything to use the record itself
+        var (sourceId, destinationId, beatmapId) = postRequest;
         if (sourceId == null || destinationId == null || beatmapId == null) return BadRequest();
         var source = await _databaseContext.Users.FirstOrDefaultAsync(u => u.Id == sourceId);
         var destination = await _databaseContext.Users.FirstOrDefaultAsync(u => u.Id == destinationId);

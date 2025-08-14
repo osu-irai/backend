@@ -2,18 +2,23 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using osuRequestor.Apis.OsuApi.Models;
+using osuRequestor.DTO.General;
 
 namespace osuRequestor.Models;
 
+[Index(nameof(Username))]
 public class UserModel
 {
     [Key]
     public int Id { get; set; }
 
+    [Length(3, 20)]
     public string Username { get; set; } = null!;
 
-    public string CountryCode { get; set; }
+    [Length(2, 2)] 
+    public string CountryCode { get; set; } = "??";
 
+    [Length(30, 50)]
     public string AvatarUrl { get; set; } = null!;
 
     public TokenModel Token { get; set; } = null!;
@@ -27,5 +32,16 @@ public class UserModel
             CountryCode = this.CountryCode,
             AvatarUrl = this.AvatarUrl,
         };
+    }
+
+    public UserDTO IntoDTO()
+    {
+        return new UserDTO
+        {
+            Id = Id,
+            AvatarUrl = AvatarUrl,
+            Username = Username
+        };
+
     }
 }

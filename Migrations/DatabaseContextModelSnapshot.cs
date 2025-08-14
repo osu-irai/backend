@@ -179,6 +179,8 @@ namespace osuRequestor.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Username");
+
                     b.ToTable("Users");
                 });
 

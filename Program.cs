@@ -34,7 +34,9 @@ public static class Program
         
         // Add a database
         builder.Services.AddDbContext<DatabaseContext>(options =>
-            options.UseNpgsql(connectionString.ConnectionString));
+        {
+            options.UseNpgsql(connectionString.ConnectionString);
+        });
         builder.Services.Configure<OsuApiConfig>(osuConfig);
         // TODO: Add rate limiting
         builder.Services.AddHttpClient<OsuApiProvider>();
@@ -44,6 +46,7 @@ public static class Program
         builder.Services.AddControllers();
         
         builder.Services.AddOpenApi();
+        builder.Services.AddSwaggerGen();
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddAuthentication("InternalCookies")
@@ -102,7 +105,6 @@ public static class Program
 
         var app = builder.Build();
 
-        app.UseHttpLogging();
 
         app.MapControllers();
         app.UseCors(options =>
@@ -117,6 +119,8 @@ public static class Program
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.MapSwagger();
+            app.UseHttpLogging();
         }
 
         app.UseAuthentication();
