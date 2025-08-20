@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
-using osuRequestor.Apis.OsuApi.Models;
+using osu.NET.Models.Users;
 using osuRequestor.DTO.General;
+using User = osuRequestor.Apis.OsuApi.Models.User;
 
 namespace osuRequestor.Models;
 
@@ -42,6 +43,16 @@ public class UserModel
             AvatarUrl = AvatarUrl,
             Username = Username
         };
+    }
 
+    public static UserModel FromUserExtended(UserExtended user)
+    {
+        return new UserModel
+        {
+            Id = user.Id,
+            Username = user.Username,
+            CountryCode = user.CountryCode,
+            AvatarUrl = user.AvatarUrl,
+        };
     }
 }

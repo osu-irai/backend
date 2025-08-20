@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using osu.NET.Models.Beatmaps;
 using osuRequestor.Apis.OsuApi.Models;
 
 namespace osuRequestor.Models;
@@ -39,31 +40,25 @@ public class BeatmapModel
 
     public Mode Mode { get; set; }
 
-    public Beatmap IntoApiModel()
+    public static BeatmapModel FromBeatmapExtended(BeatmapExtended beatmap)
     {
-        return new Beatmap
+        return new BeatmapModel
         {
-            Id = this.Id,
-            BeatmapSet = new BeatmapSet
-            {
-                Id = this.BeatmapSet.Id,
-                Artist = this.BeatmapSet.Artist,
-                Title = this.BeatmapSet.Title,
-                CreatorId = this.BeatmapSet.CreatorId,
-            },
-            Version = this.Version,
-            ApproachRate = this.ApproachRate,
-            OverallDifficulty = this.OverallDifficulty,
-            CircleSize = this.CircleSize,
-            HealthDrain = this.HealthDrain,
-            BeatsPerMinute = this.BeatsPerMinute,
-            Circles = this.Circles,
-            Sliders = this.Sliders,
-            Spinners = this.Spinners,
-            StarRating = this.StarRating,
-            Status = this.Status,
-            MaxCombo = this.MaxCombo,
-            Mode = this.Mode,
+            Id = beatmap.Id,
+            BeatmapSet = BeatmapSetModel.FromBeatmapSet(beatmap.Set),
+            Version = beatmap.Version,
+            ApproachRate = beatmap.ApproachRate,
+            OverallDifficulty = beatmap.OverallDifficulty,
+            CircleSize = beatmap.CircleSize,
+            HealthDrain = beatmap.HealthDrain,
+            BeatsPerMinute = beatmap.BPM,
+            Circles = beatmap.CountCircles,
+            Sliders = beatmap.CountSliders,
+            Spinners = beatmap.CountSpinners,
+            StarRating = beatmap.DifficultyRating,
+            Status = beatmap.Status.IntoBeatmapStatus(),
+            MaxCombo = beatmap.MaxCombo ?? 0,
+            Mode = beatmap.Ruleset.IntoMode() 
         };
     }
 

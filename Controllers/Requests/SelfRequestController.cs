@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using osu.NET;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Data;
 using osuRequestor.DTO.General;
@@ -14,6 +15,7 @@ namespace osuRequestor.Controllers.Requests;
 public class SelfRequestController : ControllerBase
 {
     private readonly DatabaseContext _databaseContext;
+    private readonly OsuApiClient _osuClient;
     private readonly IOsuApiProvider _osuApiProvider;
     private readonly ILogger<RequestController> _logger;
 
@@ -29,11 +31,12 @@ public class SelfRequestController : ControllerBase
         return userId is null ? null : int.Parse(userId);
     }
     
-    public SelfRequestController(DatabaseContext databaseContext, IOsuApiProvider osuApiProvider, ILogger<RequestController> logger)
+    public SelfRequestController(DatabaseContext databaseContext, IOsuApiProvider osuApiProvider, ILogger<RequestController> logger, OsuApiClient osuClient)
     {
         _databaseContext = databaseContext;
         _osuApiProvider = osuApiProvider;
         _logger = logger;
+        _osuClient = osuClient;
     }
     
     /// <summary>
@@ -123,14 +126,15 @@ public class SelfRequestController : ControllerBase
         if (destination is null)
         {
             _logger.LogInformation("Could not find destination player: {DestinationId}", destinationId);
-            var apiResponse = await _osuApiProvider.GetUser(destinationId.Value);
-            if (apiResponse is null)
+            var apiResponse = await _osuClient.GetUserAsync(destinationId.Value);
+            if (apiResponse.IsFailure)
             {
                 _logger.LogWarning("Destination player not found in osu!api: {DestinationId}", destinationId);
                 return BadRequest();
             };
-            _logger.LogInformation("Found destination player: {DestinationId} ({ApiResponseUsername})", destinationId, apiResponse.Username);
-            destination = apiResponse.IntoModel();
+            var apiResponseSuccess = apiResponse.Value!;
+            _logger.LogInformation("Found destination player: {DestinationId} ({ApiResponseUsername})", destinationId, apiResponseSuccess.Username);
+            destination = UserModel.FromUserExtended(apiResponseSuccess);
             _databaseContext.Users.Add(destination);
         }
         else
@@ -141,14 +145,15 @@ public class SelfRequestController : ControllerBase
         if (beatmap is null)
         {
             _logger.LogInformation("Could not find beatmap: {BeatmapId}", beatmapId);
-            var apiResponse = await _osuApiProvider.GetBeatmap(beatmapId.Value);
-            if (apiResponse is null)
+            var apiResponse = await _osuClient.GetBeatmapAsync(beatmapId.Value);
+            if (apiResponse.IsFailure)
             {
                 _logger.LogWarning("Beatmap not found in osu!api: {BeatmapId}", beatmapId);
                 return BadRequest();
             }
             _logger.LogInformation("Found beatmap: {BeatmapId}", beatmapId);
-            beatmap = apiResponse.IntoModel();
+            var apiResponseSuccess = apiResponse.Value!;
+            beatmap = BeatmapModel.FromBeatmapExtended(apiResponseSuccess);
             _databaseContext.Beatmaps.Add(beatmap);
         }        
         else
