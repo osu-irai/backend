@@ -16,10 +16,8 @@ namespace osuRequestor.Controllers.Requests;
 [Route("api/requests/self")]
 public class SelfRequestController : ControllerBase
 {
-    private readonly DatabaseContext _databaseContext;
     private readonly Repository _repository;
     private readonly OsuApiClient _osuClient;
-    private readonly IOsuApiProvider _osuApiProvider;
     private readonly ILogger<RequestController> _logger;
 
     private int? _claim()
@@ -34,9 +32,8 @@ public class SelfRequestController : ControllerBase
         return userId is null ? null : int.Parse(userId);
     }
     
-    public SelfRequestController(IOsuApiProvider osuApiProvider, ILogger<RequestController> logger, OsuApiClient osuClient, Repository repository)
+    public SelfRequestController(ILogger<RequestController> logger, OsuApiClient osuClient, Repository repository)
     {
-        _osuApiProvider = osuApiProvider;
         _logger = logger;
         _osuClient = osuClient;
         _repository = repository;
@@ -105,7 +102,7 @@ public class SelfRequestController : ControllerBase
             {
                 _logger.LogWarning("Destination player not found in osu!api: {DestinationId}", destinationId);
                 return BadRequest();
-            };
+            }
             var apiResponseSuccess = apiResponse.Value!;
             _logger.LogInformation("Found destination player: {DestinationId} ({ApiResponseUsername})", destinationId, apiResponseSuccess.Username);
             destination = apiResponseSuccess.ToModel();
