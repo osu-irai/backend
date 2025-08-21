@@ -1,6 +1,7 @@
 using osu.NET.Models.Beatmaps;
 using osu.NET.Models.Users;
 using osuRequestor.Apis.OsuApi.Models;
+using osuRequestor.DTO.General;
 using osuRequestor.Models;
 using BeatmapSet = osu.NET.Models.Beatmaps.BeatmapSet;
 

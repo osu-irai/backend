@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using osu.NET;
+using osu.NET.Authorization;
 using osuRequestor.Apis.OsuApi;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Configuration;
@@ -41,8 +43,12 @@ public static class Program
         builder.Services.Configure<OsuApiConfig>(osuConfig);
         // TODO: Add rate limiting
         builder.Services.AddHttpClient<OsuApiProvider>();
+        builder.Services
+            .AddOsuApiClient(
+                new OsuClientAccessTokenProvider(osuConfig.GetValue<string>("clientId")!,
+                    osuConfig.GetValue<string>("clientSecret")!));
         builder.Services.AddSingleton<IOsuApiProvider, OsuApiProvider>();
-        builder.Services.AddSingleton<Repository>();
+        builder.Services.AddScoped<Repository>();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddControllers();
