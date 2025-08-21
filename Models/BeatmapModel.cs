@@ -40,26 +40,4 @@ public class BeatmapModel
 
     public Mode Mode { get; set; }
 
-    public static BeatmapModel FromBeatmapExtended(BeatmapExtended beatmap)
-    {
-        return new BeatmapModel
-        {
-            Id = beatmap.Id,
-            BeatmapSet = BeatmapSetModel.FromBeatmapSet(beatmap.Set),
-            Version = beatmap.Version,
-            ApproachRate = beatmap.ApproachRate,
-            OverallDifficulty = beatmap.OverallDifficulty,
-            CircleSize = beatmap.CircleSize,
-            HealthDrain = beatmap.HealthDrain,
-            BeatsPerMinute = beatmap.BPM,
-            Circles = beatmap.CountCircles,
-            Sliders = beatmap.CountSliders,
-            Spinners = beatmap.CountSpinners,
-            StarRating = beatmap.DifficultyRating,
-            Status = beatmap.Status.IntoBeatmapStatus(),
-            MaxCombo = beatmap.MaxCombo ?? 0,
-            Mode = beatmap.Ruleset.IntoMode() 
-        };
-    }
-
 }

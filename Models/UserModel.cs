@@ -44,15 +44,4 @@ public class UserModel
             Username = Username
         };
     }
-
-    public static UserModel FromUserExtended(UserExtended user)
-    {
-        return new UserModel
-        {
-            Id = user.Id,
-            Username = user.Username,
-            CountryCode = user.CountryCode,
-            AvatarUrl = user.AvatarUrl,
-        };
-    }
 }

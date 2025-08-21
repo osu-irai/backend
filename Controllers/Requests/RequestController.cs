@@ -8,6 +8,7 @@ using osuRequestor.Data;
 using osuRequestor.DTO.General;
 using osuRequestor.DTO.Requests;
 using osuRequestor.DTO.Responses;
+using osuRequestor.Extensions;
 using osuRequestor.Models;
 using osuRequestor.Persistence;
 
@@ -76,7 +77,7 @@ public class RequestController : ControllerBase
             };
             var apiResponseSuccess = apiResponse.Value!;
             _logger.LogInformation($"Found destination player: {sourceId} ({apiResponseSuccess.Username})");
-            source = UserModel.FromUserExtended(apiResponseSuccess);
+            source = apiResponseSuccess.ToModel();
             await _repository.AddUser(source);
         }
 
@@ -91,7 +92,7 @@ public class RequestController : ControllerBase
             };
             var apiResponseSuccess = apiResponse.Value!;
             _logger.LogInformation($"Found destination player: {destinationId} ({apiResponseSuccess.Username})");
-            destination = UserModel.FromUserExtended(apiResponseSuccess);
+            destination = apiResponseSuccess.ToModel();
             await _repository.AddUser(destination);
         }
 
@@ -106,7 +107,7 @@ public class RequestController : ControllerBase
             }
             var apiResponseSuccess = apiResponse.Value!;
             _logger.LogInformation($"Found beatmap: {beatmapId}");
-            beatmap = BeatmapModel.FromBeatmapExtended(apiResponseSuccess);
+            beatmap = apiResponseSuccess.ToModel();
             await _repository.AddBeatmap(beatmap);
         }
         

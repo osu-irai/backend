@@ -25,18 +25,4 @@ public class BeatmapSetModel
         };
     }
 
-    public static BeatmapSetModel FromBeatmapSet(osu.NET.Models.Beatmaps.BeatmapSet? set)
-    {
-        if (set is null)
-        {
-            return new BeatmapSetModel();
-        }
-        return new BeatmapSetModel
-        {
-            Id = set.Id,
-            Artist = set.Artist,
-            Title = set.Title,
-            CreatorId = set.CreatorId
-        };
-    }
 }
