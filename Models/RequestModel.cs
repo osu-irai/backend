@@ -15,4 +15,6 @@ public class RequestModel
     public required BeatmapModel Beatmap { get; set; }
     public required UserModel RequestedTo { get; set; }
     public required UserModel RequestedFrom { get; set; }
+
+    public bool IsDeleted { get; set; } = false;
 }

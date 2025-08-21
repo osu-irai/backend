@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 using osuRequestor.Data;
 using osuRequestor.DTO.Responses;
+using osuRequestor.Persistence;
 
 namespace osuRequestor.Controllers.Requests;
 
@@ -10,13 +11,13 @@ namespace osuRequestor.Controllers.Requests;
 [Route("api/search")]
 public class SearchController : ControllerBase
 {
-    private readonly DatabaseContext _databaseContext;
+    private readonly Repository _repository;
     private readonly ILogger<RequestController> _logger;
 
-    public SearchController(DatabaseContext databaseContext, ILogger<RequestController> logger)
+    public SearchController(ILogger<RequestController> logger, Repository repository)
     {
-        _databaseContext = databaseContext;
         _logger = logger;
+        _repository = repository;
     }
 
     /// <summary>
@@ -25,16 +26,10 @@ public class SearchController : ControllerBase
     /// <param name="query">Username query</param>
     /// <returns>List of usernames <see cref="SearchUserResponse"/></returns>
     [HttpGet]
-    public ActionResult<SearchUserResponse> GetPlayers(string? query)
+    public async Task<ActionResult<SearchUserResponse>> GetPlayers(string? query)
     {
         _logger.LogInformation("Queried players: {Query}", query);
-        var users = _databaseContext
-            .Users
-            .AsNoTracking()
-            .Where(u => u.Username.StartsWith(query ?? String.Empty))
-            .OrderBy(u => u.Username)
-            .Take(10)
-            .ToList();
+        var users = await _repository.QueryUsers(query);
         var response = new SearchUserResponse
         {
             Players = users.Select(u => u.IntoDTO()).ToList(),

@@ -120,6 +120,9 @@ namespace osuRequestor.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("RequestedFromId")
                         .HasColumnType("integer");
 

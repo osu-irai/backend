@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using osu.NET;
@@ -8,6 +9,7 @@ using osuRequestor.DTO.General;
 using osuRequestor.DTO.Requests;
 using osuRequestor.DTO.Responses;
 using osuRequestor.Models;
+using osuRequestor.Persistence;
 
 namespace osuRequestor.Controllers.Requests;
 
@@ -15,17 +17,15 @@ namespace osuRequestor.Controllers.Requests;
 [Route("api/request")]
 public class RequestController : ControllerBase
 {
-    private readonly DatabaseContext _databaseContext;
+    private readonly Repository _repository;
     private readonly OsuApiClient _osuClient;
-    private readonly IOsuApiProvider _osuApiProvider;
     private readonly ILogger<RequestController> _logger;
 
-    public RequestController(DatabaseContext databaseContext, IOsuApiProvider osuApiProvider, ILogger<RequestController> logger, OsuApiClient osuClient)
+    public RequestController(ILogger<RequestController> logger, OsuApiClient osuClient, Repository repository)
     {
-        _databaseContext = databaseContext;
-        _osuApiProvider = osuApiProvider;
         _logger = logger;
         _osuClient = osuClient;
+        _repository = repository;
     }
     
     /// <summary>
@@ -37,40 +37,13 @@ public class RequestController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ReceivedRequestResponse>> GetRequests(int? playerId)
     {
-        if (playerId == null)
+        if (playerId is null)
         {
             _logger.LogInformation($"Posted null ID");
             return BadRequest();
         }
 
-        var requests = await _databaseContext
-            .Requests
-            // Tracking introduces unnecessary overhead for read-only ops
-            .AsNoTracking()
-            .Include(requestModel => requestModel.Beatmap)
-            .Include(requestModel => requestModel.RequestedTo)
-            .Where(req => req.RequestedTo.Id == playerId)
-            .OrderByDescending(i => i.Id)
-            .Select(x => new ReceivedRequestResponse
-            {
-                Id = x.Id,
-                Beatmap = new BeatmapDTO
-                {
-                    BeatmapId = x.Beatmap.Id,
-                    BeatmapsetId = x.Beatmap.BeatmapSet.Id,
-                    Artist = x.Beatmap.BeatmapSet.Artist,
-                    Title = x.Beatmap.BeatmapSet.Title,
-                    Difficulty = x.Beatmap.Version,
-                    Stars = x.Beatmap.StarRating
-                },
-                From = new UserDTO
-                {
-                    Id = x.RequestedFrom.Id,
-                    Username = x.RequestedFrom.Username,
-                    AvatarUrl = x.RequestedFrom.AvatarUrl
-                }
-            })
-            .Take(50).ToListAsync();
+        var requests = await _repository.GetRequestsToUser(playerId.Value);
         _logger.LogInformation($"Found requests for {playerId}: {requests.Count}");
         return Ok(requests);
     }
@@ -88,9 +61,9 @@ public class RequestController : ControllerBase
         // TODO: Change everything to use the record itself
         var (sourceId, destinationId, beatmapId) = postRequest;
         if (sourceId == null || destinationId == null || beatmapId == null) return BadRequest();
-        UserModel? source = await _databaseContext.Users.FirstOrDefaultAsync(u => u.Id == sourceId);
-        UserModel? destination = await _databaseContext.Users.FirstOrDefaultAsync(u => u.Id == destinationId);
-        BeatmapModel? beatmap = await _databaseContext.Beatmaps.FirstOrDefaultAsync(b => b.Id == beatmapId);
+        UserModel? source = await _repository.GetUser(sourceId);
+        UserModel? destination = await _repository.GetUser(destinationId);
+        BeatmapModel? beatmap = await _repository.GetBeatmap(beatmapId);
 
         if (source is null)
         {
@@ -103,8 +76,8 @@ public class RequestController : ControllerBase
             };
             var apiResponseSuccess = apiResponse.Value!;
             _logger.LogInformation($"Found destination player: {sourceId} ({apiResponseSuccess.Username})");
-            source = UserModel.FromUserExtended(apiResponseSuccess); 
-            _databaseContext.Users.Add(source);
+            source = UserModel.FromUserExtended(apiResponseSuccess);
+            await _repository.AddUser(source);
         }
 
         if (destination is null && destinationId != sourceId)
@@ -118,8 +91,8 @@ public class RequestController : ControllerBase
             };
             var apiResponseSuccess = apiResponse.Value!;
             _logger.LogInformation($"Found destination player: {destinationId} ({apiResponseSuccess.Username})");
-            destination = UserModel.FromUserExtended(apiResponseSuccess); 
-            _databaseContext.Users.Add(destination);
+            destination = UserModel.FromUserExtended(apiResponseSuccess);
+            await _repository.AddUser(destination);
         }
 
         if (beatmap is null)
@@ -131,22 +104,19 @@ public class RequestController : ControllerBase
                 _logger.LogWarning($"Beatmap not found in osu!api: {beatmapId}");
                 return BadRequest();
             }
-
             var apiResponseSuccess = apiResponse.Value!;
             _logger.LogInformation($"Found beatmap: {beatmapId}");
-            beatmap = BeatmapModel.FromBeatmapExtended(apiResponseSuccess); 
-            _databaseContext.Beatmaps.Add(beatmap);
+            beatmap = BeatmapModel.FromBeatmapExtended(apiResponseSuccess);
+            await _repository.AddBeatmap(beatmap);
         }
         
-        await _databaseContext.SaveChangesAsync();
         var request = new RequestModel
         {
             Beatmap = beatmap,
             RequestedFrom = source,
             RequestedTo = destination,
         };
-        _databaseContext.Requests.Add(request);
-        await _databaseContext.SaveChangesAsync();
+        await _repository.AddRequest(request);
         _logger.LogInformation($"Created request for {destination.Id}");
         
         return Ok(request);

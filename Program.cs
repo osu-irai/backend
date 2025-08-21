@@ -7,6 +7,7 @@ using osuRequestor.Apis.OsuApi;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Configuration;
 using osuRequestor.Data;
+using osuRequestor.Persistence;
 
 namespace osuRequestor;
 
@@ -41,6 +42,7 @@ public static class Program
         // TODO: Add rate limiting
         builder.Services.AddHttpClient<OsuApiProvider>();
         builder.Services.AddSingleton<IOsuApiProvider, OsuApiProvider>();
+        builder.Services.AddSingleton<Repository>();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddControllers();

@@ -12,7 +12,7 @@ using osuRequestor.Data;
 namespace osuRequestor.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250708001338_Initial")]
+    [Migration("20250821141900_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -122,6 +122,9 @@ namespace osuRequestor.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("RequestedFromId")
                         .HasColumnType("integer");

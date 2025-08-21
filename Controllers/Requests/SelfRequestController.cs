@@ -7,6 +7,7 @@ using osuRequestor.DTO.General;
 using osuRequestor.DTO.Requests;
 using osuRequestor.DTO.Responses;
 using osuRequestor.Models;
+using osuRequestor.Persistence;
 
 namespace osuRequestor.Controllers.Requests;
 
@@ -15,6 +16,7 @@ namespace osuRequestor.Controllers.Requests;
 public class SelfRequestController : ControllerBase
 {
     private readonly DatabaseContext _databaseContext;
+    private readonly Repository _repository;
     private readonly OsuApiClient _osuClient;
     private readonly IOsuApiProvider _osuApiProvider;
     private readonly ILogger<RequestController> _logger;
@@ -31,12 +33,12 @@ public class SelfRequestController : ControllerBase
         return userId is null ? null : int.Parse(userId);
     }
     
-    public SelfRequestController(DatabaseContext databaseContext, IOsuApiProvider osuApiProvider, ILogger<RequestController> logger, OsuApiClient osuClient)
+    public SelfRequestController(IOsuApiProvider osuApiProvider, ILogger<RequestController> logger, OsuApiClient osuClient, Repository repository)
     {
-        _databaseContext = databaseContext;
         _osuApiProvider = osuApiProvider;
         _logger = logger;
         _osuClient = osuClient;
+        _repository = repository;
     }
     
     /// <summary>
@@ -54,34 +56,7 @@ public class SelfRequestController : ControllerBase
             return Forbid();
         }
 
-        var requests = await _databaseContext
-            .Requests
-            // Tracking introduces unnecessary overhead for read-only ops
-            .AsNoTracking()
-            .Include(requestModel => requestModel.Beatmap)
-            .Include(requestModel => requestModel.RequestedTo)
-            .Where(req => req.RequestedTo.Id == claim)
-            .OrderByDescending(i => i.Id)
-            .Select(x => new ReceivedRequestResponse
-            {
-                Id = x.Id,
-                Beatmap = new BeatmapDTO
-                {
-                    BeatmapId = x.Beatmap.Id,
-                    BeatmapsetId = x.Beatmap.BeatmapSet.Id,
-                    Artist = x.Beatmap.BeatmapSet.Artist,
-                    Title = x.Beatmap.BeatmapSet.Title,
-                    Difficulty = x.Beatmap.Version,
-                    Stars = x.Beatmap.StarRating
-                },
-                From = new UserDTO
-                {
-                    Id = x.RequestedFrom.Id,
-                    Username = x.RequestedFrom.Username,
-                    AvatarUrl = x.RequestedFrom.AvatarUrl
-                }
-            })
-            .Take(50).ToListAsync();
+        var requests = await _repository.GetRequestsToUser(claim.Value);
         _logger.LogInformation($"Found requests for {claim}: {requests.Count}");
         return Ok(requests);
     }
@@ -106,12 +81,10 @@ public class SelfRequestController : ControllerBase
         {
             return Forbid();
         }
-        UserModel? source = await _databaseContext.Tokens
-            .Where(s => s.UserId == claim)
-            .Select(s => s.User)
-            .FirstOrDefaultAsync();
-        UserModel? destination = await _databaseContext.Users.FirstOrDefaultAsync(u => u.Id == destinationId);
-        BeatmapModel? beatmap = await _databaseContext.Beatmaps.FirstOrDefaultAsync(b => b.Id == beatmapId);
+
+        UserModel? source = await _repository.GetUserByClaim(claim.Value);
+        UserModel? destination = await _repository.GetUser(destinationId);
+        BeatmapModel? beatmap = await _repository.GetBeatmap(beatmapId); 
         
         if (source is null)
         {
@@ -135,7 +108,7 @@ public class SelfRequestController : ControllerBase
             var apiResponseSuccess = apiResponse.Value!;
             _logger.LogInformation("Found destination player: {DestinationId} ({ApiResponseUsername})", destinationId, apiResponseSuccess.Username);
             destination = UserModel.FromUserExtended(apiResponseSuccess);
-            _databaseContext.Users.Add(destination);
+            await _repository.AddUser(destination);
         }
         else
         {
@@ -154,21 +127,19 @@ public class SelfRequestController : ControllerBase
             _logger.LogInformation("Found beatmap: {BeatmapId}", beatmapId);
             var apiResponseSuccess = apiResponse.Value!;
             beatmap = BeatmapModel.FromBeatmapExtended(apiResponseSuccess);
-            _databaseContext.Beatmaps.Add(beatmap);
+            await _repository.AddBeatmap(beatmap);
         }        
         else
         {
             _logger.LogInformation("Found beatmap: {BeatmapId}", beatmap.Id);
         }
-        await _databaseContext.SaveChangesAsync();
         var request = new RequestModel
         {
             Beatmap = beatmap,
             RequestedFrom = source,
             RequestedTo = destination,
         };
-        _databaseContext.Requests.Add(request);
-        await _databaseContext.SaveChangesAsync();
+        await _repository.AddRequest(request);
         _logger.LogInformation($"Created request for {destination.Id}");
         
         return Ok(request);
@@ -187,10 +158,7 @@ public class SelfRequestController : ControllerBase
     {
         if (_claim() is null) return Forbid();
         if (requestId is null) return BadRequest();
-        var request = await _databaseContext.Requests.FirstOrDefaultAsync(r => r.Id == requestId);
-        if (request is null) return BadRequest();
-        _databaseContext.Requests.Remove(request);
-        await _databaseContext.SaveChangesAsync();
+        await _repository.DeleteRequest(requestId.Value);
         return Ok();
     }
 }
