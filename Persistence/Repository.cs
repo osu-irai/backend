@@ -20,6 +20,11 @@ public class Repository
         return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
     }
 
+    public async Task<UserModel?> GetUserByName(string name)
+    {
+        return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == name);
+    }
+
     public async Task<UserModel?> GetUserByClaim(int claim)
     {
         UserModel? source = await _dbContext.Tokens

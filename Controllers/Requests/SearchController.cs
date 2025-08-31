@@ -30,6 +30,7 @@ public class SearchController : ControllerBase
     /// <param name="query">Username query</param>
     /// <returns>List of usernames <see cref="SearchUserResponse"/></returns>
     [HttpGet]
+    [Route("player")]
     public async Task<ActionResult<SearchUserResponse>> GetPlayers(string? query)
     {
         _logger.LogInformation("Queried players: {Query}", query);
@@ -46,7 +47,6 @@ public class SearchController : ControllerBase
     [Route("beatmap")]
     public async Task<ActionResult<SearchBeatmapResponse>> GetBeatmaps(string? query)
     {
-        
         _logger.LogInformation("Queried beatmaps: {Query}", query);
         var beatmaps = await _osuClient.SearchBeatmapSetsAsync(query ?? String.Empty);
         if (beatmaps.IsFailure)
@@ -64,7 +64,7 @@ public class SearchController : ControllerBase
             Title = s.Title,
             Difficulty = b.Version,
             Stars = b.DifficultyRating 
-        })).ToList();
+        })).Take(20).ToList();
         var response = new SearchBeatmapResponse
         {
             Beatmaps = maps,
