@@ -17,12 +17,12 @@ public class Repository
 
     public async Task<UserModel?> GetUser(int? id)
     {
-        return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task<UserModel?> GetUserByName(string name)
     {
-        return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == name);
+        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == name);
     }
 
     public async Task<UserModel?> GetUserByClaim(int claim)
@@ -48,7 +48,7 @@ public class Repository
 
     public async Task<BeatmapModel?> GetBeatmap(int? id)
     {
-        return await _dbContext.Beatmaps.AsNoTracking().Include(b => b.BeatmapSet).FirstOrDefaultAsync(b => b.Id == id);
+        return await _dbContext.Beatmaps.Include(b => b.BeatmapSet).FirstOrDefaultAsync(b => b.Id == id);
     }
 
     public async Task AddUser(UserModel user)
@@ -77,7 +77,7 @@ public class Repository
             .AsNoTracking()
             .Include(requestModel => requestModel.Beatmap)
             .Include(requestModel => requestModel.RequestedTo)
-            .Where(req => req.RequestedTo.Id == id || !req.IsDeleted)
+            .Where(req => req.RequestedTo.Id == id && !req.IsDeleted)
             .OrderByDescending(i => i.Id)
             .Select(x => new ReceivedRequestResponse
             {

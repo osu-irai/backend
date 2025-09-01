@@ -67,6 +67,7 @@ public class SelfRequestController : ControllerBase
     [ProducesDefaultResponseType]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Route("named")]
     public async Task<IActionResult> PostSelfRequestFromUsername([FromBody] PostNamedRequestRequest postNamedRequest)
     {
         var claim = _claim();
@@ -76,6 +77,7 @@ public class SelfRequestController : ControllerBase
         }
 
         var (destinationName, beatmapId) = postNamedRequest;
+        _logger.LogInformation("Found {destinationName} and {beatmapId}", destinationName, beatmapId);
         if (destinationName is null || beatmapId is null) return BadRequest();
         
         UserModel? source = await _repository.GetUserByClaim(claim.Value);
