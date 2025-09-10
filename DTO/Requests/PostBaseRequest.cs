@@ -1,6 +1,6 @@
 namespace osuRequestor.DTO.Requests;
 
-public record PostSelfRequestRequest
+public record PostBaseRequest
 {
     public int? DestinationId { get; set; }
     public int? BeatmapId { get; set; }
@@ -10,4 +10,5 @@ public record PostSelfRequestRequest
         destinationId = DestinationId;
         beatmapId = BeatmapId;
     }
+ 
 };

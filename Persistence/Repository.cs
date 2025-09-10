@@ -27,9 +27,9 @@ public class Repository
 
     public async Task<UserModel?> GetUserByClaim(int claim)
     {
-        UserModel? source = await _dbContext.Tokens
-            .Where(s => s.UserId == claim)
-            .Select(s => s.User)
+        UserModel? source = await _dbContext.Users
+            .Where(s => s.Id== claim)
+            .Include(s => s.Token)
             .FirstOrDefaultAsync();
         return source;
     }
@@ -60,6 +60,14 @@ public class Repository
     public async Task AddBeatmap(BeatmapModel map)
     {
         _dbContext.Beatmaps.Add(map);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateToken(int id, TokenModel token)
+    {
+        var tok = await _dbContext.Tokens.FirstAsync(t => t.UserId == id);
+        tok.AccessToken = token.AccessToken;
+        tok.Expires= token.Expires;
         await _dbContext.SaveChangesAsync();
     }
 

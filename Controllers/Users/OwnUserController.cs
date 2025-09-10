@@ -10,8 +10,8 @@ namespace osuRequestor.Controllers.Users;
 
 
 [ApiController]
-[Route("api/users/self")]
-public class SelfUserController : ControllerBase
+[Route("api/users/own")]
+public class OwnUserController : ControllerBase
 {
     private readonly DatabaseContext _databaseContext;
     private readonly IOsuApiProvider _osuApiProvider;
@@ -29,7 +29,7 @@ public class SelfUserController : ControllerBase
         return userId is null ? null : int.Parse(userId);
     }
     
-    public SelfUserController(DatabaseContext databaseContext, IOsuApiProvider osuApiProvider, ILogger<RequestController> logger)
+    public OwnUserController(DatabaseContext databaseContext, IOsuApiProvider osuApiProvider, ILogger<RequestController> logger)
     {
         _databaseContext = databaseContext;
         _osuApiProvider = osuApiProvider;
@@ -48,7 +48,7 @@ public class SelfUserController : ControllerBase
 
         var user = await _databaseContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == claim);
         
-        var requestCount = await _databaseContext.Requests.AsNoTracking().CountAsync(r => r.RequestedTo.Id == claim);
+        var requestCount = await _databaseContext.Requests.AsNoTracking().CountAsync(r => r.RequestedTo.Id == claim && !r.IsDeleted);
 
         return new SelfUserResponse
         {

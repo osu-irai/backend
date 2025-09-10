@@ -51,6 +51,18 @@ public static class Mapper
          Title = beatmapset.Title,
          CreatorId = beatmapset.CreatorId
       };
- 
+   }
+
+   public static List<BeatmapDTO> ToBeatmapDtoList(this BeatmapSetsBundle bundle)
+   {
+      return bundle.Sets.SelectMany(s => s.Beatmaps!.Select(b => new BeatmapDTO
+      {
+         BeatmapId = b.Id,
+         BeatmapsetId = s.Id,
+         Artist = s.Artist,
+         Title = s.Title,
+         Difficulty = b.Version,
+         Stars = b.DifficultyRating 
+      })).Take(20).ToList();
    }
 }

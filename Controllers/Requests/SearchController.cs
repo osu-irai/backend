@@ -1,10 +1,15 @@
+using System.Text.Json;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using osu.NET;
 using osu.NET.Models.Beatmaps;
+using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Data;
 using osuRequestor.DTO.General;
 using osuRequestor.DTO.Responses;
+using osuRequestor.Extensions;
+using osuRequestor.Models;
 using osuRequestor.Persistence;
 
 namespace osuRequestor.Controllers.Requests;
@@ -15,15 +20,28 @@ public class SearchController : ControllerBase
 {
     private readonly Repository _repository;
     private readonly OsuApiClient _osuClient;
+    private readonly IOsuApiProvider _osuProvider;
     private readonly ILogger<RequestController> _logger;
 
-    public SearchController(ILogger<RequestController> logger, Repository repository, OsuApiClient osuClient)
+    public SearchController(ILogger<RequestController> logger, Repository repository, OsuApiClient osuClient, IOsuApiProvider osuProvider)
     {
         _logger = logger;
         _repository = repository;
         _osuClient = osuClient;
+        _osuProvider = osuProvider;
     }
 
+    private int? _claim()
+    {
+        var identity = HttpContext.User.Identity;
+        if (identity is null)
+        {
+            return null;
+        }
+    
+        var userId = identity.Name;
+        return userId is null ? null : int.Parse(userId);
+    }
     /// <summary>
     /// Search for players whose nickname starts with <see cref="query"/> 
     /// </summary>
@@ -44,33 +62,35 @@ public class SearchController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet]
     [Route("beatmap")]
     public async Task<ActionResult<SearchBeatmapResponse>> GetBeatmaps(string? query)
     {
-        _logger.LogInformation("Queried beatmaps: {Query}", query);
+        var claim = _claim();
+        if (claim is null)
+        {
+            return Unauthorized(); 
+        }
+
         var beatmaps = await _osuClient.SearchBeatmapSetsAsync(query ?? String.Empty);
         if (beatmaps.IsFailure)
         {
-            _logger.LogWarning("Failed to fetch maps");
+            _logger.LogWarning("Failed to fetch maps: {error}", beatmaps.Error);
             return BadRequest();
         }
-
-        var beatmapsChecked = beatmaps.Value!;
-        var maps = beatmapsChecked.Sets.SelectMany(s => s.Beatmaps!.Select(b => new BeatmapDTO
+        var beatmapsChecked = beatmaps.Value;
+        var maps = beatmapsChecked?.ToBeatmapDtoList();
+        if (maps is null)
         {
-            BeatmapId = b.Id,
-            BeatmapsetId = s.Id,
-            Artist = s.Artist,
-            Title = s.Title,
-            Difficulty = b.Version,
-            Stars = b.DifficultyRating 
-        })).Take(20).ToList();
+            _logger.LogWarning("API returned no maps?");
+            return BadRequest();
+        }
         var response = new SearchBeatmapResponse
         {
             Beatmaps = maps,
             Count = maps.Count
         };
-        _logger.LogInformation("Beatmaps: {Player}, count: {Count}", response.Beatmaps[0], response.Count);
+        _logger.LogInformation("Beatmaps: {FirstMap}, count: {Count}", response.Beatmaps.FirstOrDefault(), response.Count);
         return Ok(response);
     }
 }

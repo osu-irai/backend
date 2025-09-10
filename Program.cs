@@ -9,7 +9,9 @@ using osuRequestor.Apis.OsuApi;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Configuration;
 using osuRequestor.Data;
+using osuRequestor.Extensions;
 using osuRequestor.Persistence;
+using osuRequestor.Services;
 
 namespace osuRequestor;
 
@@ -42,11 +44,20 @@ public static class Program
         });
         builder.Services.Configure<OsuApiConfig>(osuConfig);
         // TODO: Add rate limiting
+        builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient<OsuApiProvider>();
-        builder.Services
-            .AddOsuApiClient(
-                new OsuClientAccessTokenProvider(osuConfig.GetValue<string>("clientId")!,
-                    osuConfig.GetValue<string>("clientSecret")!));
+        // builder.Services
+            // .AddOsuApiClient(
+                // new OsuClientAccessTokenProvider(osuConfig.GetValue<string>("clientId")!,
+                    // osuConfig.GetValue<string>("clientSecret")!));
+        builder.Services.AddScoped<OsuDatabaseAccessTokenProvider>();
+        builder.Services.AddScoped<OsuApiClient>((serviceProvider) =>
+        {
+            var provider = serviceProvider.GetRequiredService<OsuDatabaseAccessTokenProvider>();
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            return new OsuApiClient(provider, new(),
+                loggerFactory.CreateLogger("UserTokenOsuApiClient") as ILogger<OsuApiClient>);
+        });
         builder.Services.AddSingleton<IOsuApiProvider, OsuApiProvider>();
         builder.Services.AddScoped<Repository>();
 
