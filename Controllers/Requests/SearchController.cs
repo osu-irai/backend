@@ -58,7 +58,7 @@ public class SearchController : ControllerBase
             Players = users.Select(u => u.IntoDTO()).ToList(),
             Count = users.Count
         };
-        _logger.LogInformation("Players: {Player}, count: {Count}", response.Players[0], response.Count);
+        _logger.LogInformation("Players: {Player}, count: {Count}", response.Players.FirstOrDefault(), response.Count);
         return Ok(response);
     }
 
