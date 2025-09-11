@@ -12,7 +12,7 @@ using osuRequestor.Data;
 namespace osuRequestor.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250821141900_Initial")]
+    [Migration("20250910171301_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

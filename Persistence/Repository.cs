@@ -22,7 +22,8 @@ public class Repository
 
     public async Task<UserModel?> GetUserByName(string name)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == name);
+        return await _dbContext.Users
+            .FirstOrDefaultAsync(u => u.Username == name);
     }
 
     public async Task<UserModel?> GetUserByClaim(int claim)

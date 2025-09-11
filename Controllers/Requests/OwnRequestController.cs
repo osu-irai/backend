@@ -105,7 +105,6 @@ public class OwnRequestController : ControllerBase
             var apiResponseSuccess = apiResponse.Value!;
             _logger.LogInformation("Found destination player: {DestinationId} ({ApiResponseUsername})", destinationName, apiResponseSuccess.Username);
             destination = apiResponseSuccess.ToModel();
-            await _repository.AddUser(destination);
         }
         else
         {
@@ -124,7 +123,6 @@ public class OwnRequestController : ControllerBase
             _logger.LogInformation("Found beatmap: {BeatmapId}", beatmapId);
             var apiResponseSuccess = apiResponse.Value!;
             beatmap = apiResponseSuccess.ToModel();
-            await _repository.AddBeatmap(beatmap);
         }        
         else
         {
@@ -139,7 +137,7 @@ public class OwnRequestController : ControllerBase
         await _repository.AddRequest(request);
         _logger.LogInformation($"Created request for {destination.Id}");
         
-        return Ok(request);
+        return Ok();
     }
 
     /// <summary>

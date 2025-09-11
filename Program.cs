@@ -42,6 +42,11 @@ public static class Program
         {
             options.UseNpgsql(connectionString.ConnectionString);
         });
+        builder.Services.Configure<DatabaseContext>(c =>
+        {
+            c.Database.Migrate();
+            return;
+        });
         builder.Services.Configure<OsuApiConfig>(osuConfig);
         // TODO: Add rate limiting
         builder.Services.AddHttpContextAccessor();
@@ -76,7 +81,10 @@ public static class Program
                 options.AccessDeniedPath = string.Empty;
                 options.LogoutPath = string.Empty;
                 options.Cookie.Path = "/";
+                options.Cookie.Domain = "irai.comf.ee";
                 options.Cookie.Name = "osuToken";
+                options.Cookie.HttpOnly = false;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.SlidingExpiration = true;
                 options.Events.OnValidatePrincipal = context =>
                 {
@@ -129,7 +137,7 @@ public static class Program
         app.UseCors(options =>
         {
             options.AllowAnyHeader();
-            options.WithOrigins("http://localhost:5077", "http://localhost:5076", "http://127.0.0.1:5077", "http://127.0.0.1:5076");
+            options.WithOrigins("http://localhost:5077", "http://localhost:5076", "http://127.0.0.1:5077", "http://127.0.0.1:5076", "https://irai.comf.ee");
             options.AllowAnyMethod();
             options.AllowCredentials();
         });

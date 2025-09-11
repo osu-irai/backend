@@ -132,7 +132,7 @@ public class OAuthController : ControllerBase
 
         _logger.LogInformation("User {Username} logged in, toke expires on {TokenExpiration}", user.Username, tokenExpiration);
         
-        return Redirect($"/");
+        return Redirect($"https://irai.comf.ee/");
     }
 
     /// <summary>
@@ -145,6 +145,6 @@ public class OAuthController : ControllerBase
     {
         await HttpContext.SignOutAsync("InternalCookies");
 
-        return Redirect($"/");
+        return Redirect($"https://irai.comf.ee/");
     }
 }

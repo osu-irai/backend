@@ -4,4 +4,8 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 /appsettings.DevelopmentFull.json
+/appsettings.json
+/appsettings.Development.json
+/appsettings.Production.json
+out/
 /mass_post.nu
