@@ -17,11 +17,10 @@ namespace osuRequestor;
 
 public static class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
         builder.Services.AddAuthorization();
         builder.Services.AddHttpLogging(o => { });
 
@@ -37,24 +36,14 @@ public static class Program
             Password = dbConfig["Password"]
         };
         
-        // Add a database
         builder.Services.AddDbContext<DatabaseContext>(options =>
         {
             options.UseNpgsql(connectionString.ConnectionString);
-        });
-        builder.Services.Configure<DatabaseContext>(c =>
-        {
-            c.Database.Migrate();
-            return;
         });
         builder.Services.Configure<OsuApiConfig>(osuConfig);
         // TODO: Add rate limiting
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient<OsuApiProvider>();
-        // builder.Services
-            // .AddOsuApiClient(
-                // new OsuClientAccessTokenProvider(osuConfig.GetValue<string>("clientId")!,
-                    // osuConfig.GetValue<string>("clientSecret")!));
         builder.Services.AddScoped<OsuDatabaseAccessTokenProvider>();
         builder.Services.AddScoped<OsuApiClient>((serviceProvider) =>
         {
@@ -141,6 +130,12 @@ public static class Program
             options.AllowAnyMethod();
             options.AllowCredentials();
         });
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+            await db.Database.MigrateAsync();
+        }
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
