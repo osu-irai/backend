@@ -62,6 +62,11 @@ public class SearchController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>
+    /// Search for beatmaps. Uses osu!api as the source of beatmaps
+    /// </summary>
+    /// <param name="query">Query string</param>
+    /// <returns>List of first 20 beatmaps found</returns>
     [HttpGet]
     [Route("beatmap")]
     public async Task<ActionResult<SearchBeatmapResponse>> GetBeatmaps(string? query)
@@ -78,8 +83,7 @@ public class SearchController : ControllerBase
             _logger.LogWarning("Failed to fetch maps: {error}", beatmaps.Error);
             return BadRequest();
         }
-        var beatmapsChecked = beatmaps.Value;
-        var maps = beatmapsChecked?.ToBeatmapDtoList();
+        var maps = beatmaps.Value?.ToBeatmapDtoList();
         if (maps is null)
         {
             _logger.LogWarning("API returned no maps?");

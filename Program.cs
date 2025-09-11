@@ -26,6 +26,7 @@ public static class Program
 
         var dbConfig = builder.Configuration.GetSection("Database");
         var osuConfig = builder.Configuration.GetSection("osuApi");
+        var serverConfig = builder.Configuration.GetSection("ServerConfig");
 
         var connectionString = new NpgsqlConnectionStringBuilder
         {
@@ -41,6 +42,7 @@ public static class Program
             options.UseNpgsql(connectionString.ConnectionString);
         });
         builder.Services.Configure<OsuApiConfig>(osuConfig);
+        builder.Services.Configure<ServerConfig>(serverConfig);
         // TODO: Add rate limiting
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient<OsuApiProvider>();

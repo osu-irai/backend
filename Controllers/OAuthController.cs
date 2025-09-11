@@ -2,8 +2,10 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Apis.OsuApi.Models;
+using osuRequestor.Configuration;
 using osuRequestor.Data;
 using osuRequestor.Models;
 
@@ -16,14 +18,16 @@ public class OAuthController : ControllerBase
     private readonly ILogger<OAuthController> _logger;
     private readonly IOsuApiProvider _osuApiDataService;
     private readonly DatabaseContext _databaseContext;
+    private readonly ServerConfig _serverConfig;
 
     public OAuthController(ILogger<OAuthController> logger, 
     IOsuApiProvider osuApiDataService,
-    DatabaseContext databaseContext)
+    DatabaseContext databaseContext, IOptions<ServerConfig> serverConfig)
     {
         _logger = logger;
         _osuApiDataService = osuApiDataService;
         _databaseContext = databaseContext;
+        _serverConfig = serverConfig.Value;
     }
 
     /// <summary>
@@ -132,7 +136,7 @@ public class OAuthController : ControllerBase
 
         _logger.LogInformation("User {Username} logged in, toke expires on {TokenExpiration}", user.Username, tokenExpiration);
         
-        return Redirect($"https://irai.comf.ee/");
+        return Redirect(_serverConfig.HomePage);
     }
 
     /// <summary>
@@ -145,6 +149,6 @@ public class OAuthController : ControllerBase
     {
         await HttpContext.SignOutAsync("InternalCookies");
 
-        return Redirect($"https://irai.comf.ee/");
+        return Redirect(_serverConfig.HomePage);
     }
 }
