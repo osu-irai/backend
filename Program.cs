@@ -74,7 +74,6 @@ public static class Program
                 options.AccessDeniedPath = string.Empty;
                 options.LogoutPath = string.Empty;
                 options.Cookie.Path = "/";
-                options.Cookie.Domain = "irai.comf.ee";
                 options.Cookie.Name = "osuToken";
                 options.Cookie.HttpOnly = false;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
