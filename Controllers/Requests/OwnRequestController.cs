@@ -1,11 +1,14 @@
+using System.Security.Principal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OneOf.Monads;
 using osu.NET;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Data;
 using osuRequestor.DTO.General;
 using osuRequestor.DTO.Requests;
 using osuRequestor.DTO.Responses;
+using osuRequestor.Exceptions;
 using osuRequestor.Extensions;
 using osuRequestor.Models;
 using osuRequestor.Persistence;
@@ -20,18 +23,9 @@ public class OwnRequestController : ControllerBase
     private readonly OsuApiClient _osuClient;
     private readonly ILogger<RequestController> _logger;
 
-    private int? _claim()
-    {
-        var identity = HttpContext.User.Identity;
-        if (identity is null)
-        {
-            return null;
-        }
-    
-        var userId = identity.Name;
-        return userId is null ? null : int.Parse(userId);
-    }
-    
+
+    private int _claim() =>
+        HttpContext.User.Identity.ThrowIfUnauthorized().OrOnNullName();
     public OwnRequestController(ILogger<RequestController> logger, OsuApiClient osuClient, Repository repository)
     {
         _logger = logger;
@@ -49,12 +43,7 @@ public class OwnRequestController : ControllerBase
     public async Task<ActionResult<ReceivedRequestResponse>> GetSelfRequests()
     {
         var claim = _claim();
-        if (claim is null)
-        {
-            return Forbid();
-        }
-
-        var requests = await _repository.GetRequestsToUser(claim.Value);
+        var requests = await _repository.GetRequestsToUser(claim);
         _logger.LogInformation($"Found requests for {claim}: {requests.Count}");
         return Ok(requests);
     }
@@ -70,72 +59,55 @@ public class OwnRequestController : ControllerBase
     public async Task<IActionResult> PostRequest([FromBody] PostRequestWithName postBaseRequest)
     {
         var claim = _claim();
-        if (claim is null)
-        {
-            return Forbid();
-        }
 
         var (beatmapId, destinationName) = postBaseRequest;
         _logger.LogInformation("Found {destinationName} and {beatmapId}", destinationName, beatmapId);
         if (destinationName is null || beatmapId is null) return BadRequest();
         
-        UserModel? source = await _repository.GetUserByClaim(claim.Value);
-        UserModel? destination = await _repository.GetUserByName(destinationName);
-        BeatmapModel? beatmap = await _repository.GetBeatmap(beatmapId); 
+        Option<UserModel> source = await _repository.GetUserByClaim(claim);
+        Option<UserModel> destination = await _repository.GetUserByName(destinationName);
+        Option<BeatmapModel> beatmap = await _repository.GetBeatmap(beatmapId); 
         
-        if (source is null)
+        if (source.IsNone())
         {
-            _logger.LogWarning($"Could not find source player with token");
-            return Forbid();
+            _logger.LogWarning("Could not find source player with token");
+            return Unauthorized();
         }
-        else
-        {
-            _logger.LogInformation("Found source player: {SourceId}", source.Id);
-        }
-        
-        if (destination is null)
+
+        _logger.LogInformation("Found source player: {SourceId}", source.Value().Id);
+
+        if (destination.IsNone())
         {
             _logger.LogInformation("Could not find destination player: {DestinationId}", destinationName);
-            var apiResponse = await _osuClient.GetUserAsync(destinationName);
-            if (apiResponse.IsFailure)
-            {
-                _logger.LogWarning("Destination player not found in osu!api: {DestinationId}", destinationName);
-                return BadRequest();
-            }
-            var apiResponseSuccess = apiResponse.Value!;
-            _logger.LogInformation("Found destination player: {DestinationId} ({ApiResponseUsername})", destinationName, apiResponseSuccess.Username);
-            destination = apiResponseSuccess.ToModel();
+            var apiResponse = await _osuClient.GetUserAsync(destinationName).BadGatewayOnFailure("GET user").OrNotFound();
+            _logger.LogInformation("Found destination player: {DestinationId} ({ApiResponseUsername})", destinationName, apiResponse.Username);
+            destination = apiResponse.ToModel();
         }
         else
         {
-            _logger.LogInformation("Found destination player: {DestinationId}", destination.Id);
+            _logger.LogInformation("Found destination player: {DestinationId}", destination.Value().Id);
         }
         
-        if (beatmap is null)
+        if (beatmap.IsNone())
         {
             _logger.LogInformation("Could not find beatmap: {BeatmapId}", beatmapId);
-            var apiResponse = await _osuClient.GetBeatmapAsync(beatmapId.Value);
-            if (apiResponse.IsFailure)
-            {
-                _logger.LogWarning("Beatmap not found in osu!api: {BeatmapId}", beatmapId);
-                return BadRequest();
-            }
+            var apiResponse = await _osuClient.GetBeatmapAsync(beatmapId.Value).BadGatewayOnFailure("GET beatmap")
+                .OrNotFound();
             _logger.LogInformation("Found beatmap: {BeatmapId}", beatmapId);
-            var apiResponseSuccess = apiResponse.Value!;
-            beatmap = apiResponseSuccess.ToModel();
+            beatmap = apiResponse.ToModel();
         }        
         else
         {
-            _logger.LogInformation("Found beatmap: {BeatmapId}", beatmap.Id);
+            _logger.LogInformation("Found beatmap: {BeatmapId}", beatmap.Value().Id);
         }
         var request = new RequestModel
         {
-            Beatmap = beatmap,
-            RequestedFrom = source,
-            RequestedTo = destination,
+            Beatmap = beatmap.Value(),
+            RequestedFrom = source.Value(),
+            RequestedTo = destination.Value(),
         };
         await _repository.AddRequest(request);
-        _logger.LogInformation($"Created request for {destination.Id}");
+        _logger.LogInformation("Created request for {Id}", destination.Value().Id);
         
         return Ok();
     }
@@ -151,7 +123,7 @@ public class OwnRequestController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteSelfRequest(int? requestId)
     {
-        if (_claim() is null) return Forbid();
+        _claim();
         if (requestId is null) return BadRequest();
         await _repository.DeleteRequest(requestId.Value);
         return Ok();

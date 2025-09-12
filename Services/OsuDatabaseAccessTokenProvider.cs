@@ -30,7 +30,7 @@ public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
         var userId = identity.Name ?? throw new ArgumentException("Invalid user identity");
         var id = int.Parse(userId);
         var user = await _repository.GetUserByClaim(id);
-        var token = user?.Token;
+        var token = user.Value().Token;
         if (DateTime.Now > token?.Expires)
         {
             _logger.LogInformation("Refreshing token for {user}", id);
@@ -41,7 +41,7 @@ public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
                 AccessToken = newToken!.AccessToken,
                 RefreshToken = token.RefreshToken,
                 Expires = DateTime.Now.AddSeconds(newToken.ExpiresIn),
-                User = user!
+                User = user.Value()
             });
             return newToken.AccessToken;
         }

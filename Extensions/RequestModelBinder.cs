@@ -9,7 +9,7 @@ public class RequestModelBinder : IModelBinder
     {
         ArgumentNullException.ThrowIfNull(bindingContext);
         var request = bindingContext.HttpContext.Request;
-        if (!(bool)request.ContentType?.Contains("application/json"))
+        if (!request.ContentType?.Contains("application/json") ?? false)
         {
             bindingContext.Result = ModelBindingResult.Failed();
             throw new ArgumentException();

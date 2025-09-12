@@ -9,6 +9,7 @@ using osuRequestor.Apis.OsuApi;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Configuration;
 using osuRequestor.Data;
+using osuRequestor.Exceptions;
 using osuRequestor.Extensions;
 using osuRequestor.Persistence;
 using osuRequestor.Services;
@@ -21,6 +22,7 @@ public static class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddExceptionHandler<ApiExceptionHandler>();
         builder.Services.AddAuthorization();
         builder.Services.AddHttpLogging(o => { });
 
@@ -132,6 +134,7 @@ public static class Program
             options.AllowAnyMethod();
             options.AllowCredentials();
         });
+        app.UseExceptionHandler(opt => {});
 
         using (var scope = app.Services.CreateScope())
         {

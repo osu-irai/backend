@@ -8,6 +8,7 @@ using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Data;
 using osuRequestor.DTO.General;
 using osuRequestor.DTO.Responses;
+using osuRequestor.Exceptions;
 using osuRequestor.Extensions;
 using osuRequestor.Models;
 using osuRequestor.Persistence;
@@ -20,7 +21,6 @@ public class SearchController : ControllerBase
 {
     private readonly Repository _repository;
     private readonly OsuApiClient _osuClient;
-    private readonly IOsuApiProvider _osuProvider;
     private readonly ILogger<RequestController> _logger;
 
     public SearchController(ILogger<RequestController> logger, Repository repository, OsuApiClient osuClient, IOsuApiProvider osuProvider)
@@ -28,20 +28,10 @@ public class SearchController : ControllerBase
         _logger = logger;
         _repository = repository;
         _osuClient = osuClient;
-        _osuProvider = osuProvider;
     }
 
-    private int? _claim()
-    {
-        var identity = HttpContext.User.Identity;
-        if (identity is null)
-        {
-            return null;
-        }
-    
-        var userId = identity.Name;
-        return userId is null ? null : int.Parse(userId);
-    }
+    private int _claim() =>
+        HttpContext.User.Identity.ThrowIfUnauthorized().OrOnNullName();
     /// <summary>
     /// Search for players whose nickname starts with <see cref="query"/> 
     /// </summary>
@@ -72,23 +62,11 @@ public class SearchController : ControllerBase
     public async Task<ActionResult<SearchBeatmapResponse>> GetBeatmaps(string? query)
     {
         var claim = _claim();
-        if (claim is null)
-        {
-            return Unauthorized(); 
-        }
 
-        var beatmaps = await _osuClient.SearchBeatmapSetsAsync(query ?? String.Empty);
-        if (beatmaps.IsFailure)
-        {
-            _logger.LogWarning("Failed to fetch maps: {error}", beatmaps.Error);
-            return BadRequest();
-        }
-        var maps = beatmaps.Value?.ToBeatmapDtoList();
-        if (maps is null)
-        {
-            _logger.LogWarning("API returned no maps?");
-            return BadRequest();
-        }
+        var beatmaps = await _osuClient.SearchBeatmapSetsAsync(query ?? String.Empty)
+            .BadGatewayOnFailure("Beatmaps not found")
+            .OrNotFound();
+        var maps = beatmaps.ToBeatmapDtoList();
         var response = new SearchBeatmapResponse
         {
             Beatmaps = maps,

@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using OneOf.Monads;
 using osuRequestor.Data;
 using osuRequestor.DTO.General;
 using osuRequestor.DTO.Responses;
+using osuRequestor.Extensions;
 using osuRequestor.Models;
 
 namespace osuRequestor.Persistence;
@@ -15,24 +17,23 @@ public class Repository
         _dbContext = dbContext;
     }
 
-    public async Task<UserModel?> GetUser(int? id)
+    public async Task<Option<UserModel>> GetUser(int? id)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id).IntoOptionAsync();
     }
 
-    public async Task<UserModel?> GetUserByName(string name)
+    public async Task<Option<UserModel>> GetUserByName(string name)
     {
         return await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.Username == name);
+            .FirstOrDefaultAsync(u => u.Username == name).IntoOptionAsync();
     }
 
-    public async Task<UserModel?> GetUserByClaim(int claim)
+    public async Task<Option<UserModel>> GetUserByClaim(int claim)
     {
-        UserModel? source = await _dbContext.Users
+        return await _dbContext.Users
             .Where(s => s.Id== claim)
             .Include(s => s.Token)
-            .FirstOrDefaultAsync();
-        return source;
+            .FirstOrDefaultAsync().IntoOptionAsync();
     }
 
     public async Task<List<UserModel>> QueryUsers(string? query)
@@ -47,9 +48,12 @@ public class Repository
 
     }
 
-    public async Task<BeatmapModel?> GetBeatmap(int? id)
+    public async Task<Option<BeatmapModel>> GetBeatmap(int? id)
     {
-        return await _dbContext.Beatmaps.Include(b => b.BeatmapSet).FirstOrDefaultAsync(b => b.Id == id);
+        return await _dbContext.Beatmaps
+            .Include(b => b.BeatmapSet)
+            .FirstOrDefaultAsync(b => b.Id == id)
+            .IntoOptionAsync();
     }
 
     public async Task AddUser(UserModel user)
@@ -72,10 +76,14 @@ public class Repository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<RequestModel?> GetRequest(int id)
+    public async Task<Option<RequestModel>> GetRequest(int id)
     {
-        return await _dbContext.Requests.AsNoTracking().Include(r => r.RequestedFrom).Include(r => r.RequestedTo)
-            .Include(r => r.Beatmap).FirstOrDefaultAsync(r => r.Id == id);
+        return await _dbContext.Requests.AsNoTracking()
+            .Include(r => r.RequestedFrom)
+            .Include(r => r.RequestedTo)
+            .Include(r => r.Beatmap)
+            .FirstOrDefaultAsync(r => r.Id == id)
+            .IntoOptionAsync();
     }
 
     public async Task<List<ReceivedRequestResponse>> GetRequestsToUser(int id)
