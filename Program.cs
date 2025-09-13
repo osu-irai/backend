@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -43,6 +44,8 @@ public static class Program
         {
             options.UseNpgsql(connectionString.ConnectionString);
         });
+        builder.Services.AddDataProtection().PersistKeysToDbContext<DatabaseContext>();
+
         builder.Services.Configure<OsuApiConfig>(osuConfig);
         builder.Services.Configure<ServerConfig>(serverConfig);
         // TODO: Add rate limiting
@@ -53,7 +56,7 @@ public static class Program
         {
             var provider = serviceProvider.GetRequiredService<OsuDatabaseAccessTokenProvider>();
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            return new OsuApiClient(provider, new(),
+            return new OsuApiClient(provider, 
                 loggerFactory.CreateLogger("UserTokenOsuApiClient") as ILogger<OsuApiClient>);
         });
         builder.Services.AddSingleton<IOsuApiProvider, OsuApiProvider>();
@@ -74,7 +77,7 @@ public static class Program
                 options.AccessDeniedPath = string.Empty;
                 options.LogoutPath = string.Empty;
                 options.Cookie.Path = "/";
-                options.Cookie.Name = "osuToken";
+                options.Cookie.Name = "iraiLogin";
                 options.Cookie.HttpOnly = false;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.SlidingExpiration = true;
