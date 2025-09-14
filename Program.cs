@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -25,7 +26,14 @@ public static class Program
 
         builder.Services.AddExceptionHandler<ApiExceptionHandler>();
         builder.Services.AddAuthorization();
-        builder.Services.AddHttpLogging(o => { });
+        builder.Services.AddHttpLogging(o =>
+        {
+            if (!builder.Environment.IsDevelopment()) return;
+            o.LoggingFields = HttpLoggingFields.RequestHeaders | HttpLoggingFields.ResponseHeaders;
+            o.RequestHeaders.Add("Origin");
+            o.ResponseHeaders.Add("Origin");
+            o.ResponseHeaders.Add("Access-Control-Allow-Origin");
+        });
 
         var dbConfig = builder.Configuration.GetSection("Database");
         var osuConfig = builder.Configuration.GetSection("osuApi");
@@ -132,9 +140,16 @@ public static class Program
         app.UseCors(options =>
         {
             options.AllowAnyHeader();
-            options.WithOrigins("http://localhost:5077", "http://localhost:5076", "http://127.0.0.1:5077", "http://127.0.0.1:5076", "https://irai.comf.ee");
-            options.AllowAnyMethod();
+            if (app.Environment.IsDevelopment())
+            {
+                options.WithOrigins("http://localhost:5076", "http://localhost:5077", "http://frontend:5077", "http://irai-dev.comf.ee");
+            }
+            else
+            {
+                options.WithOrigins("https://irai.comf.ee");
+            }
             options.AllowCredentials();
+            options.AllowAnyMethod();
         });
         app.UseExceptionHandler(opt => {});
 
