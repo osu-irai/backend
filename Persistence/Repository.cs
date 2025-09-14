@@ -40,10 +40,11 @@ public class Repository
 
     public async Task<List<UserModel>> QueryUsers(string? query)
     {
+        var queryString = query ?? String.Empty;
         return await _dbContext
             .Users
             .AsNoTracking()
-            .Where(u => u.Username.StartsWith(query ?? String.Empty))
+            .Where(u => u.Username.ToLower().StartsWith(queryString.ToLower()))
             .OrderBy(u => u.Username)
             .Take(10)
             .ToListAsync();
