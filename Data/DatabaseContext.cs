@@ -16,8 +16,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Models.RequestModel>()
-            .Property(request => request.Date)
-            .HasDefaultValueSql("now()");
+            .Property(request => request.Date);
         
         modelBuilder.Entity<Models.BeatmapModel>()
             .Property(item => item.Id)

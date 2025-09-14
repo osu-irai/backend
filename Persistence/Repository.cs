@@ -11,10 +11,12 @@ namespace osuRequestor.Persistence;
 public class Repository
 {
     private readonly DatabaseContext _dbContext;
+    private readonly ILogger<Repository> _logger;
 
-    public Repository(DatabaseContext dbContext)
+    public Repository(DatabaseContext dbContext, ILogger<Repository> logger)
     {
         _dbContext = dbContext;
+        _logger = logger;
     }
 
     public async Task<Option<UserModel>> GetUser(int? id)
@@ -95,7 +97,7 @@ public class Repository
             .Include(requestModel => requestModel.Beatmap)
             .Include(requestModel => requestModel.RequestedTo)
             .Where(req => req.RequestedTo.Id == id && !req.IsDeleted)
-            .OrderByDescending(i => i.Id)
+            .OrderByDescending(req => req.Date)
             .Select(x => new ReceivedRequestResponse
             {
                 Id = x.Id,
@@ -120,7 +122,17 @@ public class Repository
 
     public async Task AddRequest(RequestModel request)
     {
-        _dbContext.Requests.Add(request);
+        var existing = await _dbContext.Requests.FirstOrDefaultAsync(req =>
+            req.RequestedFrom.Id == request.RequestedFrom.Id && req.Beatmap.Id == request.Beatmap.Id);
+        if (existing is not null)
+        {
+            existing.Date = DateTime.UtcNow;
+        }
+        else
+        {
+            request.Date = DateTime.UtcNow;
+            _dbContext.Requests.Add(request);
+        }
         await _dbContext.SaveChangesAsync();
     }
 
