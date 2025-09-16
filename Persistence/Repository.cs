@@ -124,7 +124,9 @@ public class Repository
     public async Task AddRequest(RequestModel request)
     {
         var existing = await _dbContext.Requests.FirstOrDefaultAsync(req =>
-            req.RequestedFrom.Id == request.RequestedFrom.Id && req.Beatmap.Id == request.Beatmap.Id);
+            req.RequestedFrom.Id == request.RequestedFrom.Id
+            && req.Beatmap.Id == request.Beatmap.Id
+            && req.RequestedTo.Id == request.RequestedTo.Id);
         if (existing is not null)
         {
             existing.Date = DateTime.UtcNow;
