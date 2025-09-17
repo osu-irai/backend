@@ -36,7 +36,7 @@ public static class ApiExceptionHelper
       var val = await value;
       if (val is null)
       {
-         throw new NotFoundException("value not found");
+         throw new NotFoundException($"{typeof(T)} not found");
       }
 
       return val;
@@ -46,7 +46,7 @@ public static class ApiExceptionHelper
       var val = await value;
       if (val is null)
       {
-         throw new BadRequestException("value not found");
+         throw new BadRequestException($"{typeof(T)} not found");
       }
 
       return val;

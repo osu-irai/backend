@@ -38,10 +38,10 @@ namespace osuRequestor.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DataProtectionKeys");
+                    b.ToTable("DataProtectionKeys", (string)null);
                 });
 
-            modelBuilder.Entity("osuRequestor.Models.BeatmapModel", b =>
+            modelBuilder.Entity("irai.Models.BeatmapModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -96,10 +96,10 @@ namespace osuRequestor.Migrations
 
                     b.HasIndex("BeatmapSetId");
 
-                    b.ToTable("Beatmaps");
+                    b.ToTable("Beatmaps", (string)null);
                 });
 
-            modelBuilder.Entity("osuRequestor.Models.BeatmapSetModel", b =>
+            modelBuilder.Entity("irai.Models.BeatmapSetModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -120,10 +120,10 @@ namespace osuRequestor.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BeatmapSets");
+                    b.ToTable("BeatmapSets", (string)null);
                 });
 
-            modelBuilder.Entity("osuRequestor.Models.RequestModel", b =>
+            modelBuilder.Entity("irai.Models.RequestModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -154,10 +154,10 @@ namespace osuRequestor.Migrations
 
                     b.HasIndex("RequestedToId");
 
-                    b.ToTable("Requests");
+                    b.ToTable("Requests", (string)null);
                 });
 
-            modelBuilder.Entity("osuRequestor.Models.TokenModel", b =>
+            modelBuilder.Entity("irai.Models.TokenModel", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -175,10 +175,10 @@ namespace osuRequestor.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Tokens");
+                    b.ToTable("Tokens", (string)null);
                 });
 
-            modelBuilder.Entity("osuRequestor.Models.UserModel", b =>
+            modelBuilder.Entity("irai.Models.UserModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -201,12 +201,12 @@ namespace osuRequestor.Migrations
 
                     b.HasIndex("Username");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("osuRequestor.Models.BeatmapModel", b =>
+            modelBuilder.Entity("irai.Models.BeatmapModel", b =>
                 {
-                    b.HasOne("osuRequestor.Models.BeatmapSetModel", "BeatmapSet")
+                    b.HasOne("irai.Models.BeatmapSetModel", "BeatmapSet")
                         .WithMany()
                         .HasForeignKey("BeatmapSetId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -215,21 +215,21 @@ namespace osuRequestor.Migrations
                     b.Navigation("BeatmapSet");
                 });
 
-            modelBuilder.Entity("osuRequestor.Models.RequestModel", b =>
+            modelBuilder.Entity("irai.Models.RequestModel", b =>
                 {
-                    b.HasOne("osuRequestor.Models.BeatmapModel", "Beatmap")
+                    b.HasOne("irai.Models.BeatmapModel", "Beatmap")
                         .WithMany()
                         .HasForeignKey("BeatmapId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("osuRequestor.Models.UserModel", "RequestedFrom")
+                    b.HasOne("irai.Models.UserModel", "RequestedFrom")
                         .WithMany()
                         .HasForeignKey("RequestedFromId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("osuRequestor.Models.UserModel", "RequestedTo")
+                    b.HasOne("irai.Models.UserModel", "RequestedTo")
                         .WithMany()
                         .HasForeignKey("RequestedToId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -242,18 +242,18 @@ namespace osuRequestor.Migrations
                     b.Navigation("RequestedTo");
                 });
 
-            modelBuilder.Entity("osuRequestor.Models.TokenModel", b =>
+            modelBuilder.Entity("irai.Models.TokenModel", b =>
                 {
-                    b.HasOne("osuRequestor.Models.UserModel", "User")
+                    b.HasOne("irai.Models.UserModel", "User")
                         .WithOne("Token")
-                        .HasForeignKey("osuRequestor.Models.TokenModel", "UserId")
+                        .HasForeignKey("irai.Models.TokenModel", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("osuRequestor.Models.UserModel", b =>
+            modelBuilder.Entity("irai.Models.UserModel", b =>
                 {
                     b.Navigation("Token")
                         .IsRequired();

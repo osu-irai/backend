@@ -1,4 +1,6 @@
+using System.Text;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Toolkit.HighPerformance;
 using osuRequestor.ExceptionHandler.Exception;
 
 namespace osuRequestor.Exceptions;
@@ -12,11 +14,11 @@ public class ApiExceptionHandler : IExceptionHandler
         _logger = logger;
     }
 
-    public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         if (exception is not ApiException apiException)
         {
-            return ValueTask.FromResult(false);
+            return false;
         }
 
         switch (apiException)
@@ -42,8 +44,7 @@ public class ApiExceptionHandler : IExceptionHandler
                 httpContext.Response.StatusCode = StatusCodes.Status502BadGateway;
                 break;
         }
-
-
-        return ValueTask.FromResult(true);
+        await httpContext.Response.Body.WriteAsync(apiException.ResponseMessage.AsMemory().AsBytes(), cancellationToken);
+        return true;
     }
 }
