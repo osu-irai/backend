@@ -134,6 +134,11 @@ public class Repository
         else
         {
             request.Date = DateTime.UtcNow;
+            var bms = await _dbContext.BeatmapSets.FirstOrDefaultAsync(bms => bms.Id == request.Beatmap.BeatmapSet.Id);
+            if (bms is not null)
+            {
+                request.Beatmap.BeatmapSet = bms;
+            }
             _dbContext.Requests.Add(request);
         }
         await _dbContext.SaveChangesAsync();
