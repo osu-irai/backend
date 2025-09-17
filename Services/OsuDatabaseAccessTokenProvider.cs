@@ -33,8 +33,8 @@ public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
         var user = await _repository.GetUserByClaim(id);
         _logger.LogInformation("Found valid user by claim id {id}", id);
         var token = user.Value().Token;
-        _logger.LogInformation("Current time is {}, Token for {User} expires at {Expires}", DateTime.Now, id, token?.Expires);
-        if (DateTime.Now > token?.Expires)
+        _logger.LogInformation("Current time is {}, Token for {User} expires at {Expires}", DateTime.UtcNow, id, token?.Expires);
+        if (DateTime.UtcNow > token?.Expires)
         {
             _logger.LogInformation("Refreshing token for {user}", id);
             var newToken = await _osuApiProvider.RefreshToken(token.RefreshToken, token.AccessToken);
@@ -43,7 +43,7 @@ public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
                 UserId = id,
                 AccessToken = newToken!.AccessToken,
                 RefreshToken = token.RefreshToken,
-                Expires = DateTime.Now.AddSeconds(newToken.ExpiresIn),
+                Expires = DateTime.UtcNow.AddSeconds(newToken.ExpiresIn),
                 User = user.Value()
             });
             return newToken.AccessToken;
