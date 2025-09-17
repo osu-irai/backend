@@ -44,7 +44,7 @@ public class ApiExceptionHandler : IExceptionHandler
                 httpContext.Response.StatusCode = StatusCodes.Status502BadGateway;
                 break;
         }
-        await httpContext.Response.Body.WriteAsync(apiException.ResponseMessage.AsMemory().AsBytes(), cancellationToken);
+        await httpContext.Response.WriteAsync(apiException.ResponseMessage, cancellationToken);
         return true;
     }
 }
