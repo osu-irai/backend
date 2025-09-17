@@ -22,6 +22,7 @@ public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
 
     public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Querying user info");
         var identity = _contextAccessor.HttpContext?.User?.Identity;
         if (identity is null)
         {
@@ -30,6 +31,7 @@ public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
         var userId = identity.Name ?? throw new ArgumentException("Invalid user identity");
         var id = int.Parse(userId);
         var user = await _repository.GetUserByClaim(id);
+        _logger.LogInformation("Found valid user by claim id {id}", id);
         var token = user.Value().Token;
         if (DateTime.Now > token?.Expires)
         {
