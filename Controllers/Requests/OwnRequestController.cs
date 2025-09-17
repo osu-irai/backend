@@ -79,19 +79,16 @@ public class OwnRequestController : ControllerBase
         if (destination.IsNone())
         {
             _logger.LogInformation("Could not find destination player: {DestinationId}", destinationName);
-            var apiResponse = await _osuClient.GetUserAsync(destinationName).BadGatewayOnFailure("GET user").OrNotFound();
-            _logger.LogInformation("Found destination player: {DestinationId} ({ApiResponseUsername})", destinationName, apiResponse.Username);
-            destination = apiResponse.ToModel();
+            return NotFound("User {destinationName} was not found");
         }
-        else
-        {
-            _logger.LogInformation("Found destination player: {DestinationId}", destination.Value().Id);
-        }
-        
+
+        _logger.LogInformation("Found destination player: {DestinationId}", destination.Value().Id);
+
         if (beatmap.IsNone())
         {
             _logger.LogInformation("Could not find beatmap: {BeatmapId}", beatmapId);
-            var apiResponse = await _osuClient.GetBeatmapAsync(beatmapId.Value).BadGatewayOnFailure("GET beatmap")
+            var apiResponse = await _osuClient.GetBeatmapAsync(beatmapId.Value)
+                .BadGatewayOnFailure("Beatmap doesn't exist")
                 .OrNotFound();
             _logger.LogInformation("Found beatmap: {BeatmapId}", beatmapId);
             beatmap = apiResponse.ToModel();
