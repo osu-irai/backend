@@ -12,6 +12,7 @@ using osuRequestor.Exceptions;
 using osuRequestor.Extensions;
 using osuRequestor.Models;
 using osuRequestor.Persistence;
+using osuRequestor.SignalR;
 
 namespace osuRequestor.Controllers.Requests;
 
@@ -21,16 +22,18 @@ public class OwnRequestController : ControllerBase
 {
     private readonly Repository _repository;
     private readonly OsuApiClient _osuClient;
-    private readonly ILogger<RequestController> _logger;
+    private readonly ILogger<OwnRequestController> _logger;
+    private readonly IRequestNotificationService _notification;
 
 
     private int _claim() =>
         HttpContext.User.Identity.ThrowIfUnauthorized().OrOnNullName();
-    public OwnRequestController(ILogger<RequestController> logger, OsuApiClient osuClient, Repository repository)
+    public OwnRequestController(ILogger<OwnRequestController> logger, OsuApiClient osuClient, Repository repository, IRequestNotificationService notification)
     {
         _logger = logger;
         _osuClient = osuClient;
         _repository = repository;
+        _notification = notification;
     }
     
     /// <summary>
@@ -105,6 +108,14 @@ public class OwnRequestController : ControllerBase
         };
         await _repository.AddRequest(request);
         _logger.LogInformation("Created request for {Id}", destination.Value().Id);
+
+        var reqNotif = new ReceivedRequestResponse
+        {
+            Id = request.Id,
+            Beatmap = request.Beatmap.IntoDTO(),
+            From = request.RequestedFrom.IntoDTO()
+        };
+        await _notification.NotifyUserAsync(destination.Value().Id, reqNotif);
         
         return Ok();
     }

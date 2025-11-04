@@ -15,6 +15,7 @@ using osuRequestor.Exceptions;
 using osuRequestor.Extensions;
 using osuRequestor.Persistence;
 using osuRequestor.Services;
+using osuRequestor.SignalR;
 
 namespace osuRequestor;
 
@@ -59,6 +60,8 @@ public static class Program
         // TODO: Add rate limiting
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient<OsuApiProvider>();
+        builder.Services.AddSignalR();
+        builder.Services.AddScoped<IRequestNotificationService, RequestNotificationService>();
         builder.Services.AddScoped<OsuDatabaseAccessTokenProvider>();
         builder.Services.AddScoped<OsuApiClient>((serviceProvider) =>
         {
@@ -137,6 +140,7 @@ public static class Program
 
 
         app.MapControllers();
+        app.MapHub<NotificationHub>("api/ws/notifications");
         app.UseCors(options =>
         {
             options.AllowAnyHeader();

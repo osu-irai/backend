@@ -65,4 +65,17 @@ public static class Mapper
          Stars = b.DifficultyRating 
       })).Take(20).ToList();
    }
+
+   public static BeatmapDTO IntoDTO(this BeatmapModel beatmap)
+   {
+      return new BeatmapDTO
+      {
+         BeatmapId = beatmap.Id,
+         BeatmapsetId = beatmap.BeatmapSet.Id,
+         Artist = beatmap.BeatmapSet.Artist,
+         Title = beatmap.BeatmapSet.Title,
+         Difficulty = beatmap.Version,
+         Stars = beatmap.StarRating
+      };
+   }
 }
