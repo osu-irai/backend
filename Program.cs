@@ -163,7 +163,6 @@ public static class Program
         var app = builder.Build();
 
 
-        app.MapHub<NotificationHub>("api/ws/notifications");
         app.UseCors(options =>
         {
             options.AllowAnyHeader();
@@ -193,6 +192,7 @@ public static class Program
             app.MapSwagger();
             app.UseHttpLogging();
         }
+        app.MapHub<NotificationHub>("api/ws/notifications");
         app.Use(async (context, next) =>
         {
             Console.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
