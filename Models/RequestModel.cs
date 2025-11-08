@@ -13,7 +13,9 @@ public class RequestModel
     public DateTime Date { get; set; }
     public required BeatmapModel Beatmap { get; set; }
     public required UserModel RequestedTo { get; set; }
-    public required UserModel RequestedFrom { get; set; }
+    public required UserModel? RequestedFrom { get; set; }
+    
+    public required RequestSource Source { get; set; }
 
     public bool IsDeleted { get; set; } = false;
 }

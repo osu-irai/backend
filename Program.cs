@@ -1,9 +1,15 @@
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson;
 using Npgsql;
 using osu.NET;
 using osu.NET.Authorization;
@@ -13,6 +19,7 @@ using osuRequestor.Configuration;
 using osuRequestor.Data;
 using osuRequestor.Exceptions;
 using osuRequestor.Extensions;
+using osuRequestor.Models;
 using osuRequestor.Persistence;
 using osuRequestor.Services;
 using osuRequestor.SignalR;
@@ -36,27 +43,20 @@ public static class Program
             o.ResponseHeaders.Add("Access-Control-Allow-Origin");
         });
 
-        var dbConfig = builder.Configuration.GetSection("Database");
-        var osuConfig = builder.Configuration.GetSection("osuApi");
-        var serverConfig = builder.Configuration.GetSection("ServerConfig");
-
-        var connectionString = new NpgsqlConnectionStringBuilder
-        {
-            Host = dbConfig["Host"],
-            Port = int.Parse(dbConfig["Port"]!),
-            Database = dbConfig["Database"],
-            Username = dbConfig["Username"],
-            Password = dbConfig["Password"]
-        };
+        var databaseConfig = new DatabaseConfig();
+        builder.Configuration.GetSection(DatabaseConfig.Position).Bind(databaseConfig);
+        var authClients = builder.Configuration.GetSection("Clients");
         
         builder.Services.AddDbContext<DatabaseContext>(options =>
         {
-            options.UseNpgsql(connectionString.ConnectionString);
+            options.UseNpgsql(databaseConfig.ToConnection().ConnectionString, o => o.MapEnum<RequestSource>("Source"));
         });
         builder.Services.AddDataProtection().PersistKeysToDbContext<DatabaseContext>();
 
-        builder.Services.Configure<OsuApiConfig>(osuConfig);
-        builder.Services.Configure<ServerConfig>(serverConfig);
+        builder.Services.Configure<OsuApiConfig>(builder.Configuration.GetSection(OsuApiConfig.Position));
+        builder.Services.Configure<ServerConfig>(builder.Configuration.GetSection(ServerConfig.Position));
+        builder.Services.Configure<AuthConfig>(builder.Configuration.GetSection(AuthConfig.Position));
+        builder.Services.Configure<Dictionary<string, AuthClient>>(authClients);
         // TODO: Add rate limiting
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient<OsuApiProvider>();
@@ -80,6 +80,29 @@ public static class Program
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddHttpContextAccessor();
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("Twitch", policy =>
+            {
+                policy.RequireClaim("aud", "http://localhost:5076/api/bot/twitch");
+            });
+        });
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(jwt =>
+        {
+            var cfg = new AuthConfig(); 
+            builder.Configuration.GetSection(AuthConfig.Position).Bind(cfg);
+            var securityKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(cfg.SecretKey ?? throw new NotImplementedException()));
+            jwt.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = cfg.Issuer,
+                ValidAudience = cfg.Audience,
+                IssuerSigningKey = securityKey,
+            };
+        });
         builder.Services.AddAuthentication("InternalCookies")
             .AddCookie("InternalCookies", options =>
             {
@@ -117,13 +140,14 @@ public static class Program
             .AddCookie("ExternalCookies")
             .AddOAuth("osu", options =>
             {
+                var cfg = builder.Configuration.GetSection(OsuApiConfig.Position);
                 options.SignInScheme = "ExternalCookies";
 
                 options.TokenEndpoint = "https://osu.ppy.sh/oauth/token";
                 options.AuthorizationEndpoint = "https://osu.ppy.sh/oauth/authorize";
-                options.ClientId = osuConfig["ClientID"]!;
-                options.ClientSecret = osuConfig["ClientSecret"]!;
-                options.CallbackPath = osuConfig["CallbackUrl"];
+                options.ClientId = cfg["ClientId"];
+                options.ClientSecret = cfg["ClientSecret"];
+                options.CallbackPath = "/api/oauth/callback";
                 options.Scope.Add("public");
                 options.Scope.Add("friends.read");
                 options.Scope.Add("identify");
@@ -139,7 +163,6 @@ public static class Program
         var app = builder.Build();
 
 
-        app.MapControllers();
         app.MapHub<NotificationHub>("api/ws/notifications");
         app.UseCors(options =>
         {
@@ -170,9 +193,26 @@ public static class Program
             app.MapSwagger();
             app.UseHttpLogging();
         }
-
+        app.Use(async (context, next) =>
+        {
+            Console.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
+            Console.WriteLine($"Authorization header: {context.Request.Headers["Authorization"]}");
+            await next();
+            Console.WriteLine($"Response status: {context.Response.StatusCode}");
+        });
         app.UseAuthentication();
         app.UseAuthorization();
+        app.Use(async (context, next) =>
+        {
+            await next();
+            if (context.Response.StatusCode == 401)
+            {
+                Console.WriteLine($"401 Response - User authenticated: {context.User.Identity?.IsAuthenticated}");
+                Console.WriteLine($"Auth type: {context.User.Identity?.AuthenticationType}");
+                Console.WriteLine($"Claims count: {context.User.Claims.Count()}");
+            }
+        });
+        app.MapControllers();
         
         app.Run();
     }

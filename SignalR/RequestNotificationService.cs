@@ -19,4 +19,11 @@ public class RequestNotificationService : IRequestNotificationService
         _logger.LogInformation($"Sending request to {userId}");
         await _hub.Clients.Group($"user_{userId}").ReceiveRequest(request);
     }
+
+    public async Task NotifyAllAsync(string message)
+    {
+        _logger.LogInformation($"Notifying all users with {message}");
+        await _hub.Clients.All.ReceiveGlobalNotification(message);
+
+    }
 }

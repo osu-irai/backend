@@ -111,12 +111,13 @@ public class Repository
                     Difficulty = x.Beatmap.Version,
                     Stars = x.Beatmap.StarRating
                 },
-                From = new UserDTO
+                From = x.RequestedFrom != null ? new UserDTO
                 {
                     Id = x.RequestedFrom.Id,
                     Username = x.RequestedFrom.Username,
                     AvatarUrl = x.RequestedFrom.AvatarUrl
-                }
+                } : null,
+                Source = x.Source,
             })
             .Take(50).ToListAsync();
     }

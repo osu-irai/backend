@@ -105,6 +105,7 @@ public class OwnRequestController : ControllerBase
             Beatmap = beatmap.Value(),
             RequestedFrom = source.Value(),
             RequestedTo = destination.Value(),
+            Source = RequestSource.Website,
         };
         await _repository.AddRequest(request);
         _logger.LogInformation("Created request for {Id}", destination.Value().Id);
@@ -113,7 +114,8 @@ public class OwnRequestController : ControllerBase
         {
             Id = request.Id,
             Beatmap = request.Beatmap.IntoDTO(),
-            From = request.RequestedFrom.IntoDTO()
+            From = request.RequestedFrom.IntoDTO(),
+            Source = request.Source
         };
         await _notification.NotifyUserAsync(destination.Value().Id, reqNotif);
         
