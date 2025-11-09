@@ -2,7 +2,9 @@ using osu.NET.Models.Beatmaps;
 using osu.NET.Models.Users;
 using osuRequestor.Apis.OsuApi.Models;
 using osuRequestor.DTO.General;
+using osuRequestor.DTO.Responses;
 using osuRequestor.Models;
+using osuRequestor.SignalR.Data;
 using BeatmapSet = osu.NET.Models.Beatmaps.BeatmapSet;
 
 namespace osuRequestor.Extensions;
@@ -76,6 +78,15 @@ public static class Mapper
          Title = beatmap.BeatmapSet.Title,
          Difficulty = beatmap.Version,
          Stars = beatmap.StarRating
+      };
+   }
+
+   public static RequestWithTarget ToRequest(this ReceivedRequestResponse request, int id)
+   {
+      return new RequestWithTarget
+      {
+         Target = id,
+         Request = request
       };
    }
 }

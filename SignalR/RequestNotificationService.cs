@@ -1,5 +1,8 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using osuRequestor.DTO.Responses;
+using osuRequestor.Extensions;
+using osuRequestor.SignalR.Data;
 
 namespace osuRequestor.SignalR;
 
@@ -18,6 +21,8 @@ public class RequestNotificationService : IRequestNotificationService
     {
         _logger.LogInformation($"Sending request to {userId}");
         await _hub.Clients.Group($"user_{userId}").ReceiveRequest(request);
+        
+        await _hub.Clients.Group($"service").ReceiveFullRequest(request.ToRequest(userId));
     }
 
     public async Task NotifyAllAsync(string message)

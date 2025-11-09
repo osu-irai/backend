@@ -4,7 +4,7 @@ using osuRequestor.Models;
 namespace osuRequestor.DTO.Responses;
 
 
-public record ReceivedRequestResponse
+public class ReceivedRequestResponse
 {
     public required int Id { get; set; }
 
