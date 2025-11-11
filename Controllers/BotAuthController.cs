@@ -28,7 +28,7 @@ public class BotAuthController : ControllerBase
     [HttpPost]
     public IActionResult Login([FromBody] TokenRequest auth)
     {
-        if (auth.ClientSecret != _clients["Twitch"].ClientSecret || auth.Name != _clients["Twitch"].Name)
+        if (_clients[auth.Name].ClientSecret != auth.ClientSecret)
         {
             return Unauthorized();
         }
@@ -37,7 +37,7 @@ public class BotAuthController : ControllerBase
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.SecretKey));
         var signingCreds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var token = new JwtSecurityToken(issuer: _config.Issuer, audience: _config.Audience, 
+        var token = new JwtSecurityToken(issuer: _config.Issuer, audience: $"{_config.Audience}/{auth.Name.ToLower()}", 
             expires: DateTime.Today.AddMinutes(_config.ExpirationMinutes), signingCredentials:signingCreds);
 
         return Ok(new JwtSecurityTokenHandler().WriteToken(token));

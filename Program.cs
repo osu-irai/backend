@@ -86,11 +86,18 @@ public static class Program
             {
                 policy.RequireClaim("aud", "http://localhost:5076/api/bot/twitch");
             });
+            options.AddPolicy("Irc", policy =>
+            {
+                policy.RequireClaim("aud", "http://localhost:5076/api/bot/irc");
+            });
         });
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(jwt =>
         {
             var cfg = new AuthConfig(); 
             builder.Configuration.GetSection(AuthConfig.Position).Bind(cfg);
+            var clientDict = new Dictionary<string, AuthClient>();
+            builder.Configuration.GetSection("Clients").Bind(clientDict);
+            var audiences = clientDict.Values.Select(v => $"{cfg.Audience}/{v.Name.ToLower()}");
             var securityKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(cfg.SecretKey ?? throw new NotImplementedException()));
             jwt.TokenValidationParameters = new TokenValidationParameters
@@ -99,7 +106,7 @@ public static class Program
                 ValidateAudience = true,
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = cfg.Issuer,
-                ValidAudience = cfg.Audience,
+                ValidAudiences = audiences,
                 IssuerSigningKey = securityKey,
             };
         });
