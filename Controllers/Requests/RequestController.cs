@@ -20,13 +20,13 @@ namespace osuRequestor.Controllers.Requests;
 [Route("api/request")]
 public class RequestController : ControllerBase
 {
-    private readonly Repository _repository;
     private readonly ILogger<RequestController> _logger;
+    private readonly DatabaseContext _dbContext;
 
-    public RequestController(ILogger<RequestController> logger, Repository repository)
+    public RequestController(ILogger<RequestController> logger, DatabaseContext dbContext)
     {
         _logger = logger;
-        _repository = repository;
+        _dbContext = dbContext;
     }
     
     /// <summary>
@@ -40,7 +40,7 @@ public class RequestController : ControllerBase
     {
         var id = playerId ?? throw new BadRequestException("Request player ID is null");
 
-        var requests = await _repository.GetRequestsToUser(id);
+        var requests = await _dbContext.GetRequestsToUser(id);
         _logger.LogInformation($"Found requests for {id}: {requests.Count}");
         return Ok(requests);
     }

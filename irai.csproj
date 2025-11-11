@@ -29,4 +29,8 @@
         <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.4" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Persistence\" />
+    </ItemGroup>
+
 </Project>

@@ -5,6 +5,7 @@ using Microsoft.Toolkit.HighPerformance.Helpers;
 using OneOf.Monads;
 using osu.NET;
 using osuRequestor.Controllers.Requests;
+using osuRequestor.Data;
 using osuRequestor.DTO.Requests;
 using osuRequestor.DTO.Responses;
 using osuRequestor.Exceptions;
@@ -20,14 +21,14 @@ namespace osuRequestor.Controllers.Bots;
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "Twitch")]
 public class TwitchController : ControllerBase
 {
-    private readonly Repository _repository;
+    private readonly DatabaseContext _dbContext;
     private readonly OsuApiClient _osuClient;
     private readonly ILogger<OwnRequestController> _logger;
     private readonly IRequestNotificationService _notification;
 
-    public TwitchController(Repository repository, OsuApiClient osuClient, ILogger<OwnRequestController> logger, IRequestNotificationService notification)
+    public TwitchController(DatabaseContext dbContext, OsuApiClient osuClient, ILogger<OwnRequestController> logger, IRequestNotificationService notification)
     {
-        _repository = repository;
+        _dbContext = dbContext;
         _osuClient = osuClient;
         _logger = logger;
         _notification = notification;
@@ -47,8 +48,8 @@ public class TwitchController : ControllerBase
         _logger.LogInformation("Found {destinationName} and {beatmapId}", destinationId, beatmapId);
         if (destinationId is null || beatmapId is null) return BadRequest();
         
-        Option<UserModel> destination = await _repository.GetUser(destinationId);
-        Option<BeatmapModel> beatmap = await _repository.GetBeatmap(beatmapId); 
+        Option<UserModel> destination = await _dbContext.GetUser(destinationId);
+        Option<BeatmapModel> beatmap = await _dbContext.GetBeatmap(beatmapId); 
         
         if (destination.IsNone())
         {
@@ -78,7 +79,7 @@ public class TwitchController : ControllerBase
             RequestedTo = destination.Value(),
             Source = RequestSource.Twitch,
         };
-        await _repository.AddRequest(request);
+        await _dbContext.AddRequest(request);
         _logger.LogInformation("Created request for {Id}", destination.Value().Id);
 
         var reqNotif = new ReceivedRequestResponse

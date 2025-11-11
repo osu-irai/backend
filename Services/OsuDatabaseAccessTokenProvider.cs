@@ -1,5 +1,7 @@
 using osu.NET.Authorization;
 using osuRequestor.Apis.OsuApi.Interfaces;
+using osuRequestor.Configuration;
+using osuRequestor.Data;
 using osuRequestor.Models;
 using osuRequestor.Persistence;
 
@@ -7,14 +9,14 @@ namespace osuRequestor.Services;
 
 public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
 {
-    private readonly Repository _repository;
     private readonly ILogger<OsuDatabaseAccessTokenProvider> _logger;
     private readonly IOsuApiProvider _osuApiProvider;
+    private readonly DatabaseContext _dbContext;
     private readonly IHttpContextAccessor _contextAccessor;
 
-    public OsuDatabaseAccessTokenProvider(Repository repository, IHttpContextAccessor contextAccessor, IOsuApiProvider osuApiProvider, ILogger<OsuDatabaseAccessTokenProvider> logger)
+    public OsuDatabaseAccessTokenProvider(DatabaseContext dbContext, IHttpContextAccessor contextAccessor, IOsuApiProvider osuApiProvider, ILogger<OsuDatabaseAccessTokenProvider> logger)
     {
-        _repository = repository;
+        _dbContext = dbContext;
         _contextAccessor = contextAccessor;
         _osuApiProvider = osuApiProvider;
         _logger = logger;
@@ -30,7 +32,7 @@ public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
         }
         var userId = identity.Name ?? throw new ArgumentException("Invalid user identity");
         var id = int.Parse(userId);
-        var user = await _repository.GetUserByClaim(id);
+        var user = await _dbContext.GetUserByClaim(id);
         _logger.LogInformation("Found valid user by claim id {id}", id);
         var token = user.Value().Token;
         _logger.LogInformation("Current time is {}, Token for {User} expires at {Expires}", DateTime.UtcNow, id, token?.Expires);
@@ -38,7 +40,7 @@ public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
         {
             _logger.LogInformation("Refreshing token for {user}", id);
             var newToken = await _osuApiProvider.RefreshToken(token.RefreshToken, token.AccessToken);
-            await _repository.UpdateToken(id, new TokenModel
+            await _dbContext.UpdateToken(id, new TokenModel
             {
                 UserId = id,
                 AccessToken = newToken!.AccessToken,

@@ -19,14 +19,14 @@ namespace osuRequestor.Controllers.Requests;
 [Route("api/search")]
 public class SearchController : ControllerBase
 {
-    private readonly Repository _repository;
     private readonly OsuApiClient _osuClient;
     private readonly ILogger<RequestController> _logger;
+    private readonly DatabaseContext _dbContext;
 
-    public SearchController(ILogger<RequestController> logger, Repository repository, OsuApiClient osuClient, IOsuApiProvider osuProvider)
+    public SearchController(ILogger<RequestController> logger, DatabaseContext dbContext, OsuApiClient osuClient, IOsuApiProvider osuProvider)
     {
         _logger = logger;
-        _repository = repository;
+        _dbContext = dbContext;
         _osuClient = osuClient;
     }
 
@@ -42,7 +42,7 @@ public class SearchController : ControllerBase
     public async Task<ActionResult<SearchUserResponse>> GetPlayers(string? query)
     {
         _logger.LogInformation("Queried players: {Query}", query);
-        var users = await _repository.QueryUsers(query);
+        var users = await _dbContext.QueryUsers(query);
         var response = new SearchUserResponse
         {
             Players = users.Select(u => u.IntoDTO()).ToList(),

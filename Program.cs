@@ -71,7 +71,6 @@ public static class Program
                 loggerFactory.CreateLogger("UserTokenOsuApiClient") as ILogger<OsuApiClient>);
         });
         builder.Services.AddSingleton<IOsuApiProvider, OsuApiProvider>();
-        builder.Services.AddScoped<Repository>();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddControllers();

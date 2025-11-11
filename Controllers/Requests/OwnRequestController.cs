@@ -20,19 +20,19 @@ namespace osuRequestor.Controllers.Requests;
 [Route("api/requests/own")]
 public class OwnRequestController : ControllerBase
 {
-    private readonly Repository _repository;
     private readonly OsuApiClient _osuClient;
+    private readonly DatabaseContext _dbContext;
     private readonly ILogger<OwnRequestController> _logger;
     private readonly IRequestNotificationService _notification;
 
 
     private int _claim() =>
         HttpContext.User.Identity.ThrowIfUnauthorized().OrOnNullName();
-    public OwnRequestController(ILogger<OwnRequestController> logger, OsuApiClient osuClient, Repository repository, IRequestNotificationService notification)
+    public OwnRequestController(ILogger<OwnRequestController> logger, OsuApiClient osuClient, DatabaseContext dbContext, IRequestNotificationService notification)
     {
         _logger = logger;
         _osuClient = osuClient;
-        _repository = repository;
+        _dbContext = dbContext;
         _notification = notification;
     }
     
@@ -46,7 +46,7 @@ public class OwnRequestController : ControllerBase
     public async Task<ActionResult<ReceivedRequestResponse>> GetSelfRequests()
     {
         var claim = _claim();
-        var requests = await _repository.GetRequestsToUser(claim);
+        var requests = await _dbContext.GetRequestsToUser(claim);
         _logger.LogInformation($"Found requests for {claim}: {requests.Count}");
         return Ok(requests);
     }
@@ -67,9 +67,9 @@ public class OwnRequestController : ControllerBase
         _logger.LogInformation("Found {destinationName} and {beatmapId}", destinationName, beatmapId);
         if (destinationName is null || beatmapId is null) return BadRequest();
         
-        Option<UserModel> source = await _repository.GetUserByClaim(claim);
-        Option<UserModel> destination = await _repository.GetUserByName(destinationName);
-        Option<BeatmapModel> beatmap = await _repository.GetBeatmap(beatmapId); 
+        Option<UserModel> source = await _dbContext.GetUserByClaim(claim);
+        Option<UserModel> destination = await _dbContext.GetUserByName(destinationName);
+        Option<BeatmapModel> beatmap = await _dbContext.GetBeatmap(beatmapId); 
         
         if (source.IsNone())
         {
@@ -107,7 +107,7 @@ public class OwnRequestController : ControllerBase
             RequestedTo = destination.Value(),
             Source = RequestSource.Website,
         };
-        await _repository.AddRequest(request);
+        await _dbContext.AddRequest(request);
         _logger.LogInformation("Created request for {Id}", destination.Value().Id);
 
         var reqNotif = new ReceivedRequestResponse
@@ -135,7 +135,7 @@ public class OwnRequestController : ControllerBase
     {
         _claim();
         if (requestId is null) return BadRequest();
-        await _repository.DeleteRequest(requestId.Value);
+        await _dbContext.DeleteRequest(requestId.Value);
         return Ok();
     }
 }
