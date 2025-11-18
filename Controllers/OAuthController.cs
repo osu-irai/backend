@@ -84,6 +84,7 @@ public class OAuthController : ControllerBase
                 Username = user.Username,
                 AvatarUrl = user.AvatarUrl,
                 CountryCode = user.CountryCode,
+                Settings = new SettingsModel(),
             });
         }
         else

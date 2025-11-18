@@ -12,6 +12,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     public DbSet<BeatmapSetModel> BeatmapSets { get; set; } = null!;
     public DbSet<UserModel> Users { get; set; } = null!;
 
+    public DbSet<SettingsModel> Settings { get; set; } = null;
+
     public DbSet<TokenModel> Tokens { get; set; } = null!;
 
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
@@ -20,6 +22,10 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
         modelBuilder.ApplyConfiguration(new RequestModelConfiguration());
         modelBuilder.ApplyConfiguration(new UserModelConfiguration());
         modelBuilder.ApplyConfiguration(new BeatmapModelConfiguration());
+        modelBuilder.ApplyConfiguration(new SettingsModelConfiguration());
+
+        modelBuilder.Entity<UserModel>().HasOne(e => e.Settings).WithOne(e => e.User)
+            .HasForeignKey<SettingsModel>(e => e.UserId).IsRequired();
     }
 
 }

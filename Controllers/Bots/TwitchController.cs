@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Toolkit.HighPerformance.Helpers;
-using OneOf.Monads;
 using osu.NET;
 using osuRequestor.Controllers.Requests;
 using osuRequestor.Data;
@@ -89,7 +88,7 @@ public class TwitchController : ControllerBase
             From = null, 
             Source = RequestSource.Twitch
         };
-        await _notification.NotifyUserAsync(destination.Value().Id, reqNotif);
+        await _notification.NotifyUserAsync(destination.Value().Username, reqNotif);
         
         return Ok();
     }

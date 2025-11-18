@@ -24,6 +24,7 @@ namespace osuRequestor.Apis.OsuApi.Models
                 Id = Id,
                 Username = Username,
                 AvatarUrl = AvatarUrl,
+                Settings = new(),
             };
         }
     }

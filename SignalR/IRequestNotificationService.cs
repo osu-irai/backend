@@ -5,7 +5,7 @@ namespace osuRequestor.SignalR;
 
 public interface IRequestNotificationService
 {
-    Task NotifyUserAsync(int userId, ReceivedRequestResponse request);
+    Task NotifyUserAsync(string destinationUsername, ReceivedRequestResponse request);
 
     Task NotifyAllAsync(string message);
 }

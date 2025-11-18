@@ -24,6 +24,6 @@ public class IrcBotController : ControllerBase
     [HttpGet]
     public async Task<List<String>> GetNames()
     {
-        return await _repository.Users.Select(u => u.Username).ToListAsync();
+        return await _repository.Users.Include(u => u.Settings).Where(u => u.Settings.EnableIrc).Select(u => u.Username).ToListAsync();
     }
 }

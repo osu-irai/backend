@@ -17,12 +17,12 @@ public class RequestNotificationService : IRequestNotificationService
         _logger = logger;
     }
 
-    public async Task NotifyUserAsync(int userId, ReceivedRequestResponse request)
+    public async Task NotifyUserAsync(string destinationUsername, ReceivedRequestResponse request)
     {
-        _logger.LogInformation($"Sending request to {userId}");
-        await _hub.Clients.Group($"user_{userId}").ReceiveRequest(request);
+        _logger.LogInformation($"Sending request to {destinationUsername}");
+        await _hub.Clients.Group($"user_{destinationUsername}").ReceiveRequest(request);
         
-        await _hub.Clients.Group($"service").ReceiveFullRequest(request.ToRequest(userId));
+        await _hub.Clients.Group($"service").ReceiveFullRequest(request.ToRequest(destinationUsername));
     }
 
     public async Task NotifyAllAsync(string message)

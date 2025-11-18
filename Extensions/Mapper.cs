@@ -19,6 +19,7 @@ public static class Mapper
          Username = user.Username,
          CountryCode = user.CountryCode,
          AvatarUrl = user.AvatarUrl,
+         Settings = new SettingsModel(),
       };
    }
 
@@ -81,11 +82,11 @@ public static class Mapper
       };
    }
 
-   public static RequestWithTarget ToRequest(this ReceivedRequestResponse request, int id)
+   public static RequestWithTarget ToRequest(this ReceivedRequestResponse request, string username)
    {
       return new RequestWithTarget
       {
-         Target = id,
+         Target = username,
          Request = request
       };
    }

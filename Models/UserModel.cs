@@ -24,6 +24,8 @@ public class UserModel
 
     public TokenModel Token { get; set; } = null!;
 
+    public required SettingsModel Settings { get; set; } = new SettingsModel();
+
     public User IntoApiModel()
     {
         return new User
