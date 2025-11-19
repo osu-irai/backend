@@ -61,7 +61,9 @@ public static class Program
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient<OsuApiProvider>();
         builder.Services.AddSignalR();
+        builder.Services.AddTransient<RequestService>();
         builder.Services.AddScoped<IRequestNotificationService, RequestNotificationService>();
+        builder.Services.AddScoped<IUserContext, HttpUserContext>();
         builder.Services.AddScoped<OsuDatabaseAccessTokenProvider>();
         builder.Services.AddScoped<OsuApiClient>((serviceProvider) =>
         {
@@ -199,25 +201,8 @@ public static class Program
             app.UseHttpLogging();
         }
         app.MapHub<NotificationHub>("api/ws/notifications");
-        app.Use(async (context, next) =>
-        {
-            Console.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
-            Console.WriteLine($"Authorization header: {context.Request.Headers["Authorization"]}");
-            await next();
-            Console.WriteLine($"Response status: {context.Response.StatusCode}");
-        });
         app.UseAuthentication();
         app.UseAuthorization();
-        app.Use(async (context, next) =>
-        {
-            await next();
-            if (context.Response.StatusCode == 401)
-            {
-                Console.WriteLine($"401 Response - User authenticated: {context.User.Identity?.IsAuthenticated}");
-                Console.WriteLine($"Auth type: {context.User.Identity?.AuthenticationType}");
-                Console.WriteLine($"Claims count: {context.User.Claims.Count()}");
-            }
-        });
         app.MapControllers();
         
         app.Run();

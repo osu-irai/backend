@@ -1,17 +1,22 @@
 using System.Security.Principal;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OneOf.Monads;
+using OneOf.Types;
 using osu.NET;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Data;
 using osuRequestor.DTO.General;
 using osuRequestor.DTO.Requests;
 using osuRequestor.DTO.Responses;
+using osuRequestor.ExceptionHandler.Exception;
 using osuRequestor.Exceptions;
 using osuRequestor.Extensions;
 using osuRequestor.Models;
 using osuRequestor.Persistence;
+using osuRequestor.Services;
 using osuRequestor.SignalR;
 
 namespace osuRequestor.Controllers.Requests;
@@ -24,16 +29,25 @@ public class OwnRequestController : ControllerBase
     private readonly DatabaseContext _dbContext;
     private readonly ILogger<OwnRequestController> _logger;
     private readonly IRequestNotificationService _notification;
+    private readonly RequestService _requestService;
+    
 
 
-    private int _claim() =>
-        HttpContext.User.Identity.ThrowIfUnauthorized().OrOnNullName();
-    public OwnRequestController(ILogger<OwnRequestController> logger, OsuApiClient osuClient, DatabaseContext dbContext, IRequestNotificationService notification)
+    private int _claim()
+    {
+        var identity = HttpContext.User.Identity;
+            
+        _logger.LogInformation("Identity is {identityName}", identity?.Name);
+        return identity.ThrowIfUnauthorized().OrOnNullName();
+    }
+
+    public OwnRequestController(ILogger<OwnRequestController> logger, OsuApiClient osuClient, DatabaseContext dbContext, IRequestNotificationService notification, RequestService requestService)
     {
         _logger = logger;
         _osuClient = osuClient;
         _dbContext = dbContext;
         _notification = notification;
+        _requestService = requestService;
     }
     
     /// <summary>
@@ -43,8 +57,10 @@ public class OwnRequestController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(ReceivedRequestResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(Roles = "User,Proxy", AuthenticationSchemes = "Bearer,InternalCookies")]
     public async Task<ActionResult<ReceivedRequestResponse>> GetSelfRequests()
     {
+        _logger.LogInformation("Received request list");
         var claim = _claim();
         var requests = await _dbContext.GetRequestsToUser(claim);
         _logger.LogInformation($"Found requests for {claim}: {requests.Count}");
@@ -61,64 +77,19 @@ public class OwnRequestController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PostRequest([FromBody] PostRequestWithName postBaseRequest)
     {
-        var claim = _claim();
-
+        var sourceId = _claim();
+        
         var (beatmapId, destinationName) = postBaseRequest;
-        _logger.LogInformation("Found {destinationName} and {beatmapId}", destinationName, beatmapId);
         if (destinationName is null || beatmapId is null) return BadRequest();
+        _logger.LogInformation("Found {destinationName} and {beatmapId}", destinationName, beatmapId);
         
-        Option<UserModel> source = await _dbContext.GetUserByClaim(claim);
-        Option<UserModel> destination = await _dbContext.GetUserByName(destinationName);
-        Option<BeatmapModel> beatmap = await _dbContext.GetBeatmap(beatmapId); 
-        
-        if (source.IsNone())
+        var result = await _requestService.CreateRequest(sourceId, destinationName, beatmapId.Value);
+
+        if (result.Value is Error)
         {
-            _logger.LogWarning("Could not find source player with token");
-            return Unauthorized();
+            throw new ServerErrorException("Failed to create a request");
         }
 
-        _logger.LogInformation("Found source player: {SourceId}", source.Value().Id);
-
-        if (destination.IsNone())
-        {
-            _logger.LogInformation("Could not find destination player: {DestinationId}", destinationName);
-            return NotFound("User {destinationName} was not found");
-        }
-
-        _logger.LogInformation("Found destination player: {DestinationId}", destination.Value().Id);
-
-        if (beatmap.IsNone())
-        {
-            _logger.LogInformation("Could not find beatmap: {BeatmapId}", beatmapId);
-            var apiResponse = await _osuClient.GetBeatmapAsync(beatmapId.Value)
-                .BadGatewayOnFailure("Beatmap doesn't exist")
-                .OrNotFound();
-            _logger.LogInformation("Found beatmap: {BeatmapId}", beatmapId);
-            beatmap = apiResponse.ToModel();
-        }        
-        else
-        {
-            _logger.LogInformation("Found beatmap: {BeatmapId}", beatmap.Value().Id);
-        }
-        var request = new RequestModel
-        {
-            Beatmap = beatmap.Value(),
-            RequestedFrom = source.Value(),
-            RequestedTo = destination.Value(),
-            Source = RequestSource.Website,
-        };
-        await _dbContext.AddRequest(request);
-        _logger.LogInformation("Created request for {Id}", destination.Value().Id);
-
-        var reqNotif = new ReceivedRequestResponse
-        {
-            Id = request.Id,
-            Beatmap = request.Beatmap.IntoDTO(),
-            From = request.RequestedFrom.IntoDTO(),
-            Source = request.Source
-        };
-        await _notification.NotifyUserAsync(destination.Value().Id, reqNotif);
-        
         return Ok();
     }
 

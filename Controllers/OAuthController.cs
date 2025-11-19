@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -123,6 +124,7 @@ public class OAuthController : ControllerBase
         var claims = new List<Claim>
         {
             new(ClaimTypes.Name, user.Id.ToString()),
+            new(ClaimTypes.Role, "User")
         };
 
         var id = new ClaimsIdentity(claims, "InternalCookies");

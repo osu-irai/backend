@@ -1,19 +1,40 @@
+using System.Diagnostics;
 using System.Security.Principal;
 using osu.NET;
 using osuRequestor.ExceptionHandler.Exception;
+using osuRequestor.Services;
 
 namespace osuRequestor.Exceptions;
 
 public static class ApiExceptionHelper
 {
+   public static async Task<T> ThrowIfUnauthorized<T>(this Task<RequestServiceResult<T>> value)
+   {
+      return (await value).Match(
+         val => val,
+         bnf => throw new UnreachableException(),
+         unf => throw new UnauthorizedException(),
+         upstream => throw new BadGatewayException(upstream.Details),
+         inter => throw new ServerErrorException("Internal error"));
+   }
+
+   public static async Task<T> ThrowIfNotFound<T>(this Task<RequestServiceResult<T>> value)
+   {
+      return (await value).Match(
+         val => val,
+         bnf => throw new NotFoundException("Beatmap"),
+         unf => throw new NotFoundException("User"),
+         upstream => throw new BadGatewayException(upstream.Details),
+         inter => throw new ServerErrorException("Internal error"));
+   }
    public static void OrNotFound<T>(this T value)
    {
       throw new NotFoundException($"{typeof(T)}");
    }
 
-   public static void OrBadRequest<T>(this T value, string message)
+   public static T OrBadRequest<T>(this T? value, string message)
    {
-      throw new BadRequestException(message);
+      return value ?? throw new BadRequestException(message);
    }
 
    public static async Task<T?> BadGatewayOnFailure<T>(this Task<ApiResult<T>> value, string message) where T : class
@@ -38,7 +59,6 @@ public static class ApiExceptionHelper
       {
          throw new NotFoundException($"{typeof(T)} not found");
       }
-
       return val;
    }
    public static async Task<T?> OrBadRequest<T>(this Task<T?> value) where T : class
@@ -48,7 +68,6 @@ public static class ApiExceptionHelper
       {
          throw new BadRequestException($"{typeof(T)} not found");
       }
-
       return val;
    }
 

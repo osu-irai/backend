@@ -15,7 +15,7 @@ public class OwnUserController : ControllerBase
 {
     private readonly DatabaseContext _databaseContext;
     private readonly IOsuApiProvider _osuApiProvider;
-    private readonly ILogger<RequestController> _logger;
+    private readonly ILogger<OwnUserController> _logger;
 
     private int? _claim()
     {
@@ -29,7 +29,7 @@ public class OwnUserController : ControllerBase
         return userId is null ? null : int.Parse(userId);
     }
     
-    public OwnUserController(DatabaseContext databaseContext, IOsuApiProvider osuApiProvider, ILogger<RequestController> logger)
+    public OwnUserController(DatabaseContext databaseContext, IOsuApiProvider osuApiProvider, ILogger<OwnUserController> logger)
     {
         _databaseContext = databaseContext;
         _osuApiProvider = osuApiProvider;
@@ -43,6 +43,7 @@ public class OwnUserController : ControllerBase
         var claim = _claim();
         if (claim is null)
         {
+            _logger.LogWarning("Returning Forbid");
             return Forbid();
         }
 
