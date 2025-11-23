@@ -284,8 +284,7 @@ namespace osuRequestor.Migrations
 
             modelBuilder.Entity("osuRequestor.Models.UserModel", b =>
                 {
-                    b.Navigation("Settings")
-                        .IsRequired();
+                    b.Navigation("Settings");
 
                     b.Navigation("Token")
                         .IsRequired();

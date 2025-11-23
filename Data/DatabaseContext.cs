@@ -24,8 +24,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
         modelBuilder.ApplyConfiguration(new BeatmapModelConfiguration());
         modelBuilder.ApplyConfiguration(new SettingsModelConfiguration());
 
-        modelBuilder.Entity<UserModel>().HasOne(e => e.Settings).WithOne(e => e.User)
-            .HasForeignKey<SettingsModel>(e => e.UserId).IsRequired();
+        modelBuilder.Entity<UserModel>().HasOne(e => e.Settings).WithOne(e => e.User);
     }
 
 }

@@ -13,7 +13,7 @@ using osuRequestor.Models;
 namespace osuRequestor.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20251112190121_AddedSettings")]
+    [Migration("20251122193818_AddedSettings")]
     partial class AddedSettings
     {
         /// <inheritdoc />
@@ -287,8 +287,7 @@ namespace osuRequestor.Migrations
 
             modelBuilder.Entity("osuRequestor.Models.UserModel", b =>
                 {
-                    b.Navigation("Settings")
-                        .IsRequired();
+                    b.Navigation("Settings");
 
                     b.Navigation("Token")
                         .IsRequired();
