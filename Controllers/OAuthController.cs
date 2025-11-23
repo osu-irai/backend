@@ -56,6 +56,7 @@ public class OAuthController : ControllerBase
         {
             return Forbid();
         }
+        _logger.LogWarning($"Expires at {authResult.Properties?.ExpiresUtc}");
 
         var accessToken = await HttpContext.GetTokenAsync("ExternalCookies", "access_token");
         var refreshToken = await HttpContext.GetTokenAsync("ExternalCookies", "refresh_token");
@@ -74,7 +75,6 @@ public class OAuthController : ControllerBase
         if (user is null || accessToken is null || refreshToken is null)
             return Forbid();
         
-        _logger.LogError($"{user}");
         var existingUser = await _databaseContext.Users.FindAsync(user.Id);
         if (existingUser is null)
         {
@@ -97,8 +97,9 @@ public class OAuthController : ControllerBase
             _databaseContext.Users.Update(existingUser);
         }
 
-        var tokenExpiration = authResult.Properties?.ExpiresUtc?.DateTime.ToUniversalTime() ?? DateTime.UtcNow.AddDays(1);
-
+        var tokenExpiration = DateTime.UtcNow.AddDays(1);
+        _logger.LogInformation($"Token expires at {tokenExpiration}");
+        
         var existingTokens = await _databaseContext.Tokens.FindAsync(user.Id);
         if (existingTokens is not null)
         {
