@@ -29,6 +29,11 @@ public class RequestNotificationService : IRequestNotificationService
     {
         _logger.LogInformation($"Notifying all users with {message}");
         await _hub.Clients.All.ReceiveGlobalNotification(message);
+    }
 
+    public async Task NotifyAboutIrcChange(string username, bool newIrcStatus)
+    {
+        _logger.LogInformation($"User {username} toggled IRC");
+        await _hub.Clients.Group($"service").ReceiveIrcSettingsChange(username, newIrcStatus);
     }
 }

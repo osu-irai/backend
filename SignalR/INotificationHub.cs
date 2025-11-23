@@ -10,4 +10,6 @@ public interface INotificationHub
     Task ReceiveFullRequest(RequestWithTarget request);
 
     Task ReceiveGlobalNotification(string notification);
+
+    Task ReceiveIrcSettingsChange(string username, bool newIrcState);
 }
