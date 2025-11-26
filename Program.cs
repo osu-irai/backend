@@ -22,6 +22,7 @@ using osuRequestor.Extensions;
 using osuRequestor.Models;
 using osuRequestor.Persistence;
 using osuRequestor.Services;
+using osuRequestor.Setup;
 using osuRequestor.SignalR;
 
 namespace osuRequestor;
@@ -45,7 +46,6 @@ public static class Program
 
         var databaseConfig = new DatabaseConfig();
         builder.Configuration.GetSection(DatabaseConfig.Position).Bind(databaseConfig);
-        var authClients = builder.Configuration.GetSection("Clients");
         
         builder.Services.AddDbContext<DatabaseContext>(options =>
         {
@@ -53,26 +53,9 @@ public static class Program
         });
         builder.Services.AddDataProtection().PersistKeysToDbContext<DatabaseContext>();
 
-        builder.Services.Configure<OsuApiConfig>(builder.Configuration.GetSection(OsuApiConfig.Position));
-        builder.Services.Configure<ServerConfig>(builder.Configuration.GetSection(ServerConfig.Position));
-        builder.Services.Configure<AuthConfig>(builder.Configuration.GetSection(AuthConfig.Position));
-        builder.Services.Configure<Dictionary<string, AuthClient>>(authClients);
+        builder.AddConfiguration();
         // TODO: Add rate limiting
-        builder.Services.AddHttpContextAccessor();
-        builder.Services.AddHttpClient<OsuApiProvider>();
-        builder.Services.AddSignalR();
-        builder.Services.AddTransient<RequestService>();
-        builder.Services.AddScoped<IRequestNotificationService, RequestNotificationService>();
-        builder.Services.AddScoped<IUserContext, HttpUserContext>();
-        builder.Services.AddScoped<OsuDatabaseAccessTokenProvider>();
-        builder.Services.AddScoped<OsuApiClient>((serviceProvider) =>
-        {
-            var provider = serviceProvider.GetRequiredService<OsuDatabaseAccessTokenProvider>();
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            return new OsuApiClient(provider, 
-                loggerFactory.CreateLogger("UserTokenOsuApiClient") as ILogger<OsuApiClient>);
-        });
-        builder.Services.AddSingleton<IOsuApiProvider, OsuApiProvider>();
+        builder.Services.AddServiceSetup();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddControllers();
@@ -81,92 +64,8 @@ public static class Program
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddHttpContextAccessor();
-        builder.Services.AddAuthorization(options =>
-        {
-            options.AddPolicy("Twitch", policy =>
-            {
-                policy.RequireClaim("aud", "http://localhost:5076/api/bot/twitch");
-            });
-            options.AddPolicy("Irc", policy =>
-            {
-                policy.RequireClaim("aud", "http://localhost:5076/api/bot/irc");
-            });
-        });
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(jwt =>
-        {
-            var cfg = new AuthConfig(); 
-            builder.Configuration.GetSection(AuthConfig.Position).Bind(cfg);
-            var clientDict = new Dictionary<string, AuthClient>();
-            builder.Configuration.GetSection("Clients").Bind(clientDict);
-            var audiences = clientDict.Values.Select(v => $"{cfg.Audience}/{v.Name.ToLower()}");
-            var securityKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(cfg.SecretKey ?? throw new NotImplementedException()));
-            jwt.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = cfg.Issuer,
-                ValidAudiences = audiences,
-                IssuerSigningKey = securityKey,
-            };
-        });
-        builder.Services.AddAuthentication("InternalCookies")
-            .AddCookie("InternalCookies", options =>
-            {
-                // set some paths to empty to make auth not redirect API calls
-                options.LoginPath = string.Empty;
-                options.AccessDeniedPath = string.Empty;
-                options.LogoutPath = string.Empty;
-                options.Cookie.Path = "/";
-                options.Cookie.Name = "iraiLogin";
-                options.Cookie.HttpOnly = false;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                options.SlidingExpiration = true;
-                options.Events.OnValidatePrincipal = context =>
-                {
-                    var name = context.Principal?.Identity?.Name;
-                    if (string.IsNullOrEmpty(name) || !long.TryParse(name, out _))
-                    {
-                        context.RejectPrincipal();
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    }
-
-                    return Task.CompletedTask;
-                };
-
-                static Task UnauthorizedRedirect(RedirectContext<CookieAuthenticationOptions> context)
-                {
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-
-                    return Task.CompletedTask;
-                }
-
-                options.Events.OnRedirectToLogin = UnauthorizedRedirect;
-                options.Events.OnRedirectToAccessDenied = UnauthorizedRedirect;
-            })
-            .AddCookie("ExternalCookies")
-            .AddOAuth("osu", options =>
-            {
-                var cfg = builder.Configuration.GetSection(OsuApiConfig.Position);
-                options.SignInScheme = "ExternalCookies";
-
-                options.TokenEndpoint = "https://osu.ppy.sh/oauth/token";
-                options.AuthorizationEndpoint = "https://osu.ppy.sh/oauth/authorize";
-                options.ClientId = cfg["ClientId"];
-                options.ClientSecret = cfg["ClientSecret"];
-                options.CallbackPath = "/api/oauth/callback";
-                options.Scope.Add("public");
-                options.Scope.Add("friends.read");
-                options.Scope.Add("identify");
-
-                options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-
-                options.SaveTokens = true;
-
-                options.Validate();
-            });
-
+        builder.Services.AddHttpClient();
+        builder.Services.AddAuthenticationSetup(builder.Configuration);
 
         var app = builder.Build();
 
