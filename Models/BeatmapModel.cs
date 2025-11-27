@@ -1,16 +1,16 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using osu.NET.Models.Beatmaps;
 using osuRequestor.Apis.OsuApi.Models;
 
 namespace osuRequestor.Models;
 
+/// <summary>
+///     Database model for individual beatmaps
+/// </summary>
 [PrimaryKey(nameof(Id))]
 public class BeatmapModel
 {
-    [Key]
-    public int Id { get; set; }
+    [Key] public int Id { get; set; }
 
     public BeatmapSetModel BeatmapSet { get; set; } = null!;
 
@@ -39,5 +39,4 @@ public class BeatmapModel
     public int MaxCombo { get; set; }
 
     public Mode Mode { get; set; }
-
 }

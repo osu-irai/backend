@@ -1,7 +1,4 @@
-using osu.NET.Models.Beatmaps;
 using osuRequestor.Apis.OsuApi.Models;
-using osuRequestor.Models;
-using Beatmap = osuRequestor.Apis.OsuApi.Models.Beatmap;
 
 namespace osuRequestor.Apis.OsuApi.Interfaces;
 

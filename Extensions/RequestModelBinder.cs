@@ -28,17 +28,17 @@ public class RequestModelBinder : IModelBinder
         }
 
         bindingContext.Result = ModelBindingResult.Failed();
-        return;
     }
+
     private async Task<bool> HasJsonProperty(HttpRequest request, string propertyName)
     {
         request.EnableBuffering();
         request.Body.Position = 0;
-        
+
         using var reader = new StreamReader(request.Body, leaveOpen: true);
         var json = await reader.ReadToEndAsync();
         request.Body.Position = 0;
-        
+
         return json.Contains($"\"{propertyName}\"", StringComparison.OrdinalIgnoreCase);
     }
 }

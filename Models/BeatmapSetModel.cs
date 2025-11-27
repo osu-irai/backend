@@ -3,6 +3,9 @@ using osuRequestor.Apis.OsuApi.Models;
 
 namespace osuRequestor.Models;
 
+/// <summary>
+/// Database model for beatmapsets
+/// </summary>
 public class BeatmapSetModel
 {
     [Key]

@@ -10,5 +10,4 @@ public record PostBaseRequest
         destinationId = DestinationId;
         beatmapId = BeatmapId;
     }
- 
-};
+}

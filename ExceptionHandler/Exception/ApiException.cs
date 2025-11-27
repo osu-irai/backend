@@ -1,10 +1,6 @@
 namespace osuRequestor.ExceptionHandler.Exception;
 
-public abstract class ApiException : System.Exception
+public abstract class ApiException(string message) : System.Exception(message)
 {
-    internal string ResponseMessage { get; set; }
-    public ApiException(string message) : base(message)
-    {
-        ResponseMessage = message;
-    }
-} 
+    internal string ResponseMessage { get; set; } = message;
+}

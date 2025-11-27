@@ -4,6 +4,6 @@ namespace osuRequestor.DTO.Responses;
 
 public record SearchUserResponse
 {
-   public required List<UserDTO> Players { get; set; }
-   public required int Count { get; set; }
+    public required List<UserDTO> Players { get; set; }
+    public required int Count { get; set; }
 }

@@ -1,5 +1,4 @@
 using osuRequestor.DTO.Responses;
-using osuRequestor.Models;
 
 namespace osuRequestor.SignalR;
 

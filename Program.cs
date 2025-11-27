@@ -1,27 +1,10 @@
-using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using MongoDB.Bson;
-using Npgsql;
-using osu.NET;
-using osu.NET.Authorization;
-using osuRequestor.Apis.OsuApi;
-using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Configuration;
 using osuRequestor.Data;
 using osuRequestor.Exceptions;
-using osuRequestor.Extensions;
 using osuRequestor.Models;
-using osuRequestor.Persistence;
-using osuRequestor.Services;
 using osuRequestor.Setup;
 using osuRequestor.SignalR;
 
@@ -46,10 +29,11 @@ public static class Program
 
         var databaseConfig = new DatabaseConfig();
         builder.Configuration.GetSection(DatabaseConfig.Position).Bind(databaseConfig);
-        
+
         builder.Services.AddDbContext<DatabaseContext>(options =>
         {
-            options.UseNpgsql(databaseConfig.ToConnection().ConnectionString, o => o.MapEnum<RequestSource>("Source"));
+            options.UseNpgsql(databaseConfig.ToConnection().ConnectionString,
+                o => o.MapEnum<RequestSource>("Source"));
         });
         builder.Services.AddDataProtection().PersistKeysToDbContext<DatabaseContext>();
 
@@ -59,7 +43,7 @@ public static class Program
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddControllers();
-        
+
         builder.Services.AddOpenApi();
         builder.Services.AddSwaggerGen();
 
@@ -74,17 +58,14 @@ public static class Program
         {
             options.AllowAnyHeader();
             if (app.Environment.IsDevelopment())
-            {
-                options.WithOrigins("http://localhost:5076", "http://localhost:5077", "http://frontend:5077", "http://irai-dev.comf.ee");
-            }
+                options.WithOrigins("http://localhost:5076", "http://localhost:5077", "http://frontend:5077",
+                    "http://irai-dev.comf.ee");
             else
-            {
                 options.WithOrigins("https://irai.comf.ee");
-            }
             options.AllowCredentials();
             options.AllowAnyMethod();
         });
-        app.UseExceptionHandler(opt => {});
+        app.UseExceptionHandler(opt => { });
 
         using (var scope = app.Services.CreateScope())
         {
@@ -99,11 +80,12 @@ public static class Program
             app.MapSwagger();
             app.UseHttpLogging();
         }
+
         app.MapHub<NotificationHub>("api/ws/notifications");
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
-        
+
         app.Run();
     }
 }

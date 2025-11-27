@@ -19,7 +19,7 @@ public class DatabaseConfig
             Port = Port,
             Database = Database,
             Username = Username,
-            Password = Password,
+            Password = Password
         };
     }
 }

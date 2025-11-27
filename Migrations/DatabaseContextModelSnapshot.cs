@@ -18,7 +18,7 @@ namespace osuRequestor.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "Source", new[] { "twitch", "website" });
@@ -40,7 +40,7 @@ namespace osuRequestor.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DataProtectionKeys");
+                    b.ToTable("DataProtectionKeys", (string)null);
                 });
 
             modelBuilder.Entity("osuRequestor.Models.BeatmapModel", b =>
@@ -98,7 +98,7 @@ namespace osuRequestor.Migrations
 
                     b.HasIndex("BeatmapSetId");
 
-                    b.ToTable("Beatmaps");
+                    b.ToTable("Beatmaps", (string)null);
                 });
 
             modelBuilder.Entity("osuRequestor.Models.BeatmapSetModel", b =>
@@ -122,7 +122,7 @@ namespace osuRequestor.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BeatmapSets");
+                    b.ToTable("BeatmapSets", (string)null);
                 });
 
             modelBuilder.Entity("osuRequestor.Models.RequestModel", b =>
@@ -159,7 +159,7 @@ namespace osuRequestor.Migrations
 
                     b.HasIndex("RequestedToId");
 
-                    b.ToTable("Requests");
+                    b.ToTable("Requests", (string)null);
                 });
 
             modelBuilder.Entity("osuRequestor.Models.SettingsModel", b =>
@@ -174,7 +174,7 @@ namespace osuRequestor.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Settings");
+                    b.ToTable("Settings", (string)null);
                 });
 
             modelBuilder.Entity("osuRequestor.Models.TokenModel", b =>
@@ -195,7 +195,7 @@ namespace osuRequestor.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Tokens");
+                    b.ToTable("Tokens", (string)null);
                 });
 
             modelBuilder.Entity("osuRequestor.Models.UserModel", b =>
@@ -221,7 +221,7 @@ namespace osuRequestor.Migrations
 
                     b.HasIndex("Username");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("osuRequestor.Models.BeatmapModel", b =>

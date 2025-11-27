@@ -1,8 +1,6 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using osuRequestor.DTO.Responses;
 using osuRequestor.Extensions;
-using osuRequestor.SignalR.Data;
 
 namespace osuRequestor.SignalR;
 
@@ -11,7 +9,8 @@ public class RequestNotificationService : IRequestNotificationService
     private readonly IHubContext<NotificationHub, INotificationHub> _hub;
     private readonly ILogger<RequestNotificationService> _logger;
 
-    public RequestNotificationService(IHubContext<NotificationHub, INotificationHub> hub, ILogger<RequestNotificationService> logger)
+    public RequestNotificationService(IHubContext<NotificationHub, INotificationHub> hub,
+        ILogger<RequestNotificationService> logger)
     {
         _hub = hub;
         _logger = logger;
@@ -21,8 +20,8 @@ public class RequestNotificationService : IRequestNotificationService
     {
         _logger.LogInformation($"Sending request to {destinationUsername}");
         await _hub.Clients.Group($"user_{destinationUsername}").ReceiveRequest(request);
-        
-        await _hub.Clients.Group($"service").ReceiveFullRequest(request.ToRequest(destinationUsername));
+
+        await _hub.Clients.Group("service").ReceiveFullRequest(request.ToRequest(destinationUsername));
     }
 
     public async Task NotifyAllAsync(string message)
@@ -34,6 +33,6 @@ public class RequestNotificationService : IRequestNotificationService
     public async Task NotifyAboutIrcChange(string username, bool newIrcStatus)
     {
         _logger.LogInformation($"User {username} toggled IRC");
-        await _hub.Clients.Group($"service").ReceiveIrcSettingsChange(username, newIrcStatus);
+        await _hub.Clients.Group("service").ReceiveIrcSettingsChange(username, newIrcStatus);
     }
 }

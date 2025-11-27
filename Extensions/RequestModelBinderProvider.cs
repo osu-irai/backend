@@ -9,10 +9,8 @@ public class RequestModelBinderProvider : IModelBinderProvider
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        if (context.Metadata.ModelType == typeof(PostBaseRequest) || context.Metadata.ModelType == typeof(PostRequestWithName))
-        {
-            return new RequestModelBinder();
-        }
+        if (context.Metadata.ModelType == typeof(PostBaseRequest) ||
+            context.Metadata.ModelType == typeof(PostRequestWithName)) return new RequestModelBinder();
 
         return null;
     }

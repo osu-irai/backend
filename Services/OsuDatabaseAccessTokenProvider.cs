@@ -1,46 +1,35 @@
 using osu.NET.Authorization;
 using osuRequestor.Apis.OsuApi.Interfaces;
-using osuRequestor.Configuration;
 using osuRequestor.Data;
 using osuRequestor.Models;
 using osuRequestor.Persistence;
 
 namespace osuRequestor.Services;
 
-public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
+public class OsuDatabaseAccessTokenProvider(
+    DatabaseContext dbContext,
+    IHttpContextAccessor contextAccessor,
+    IOsuApiProvider osuApiProvider,
+    ILogger<OsuDatabaseAccessTokenProvider> logger)
+    : IOsuAccessTokenProvider
 {
-    private readonly ILogger<OsuDatabaseAccessTokenProvider> _logger;
-    private readonly IOsuApiProvider _osuApiProvider;
-    private readonly DatabaseContext _dbContext;
-    private readonly IHttpContextAccessor _contextAccessor;
-
-    public OsuDatabaseAccessTokenProvider(DatabaseContext dbContext, IHttpContextAccessor contextAccessor, IOsuApiProvider osuApiProvider, ILogger<OsuDatabaseAccessTokenProvider> logger)
-    {
-        _dbContext = dbContext;
-        _contextAccessor = contextAccessor;
-        _osuApiProvider = osuApiProvider;
-        _logger = logger;
-    }
-
     public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Querying user info");
-        var identity = _contextAccessor.HttpContext?.User?.Identity;
-        if (identity is null)
-        {
-            throw new ArgumentException("Invalid user identity");
-        }
+        logger.LogInformation("Querying user info");
+        var identity = contextAccessor.HttpContext?.User?.Identity;
+        if (identity is null) throw new ArgumentException("Invalid user identity");
         var userId = identity.Name ?? throw new ArgumentException("Invalid user identity");
         var id = int.Parse(userId);
-        var user = await _dbContext.GetUserByClaim(id);
-        _logger.LogInformation("Found valid user by claim id {id}", id);
+        var user = await dbContext.GetUserByClaim(id);
+        logger.LogInformation("Found valid user by claim id {id}", id);
         var token = user.Value().Token;
-        _logger.LogInformation("Current time is {}, Token for {User} expires at {Expires}", DateTime.UtcNow, id, token?.Expires);
+        logger.LogInformation("Current time is {Time}, Token for {User} expires at {Expires}", DateTime.UtcNow, id,
+            token?.Expires);
         if (DateTime.UtcNow > token?.Expires)
         {
-            _logger.LogInformation("Refreshing token for {user}", id);
-            var newToken = await _osuApiProvider.RefreshToken(token.RefreshToken, token.AccessToken);
-            await _dbContext.UpdateToken(id, new TokenModel
+            logger.LogInformation("Refreshing token for {user}", id);
+            var newToken = await osuApiProvider.RefreshToken(token.RefreshToken, token.AccessToken);
+            await dbContext.UpdateToken(id, new TokenModel
             {
                 UserId = id,
                 AccessToken = newToken!.AccessToken,
@@ -50,6 +39,7 @@ public class OsuDatabaseAccessTokenProvider : IOsuAccessTokenProvider
             });
             return newToken.AccessToken;
         }
+
         return token!.AccessToken;
     }
 }

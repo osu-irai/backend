@@ -1,20 +1,14 @@
 using System.Net.Http.Headers;
-using System.Net;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
-using osu.NET.Models.Beatmaps;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Apis.OsuApi.Models;
 using osuRequestor.Configuration;
-using osuRequestor.Models;
-using Beatmap = osuRequestor.Apis.OsuApi.Models.Beatmap;
 
 namespace osuRequestor.Apis.OsuApi;
 
 /// <summary>
-/// Stolen entirely off of Relaxation Vault's wrapper until a real one exists
+///     Stolen entirely off of Relaxation Vault's wrapper until a real one exists
 /// </summary>
 public class OsuApiProvider : IOsuApiProvider
 {
@@ -22,8 +16,8 @@ public class OsuApiProvider : IOsuApiProvider
     private const string ApiTokenLink = "oauth/token";
     private const string ApiMeLink = "api/v2/me/";
     private const string ApiFriendsLink = "api/v2/friends/";
-    private readonly HttpClient _httpClient;
     private readonly OsuApiConfig _config;
+    private readonly HttpClient _httpClient;
     private readonly ILogger<OsuApiProvider> _logger;
 
     private TokenResponse? _userlessToken;
@@ -85,7 +79,7 @@ public class OsuApiProvider : IOsuApiProvider
             Method = HttpMethod.Post,
             RequestUri = new Uri(OsuBase + ApiTokenLink),
             Content = new StringContent(JsonSerializer.Serialize(config), null, "application/json"),
-            Headers = { Accept = { new MediaTypeWithQualityHeaderValue("application/json") }}
+            Headers = { Accept = { new MediaTypeWithQualityHeaderValue("application/json") } }
         };
 
         var response = await _httpClient.SendAsync(requestMessage);
@@ -98,15 +92,12 @@ public class OsuApiProvider : IOsuApiProvider
 
     private async Task RefreshUserlessToken()
     {
-        if (_userlessTokenExpiration > DateTime.UtcNow)
-        {
-            return;
-        }
+        if (_userlessTokenExpiration > DateTime.UtcNow) return;
 
         var requestModel = new GetUserlessTokenRequest
         {
             ClientId = _config.ClientId,
-            ClientSecret = _config.ClientSecret,
+            ClientSecret = _config.ClientSecret
         };
 
         var requestMessage = new HttpRequestMessage
@@ -128,7 +119,8 @@ public class OsuApiProvider : IOsuApiProvider
         _userlessToken = await response.Content.ReadFromJsonAsync<TokenResponse>();
         if (_userlessToken == null)
         {
-            _logger.Log(LogLevel.Error, "Couldn't parse userless token! {Json}", await response.Content.ReadAsStringAsync());
+            _logger.Log(LogLevel.Error, "Couldn't parse userless token! {Json}",
+                await response.Content.ReadAsStringAsync());
             return;
         }
 

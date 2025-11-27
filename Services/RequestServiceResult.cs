@@ -22,6 +22,7 @@ public partial class RequestServiceResult<T> : OneOfBase<T, BeatmapNotFound, Use
 }
 
 public record Ok;
+
 public record BeatmapNotFound(int Id);
 
 public record UserNotFound(int? Id);

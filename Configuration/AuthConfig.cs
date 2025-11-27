@@ -7,5 +7,4 @@ public class AuthConfig
     public string Audience { get; set; }
     public string Issuer { get; set; }
     public int ExpirationMinutes { get; set; }
-    
 }
