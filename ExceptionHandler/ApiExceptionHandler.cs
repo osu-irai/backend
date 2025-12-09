@@ -25,7 +25,7 @@ public class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : IExcepti
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                 break;
             case UnauthorizedException:
-                logger.LogWarning("User not authorized");
+                logger.LogWarning("User not authorized, {e}", apiException.Message);
                 httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 break;
             case BadGatewayException:

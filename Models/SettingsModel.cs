@@ -12,4 +12,6 @@ public class SettingsModel
     public UserModel User { get; set; } = null!;
 
     public bool EnableIrc { get; set; } = false;
+
+    public bool? EnableTwitch { get; set; } = false;
 }

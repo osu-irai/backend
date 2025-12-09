@@ -1,6 +1,8 @@
+using MassTransit;
 using osu.NET;
 using osuRequestor.Apis.OsuApi;
 using osuRequestor.Apis.OsuApi.Interfaces;
+using osuRequestor.Apis.TwitchApi;
 using osuRequestor.Services;
 using osuRequestor.SignalR;
 
@@ -26,5 +28,22 @@ public static class ServiceSetup
                 loggerFactory.CreateLogger("UserTokenOsuApiClient") as ILogger<OsuApiClient>);
         });
         services.AddSingleton<IOsuApiProvider, OsuApiProvider>();
+        services.AddSingleton<TwitchApiProvider>();
+        services.AddMassTransit(cfg =>
+        {
+            cfg.SetKebabCaseEndpointNameFormatter();
+
+            cfg.UsingRabbitMq((context, bus) =>
+            {
+                bus.UseRawJsonSerializer();
+                bus.UseRawJsonDeserializer();
+                bus.Host("localhost", h =>
+                {
+                    h.Username("irai");
+                    h.Password("iraipass");
+                });
+            });
+        });
+        services.AddScoped<MessageBusService>();
     }
 }

@@ -16,7 +16,8 @@ public class RequestService(
     ILogger<RequestService> logger,
     DatabaseContext dbContext,
     OsuApiClient osuApiClient,
-    IRequestNotificationService notification)
+    IRequestNotificationService notification,
+    MessageBusService messageBus)
 {
     public async Task<RequestServiceResult<BeatmapModel>> GetBeatmap(int beatmapId)
     {
@@ -83,6 +84,7 @@ public class RequestService(
         };
 
         await notification.NotifyUserAsync(destinationUser.Username, notificationBody);
+        await messageBus.SubmitRequestAsync(destinationUser.Username, notificationBody);
         return new Success();
     }
 

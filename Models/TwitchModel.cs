@@ -12,9 +12,8 @@ public class TwitchModel
     public UserModel User { get; set; }
 
     public required int TwitchId { get; set; }
+    public required string Username { get; set; }
 
     public required string AccessToken { get; set; }
     public required string RefreshToken { get; set; }
-
-    public bool IsEnabled { get; set; }
 }

@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using osuRequestor.Apis.TwitchApi;
+using osuRequestor.Configuration;
 using osuRequestor.Data;
 using osuRequestor.ExceptionHandler.Exception;
 using osuRequestor.Models;
@@ -9,38 +12,20 @@ namespace osuRequestor.Controllers;
 
 [ApiController]
 [Route("api/twitch/auth")]
-public class TwitchAuthController : ControllerBase
+public class TwitchAuthController : CrudController
 {
     private readonly DatabaseContext _dbContext;
     private readonly ILogger<TwitchAuthController> _logger;
     private readonly TwitchApiProvider _twitchApi;
+    private readonly ServerConfig _serverConfig;
 
     public TwitchAuthController(ILogger<TwitchAuthController> logger, DatabaseContext dbContext,
-        TwitchApiProvider twitchApi)
+        TwitchApiProvider twitchApi, IOptions<ServerConfig> config)
     {
         _logger = logger;
         _dbContext = dbContext;
         _twitchApi = twitchApi;
-    }
-
-
-    private async Task<int> _osuId()
-    {
-        var osuAuthResult = await HttpContext.AuthenticateAsync("InternalCookies");
-        if (!osuAuthResult.Succeeded)
-        {
-            _logger.LogInformation("osu auth failed: {osuAuthResult}", osuAuthResult.Failure?.Message);
-            throw new UnauthorizedException();
-        }
-
-        var name = osuAuthResult.Principal.Identity?.Name;
-        if (name is null || name.Length == 0)
-        {
-            _logger.LogInformation("osu identity name is null");
-            throw new UnauthorizedException();
-        }
-
-        return int.Parse(name);
+        _serverConfig = config.Value;
     }
 
     [ProducesResponseType(StatusCodes.Status302Found)]
@@ -61,17 +46,9 @@ public class TwitchAuthController : ControllerBase
     {
         _logger.LogInformation("Completed twitch auth");
 
-        var authenticationResult =
-            await HttpContext.AuthenticateAsync("Twitch");
+        await TryAuthenticateTwitch();
 
-        if (!authenticationResult.Succeeded)
-        {
-            _logger.LogInformation("Authentication failed: {authenticationResult}",
-                authenticationResult.Failure?.Message);
-            return Unauthorized();
-        }
-
-        var id = await _osuId();
+        var id = await GetOsuClaim();
         _logger.LogInformation("Authentication succeeded");
 
         var accessToken = await HttpContext.GetTokenAsync("Twitch", "access_token");
@@ -89,18 +66,32 @@ public class TwitchAuthController : ControllerBase
             return Unauthorized();
         }
 
+        var twitchUser = await _twitchApi.GetUser(twitchUserValidation.UserId, accessToken, twitchUserValidation.ClientId);
+
         var twitchId = int.Parse(twitchUserValidation.UserId);
 
-        _dbContext.Twitch.Add(new TwitchModel
+        var twitchUserModel = await _dbContext.Twitch.FirstOrDefaultAsync(u => u.UserId == id);
+
+        if (twitchUserModel is null)
         {
-            UserId = id,
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            IsEnabled = true,
-            TwitchId = twitchId
-        });
+            _dbContext.Twitch.Add(new TwitchModel
+            {
+                UserId = id,
+                Username = twitchUser.Data[0].Login,
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                TwitchId = twitchId
+            });     
+        }
+        else
+        {
+            twitchUserModel.Username = twitchUser.Data[0].Login;
+        }
+        
+        var user = await _dbContext.Settings.FirstOrDefaultAsync(u => u.UserId == id);
+        if (user != null) user.EnableTwitch = true;
         await _dbContext.SaveChangesAsync();
 
-        return Ok();
+        return Redirect(_serverConfig.HomePage);
     }
 }

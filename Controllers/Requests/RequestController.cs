@@ -16,7 +16,7 @@ public class RequestController(
     ILogger<RequestController> logger,
     DatabaseContext dbContext,
     IUserContext context,
-    RequestService request)
+    RequestService requestService)
     : ControllerBase
 {
     /// <summary>
@@ -37,11 +37,11 @@ public class RequestController(
 
     [HttpPost]
     [Authorize(Roles = "User,Proxy", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> PostRequest(PostRequestRequest request1)
+    public async Task<IActionResult> PostRequest(PostRequestRequest request)
     {
-        var sourceId = context.GetCurrentUserId(request1);
+        var sourceId = context.GetCurrentUserId(request);
 
-        var result = await request.CreateRequest(sourceId, request1.DestinationId, request1.BeatmapId);
+        var result = await requestService.CreateRequest(sourceId, request.DestinationId, request.BeatmapId);
 
         return result.Match<IActionResult>(ok => Ok(), bnf => NotFound(), unf => NotFound(),
             uperr => throw new BadGatewayException("osu!api error"),

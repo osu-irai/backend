@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneOf.Types;
@@ -21,16 +22,8 @@ public class OwnRequestController(
     DatabaseContext dbContext,
     IRequestNotificationService notification,
     RequestService requestService)
-    : ControllerBase
+    : CrudController
 {
-    private int _claim()
-    {
-        var identity = HttpContext.User.Identity;
-
-        logger.LogInformation("Identity is {identityName}", identity?.Name);
-        return identity.ThrowIfUnauthorized().OrOnNullName();
-    }
-
     /// <summary>
     ///     Returns a list of beatmaps requested to a player using their oauth token
     /// </summary>
@@ -42,7 +35,7 @@ public class OwnRequestController(
     public async Task<ActionResult<ReceivedRequestResponse>> GetSelfRequests()
     {
         logger.LogInformation("Received request list");
-        var claim = _claim();
+        var claim = await GetOsuClaim();
         var requests = await dbContext.GetRequestsToUser(claim);
         logger.LogInformation($"Found requests for {claim}: {requests.Count}");
         return Ok(requests);
@@ -59,7 +52,7 @@ public class OwnRequestController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PostRequest([FromBody] PostRequestWithName postBaseRequest)
     {
-        var sourceId = _claim();
+        var sourceId = await GetOsuClaim();
 
         var (beatmapId, destinationName) = postBaseRequest;
         if (destinationName is null || beatmapId is null) return BadRequest();
@@ -83,7 +76,7 @@ public class OwnRequestController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteSelfRequest(int? requestId)
     {
-        _claim();
+        await TryAuthenticateOsu();
         if (requestId is null) return BadRequest();
         await dbContext.DeleteRequest(requestId.Value);
         return Ok();

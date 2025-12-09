@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authentication;
 using osu.NET.Authorization;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Data;
+using osuRequestor.ExceptionHandler.Exception;
 using osuRequestor.Models;
 using osuRequestor.Persistence;
 
@@ -16,7 +18,14 @@ public class OsuDatabaseAccessTokenProvider(
     public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Querying user info");
-        var identity = contextAccessor.HttpContext?.User?.Identity;
+        var osuAuthResult = await contextAccessor.HttpContext?.AuthenticateAsync("InternalCookies")!;
+        if (!osuAuthResult.Succeeded)
+        {
+            logger.LogInformation("osu auth failed: {osuAuthResult}", osuAuthResult.Failure?.Message);
+            throw new UnauthorizedException();
+        }
+        
+        var identity = osuAuthResult.Principal?.Identity;
         if (identity is null) throw new ArgumentException("Invalid user identity");
         var userId = identity.Name ?? throw new ArgumentException("Invalid user identity");
         var id = int.Parse(userId);

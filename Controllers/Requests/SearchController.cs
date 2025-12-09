@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using osu.NET;
 using osuRequestor.Data;
 using osuRequestor.DTO.Responses;
+using osuRequestor.ExceptionHandler.Exception;
 using osuRequestor.Exceptions;
 using osuRequestor.Extensions;
 using osuRequestor.Persistence;
@@ -11,13 +13,8 @@ namespace osuRequestor.Controllers.Requests;
 [ApiController]
 [Route("api/search")]
 public class SearchController(ILogger<RequestController> logger, DatabaseContext dbContext, OsuApiClient osuClient)
-    : ControllerBase
+    : CrudController 
 {
-    private int _claim()
-    {
-        return HttpContext.User.Identity.ThrowIfUnauthorized().OrOnNullName();
-    }
-
     /// <summary>
     ///     Search for players whose nickname starts with <see cref="query" />
     /// </summary>
@@ -47,7 +44,7 @@ public class SearchController(ILogger<RequestController> logger, DatabaseContext
     [Route("beatmap")]
     public async Task<ActionResult<SearchBeatmapResponse>> GetBeatmaps(string? query)
     {
-        var claim = _claim();
+        var claim = await GetOsuClaim();
 
         var beatmaps = await osuClient.SearchBeatmapSetsAsync(query ?? string.Empty)
             .BadGatewayOnFailure("Beatmaps not found")

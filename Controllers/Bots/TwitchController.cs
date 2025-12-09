@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OneOf.Types;
+using osu.Framework.Extensions.ObjectExtensions;
 using osu.NET;
 using osuRequestor.Controllers.Requests;
 using osuRequestor.Data;
@@ -28,7 +29,9 @@ public class TwitchController(
     [HttpGet]
     public async Task<List<TwitchModel>> GetAuthenticatedUsers()
     {
-        return await dbContext.Twitch.Where(x => x.IsEnabled).ToListAsync();
+        return await dbContext.Twitch.Where(x =>
+                x.User.Settings != null && x.User.Settings.EnableTwitch != null && x.User.Settings.EnableTwitch.Value)
+            .ToListAsync();
     }
 
     [HttpPost]
