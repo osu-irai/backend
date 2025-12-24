@@ -3,6 +3,7 @@ using osu.NET;
 using osuRequestor.Apis.OsuApi;
 using osuRequestor.Apis.OsuApi.Interfaces;
 using osuRequestor.Apis.TwitchApi;
+using osuRequestor.DTO.Requests;
 using osuRequestor.Services;
 using osuRequestor.SignalR;
 
@@ -32,6 +33,7 @@ public static class ServiceSetup
         services.AddMassTransit(cfg =>
         {
             cfg.SetKebabCaseEndpointNameFormatter();
+            cfg.AddConsumer<MessageSubscriberService>();
 
             cfg.UsingRabbitMq((context, bus) =>
             {
@@ -41,6 +43,14 @@ public static class ServiceSetup
                 {
                     h.Username("irai");
                     h.Password("iraipass");
+                });
+                bus.Message<PostBaseRequest>(x =>
+                {
+                    x.SetEntityName("request-exchange");
+                });
+                bus.ReceiveEndpoint("send-request-userless", e =>
+                {
+                    e.Consumer<MessageSubscriberService>(context);
                 });
             });
         });

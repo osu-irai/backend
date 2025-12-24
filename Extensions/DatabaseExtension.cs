@@ -146,9 +146,11 @@ public static class DatabaseExtension
     /// <param name="request">Newly added request</param>
     public static async Task AddRequest(this DatabaseContext dbContext, RequestModel request)
     {
+        var requestedFrom = request.RequestedFrom?.Id ?? null;
         var existing = await dbContext.Requests.FirstOrDefaultAsync(req =>
-            req.RequestedFrom.Id == request.RequestedFrom.Id
-            && req.Beatmap.Id == request.Beatmap.Id
+            // req.RequestedFrom.Id == requestedFrom
+            // && 
+            req.Beatmap.Id == request.Beatmap.Id
             && req.RequestedTo.Id == request.RequestedTo.Id);
         if (existing is not null)
         {
