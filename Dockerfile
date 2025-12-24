@@ -1,10 +1,10 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["irai.csproj", "./"]
-RUN dotnet restore "irai.csproj"
+COPY ["irai/irai.csproj", "irai/"]
+RUN dotnet restore "irai/irai.csproj"
 COPY . .
-WORKDIR "/src/"
+WORKDIR "/src/irai"
 RUN dotnet build "irai.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish

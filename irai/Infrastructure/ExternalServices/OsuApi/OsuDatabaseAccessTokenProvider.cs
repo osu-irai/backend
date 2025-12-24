@@ -1,0 +1,73 @@
+using Microsoft.AspNetCore.Authentication;
+using osu.NET.Authorization;
+using osuRequestor.Common.Exceptions;
+using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
+using osuRequestor.Infrastructure.Persistence;
+using osuRequestor.Infrastructure.Persistence.Extensions;
+using osuRequestor.Infrastructure.Persistence.Models;
+
+namespace osuRequestor.Infrastructure.ExternalServices.OsuApi;
+
+public class OsuDatabaseAccessTokenProvider(
+    DatabaseContext dbContext,
+    IHttpContextAccessor contextAccessor,
+    IOsuApiProvider osuApiProvider,
+    ILogger<OsuDatabaseAccessTokenProvider> logger)
+    : IOsuAccessTokenProvider
+{
+    #region IOsuAccessTokenProvider Members
+
+    public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Querying user info");
+        var    ctx = contextAccessor.HttpContext;
+        string userId;
+        if (ctx is not null)
+        {
+            var osuAuthResult = await ctx.AuthenticateAsync("InternalCookies");
+            if (!osuAuthResult.Succeeded)
+            {
+                logger.LogInformation("osu auth failed: {osuAuthResult}", osuAuthResult.Failure?.Message);
+                throw new UnauthorizedException();
+            }
+
+            var identity = osuAuthResult.Principal?.Identity;
+            if (identity is null)
+            {
+                throw new ArgumentException("Invalid user identity");
+            }
+
+            userId = identity.Name ?? throw new ArgumentException("Invalid user identity");
+        }
+        else
+        {
+            userId = "11482346";
+        }
+
+        var id   = int.Parse(userId);
+        var user = await dbContext.GetUserByClaim(id);
+        logger.LogInformation("Found valid user by claim id {id}", id);
+        var token = user.Value()
+                        .Token;
+        logger.LogInformation("Current time is {Time}, Token for {User} expires at {Expires}", DateTime.UtcNow, id,
+                              token?.Expires);
+        if (DateTime.UtcNow > token?.Expires)
+        {
+            logger.LogInformation("Refreshing token for {user}", id);
+            var newToken = await osuApiProvider.RefreshToken(token.RefreshToken, token.AccessToken);
+            await dbContext.UpdateToken(id, new TokenModel
+            {
+                UserId       = id,
+                AccessToken  = newToken!.AccessToken,
+                RefreshToken = token.RefreshToken,
+                Expires      = DateTime.UtcNow.AddSeconds(newToken.ExpiresIn),
+                User         = user.Value()
+            });
+            return newToken.AccessToken;
+        }
+
+        return token!.AccessToken;
+    }
+
+    #endregion
+}
