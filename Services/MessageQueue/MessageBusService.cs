@@ -31,10 +31,10 @@ public class MessageBusService
         await endpoint.Send(new IrcSettingsChangeContract { Username = username, IsEnabled = isEnabled });
     }
 
-    public async Task SubmitTwitchSettingsChangeAsync(string twitchUserId, bool isEnabled)
+    public async Task SubmitTwitchSettingsChangeAsync(string twitchUserId, int osuId, bool isEnabled)
     {
         var endpoint = await _endpointProvider.GetSendEndpoint(new Uri("queue:twitch-settings"));
-        _logger.LogInformation("Changing Twitch settings of {Username}", twitchUserId);
-        await endpoint.Send(new TwitchSettingsChangeContract { TwitchUserId = twitchUserId, IsEnabled = isEnabled });
+        _logger.LogInformation("Changing Twitch settings of {Username}, enabled: {isEnabled}", twitchUserId, isEnabled);
+        await endpoint.Send(new TwitchSettingsChangeContract { TwitchUserId = twitchUserId, OsuId = osuId, IsEnabled = isEnabled});
     }
 }

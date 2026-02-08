@@ -22,8 +22,8 @@ public static class AuthenticationSetup
         service.AddAuthorization(options =>
         {
             options.AddPolicy("Twitch",
-                policy => { policy.RequireClaim("aud", "http://localhost:5076/api/bot/twitch"); });
-            options.AddPolicy("Irc", policy => { policy.RequireClaim("aud", "http://localhost:5076/api/bot/irc"); });
+                policy => { policy.RequireClaim("aud", "http://localhost:5076/api/bot/twitch/", "http://localhost:5076/api/bot/twitch"); });
+            options.AddPolicy("Irc", policy => { policy.RequireClaim("aud", "http://localhost:5076/api/bot/irc/", "http://localhost:5076/api/bot/irc"); });
         });
         service.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(jwt =>
         {
@@ -31,16 +31,16 @@ public static class AuthenticationSetup
             configuration.GetSection(AuthConfig.Position).Bind(cfg);
             var clientDict = new Dictionary<string, AuthClient>();
             configuration.GetSection("Clients").Bind(clientDict);
-            var audiences = clientDict.Values.Select(v => $"{cfg.Audience}/{v.Name.ToLower()}");
+            var audiences = clientDict.Values.Select(v => $"{cfg.Audience}/{v.Name.ToLower()}").ToList();
             var securityKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(cfg.SecretKey ?? throw new NotImplementedException()));
             jwt.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidateAudience = true,
+                ValidateAudience = false,
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = cfg.Issuer,
-                ValidAudiences = audiences,
+                // ValidAudiences = audiences,
                 IssuerSigningKey = securityKey
             };
         });

@@ -6,6 +6,7 @@ namespace osuRequestor.Services.MessageQueue.Contracts;
 public class TwitchSettingsChangeContract
 {
     public string TwitchUserId { get; set; }
+    public int OsuId { get; set; }
     
     public bool IsEnabled { get; set; }
 }

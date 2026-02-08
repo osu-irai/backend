@@ -84,7 +84,7 @@ public class OwnUserController(
             await messageBus.SubmitIrcSettingsChangeAsync(username, settings.EnableIrc);
             if (settings.EnableTwitch is not null && twitch is not null)
             {
-                await messageBus.SubmitTwitchSettingsChangeAsync(twitch.TwitchId.ToString(), settings.EnableTwitch.Value);
+                await messageBus.SubmitTwitchSettingsChangeAsync(twitch.TwitchId.ToString(), user.Id, settings.EnableTwitch.Value);
             }
         }
         else

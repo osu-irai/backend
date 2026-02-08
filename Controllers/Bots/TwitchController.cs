@@ -7,6 +7,7 @@ using osu.Framework.Extensions.ObjectExtensions;
 using osu.NET;
 using osuRequestor.Controllers.Requests;
 using osuRequestor.Data;
+using osuRequestor.DTO.General;
 using osuRequestor.DTO.Requests;
 using osuRequestor.ExceptionHandler.Exception;
 using osuRequestor.Models;
@@ -27,10 +28,11 @@ public class TwitchController(
     : ControllerBase
 {
     [HttpGet]
-    public async Task<List<TwitchModel>> GetAuthenticatedUsers()
+    public async Task<List<TwitchDTO>> GetAuthenticatedUsers()
     {
         return await dbContext.Twitch.Where(x =>
                 x.User.Settings != null && x.User.Settings.EnableTwitch != null && x.User.Settings.EnableTwitch.Value)
+            .Select(u => new TwitchDTO { TwitchId = u.TwitchId.ToString(), OsuId = u.UserId})
             .ToListAsync();
     }
 
