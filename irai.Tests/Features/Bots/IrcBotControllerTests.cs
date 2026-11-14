@@ -4,7 +4,7 @@ using NUnit.Framework;
 using osuRequestor.Features.Bots.Controllers;
 using osuRequestor.Features.Bots.Services;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Tests.Features.Bots;
 

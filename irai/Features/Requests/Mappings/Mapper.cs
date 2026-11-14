@@ -4,7 +4,8 @@ using osuRequestor.Common.Models;
 using osuRequestor.Features.Requests.Models;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Infrastructure.Notifications.Data;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Requests.Persistence;
+using osuRequestor.Features.Users.Persistence;
 using BeatmapSet = osu.NET.Models.Beatmaps.BeatmapSet;
 
 namespace osuRequestor.Features.Requests.Mappings;

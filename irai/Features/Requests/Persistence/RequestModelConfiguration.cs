@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using osuRequestor.Infrastructure.Persistence.Models;
 
-namespace osuRequestor.Infrastructure.Persistence.Configurations;
+namespace osuRequestor.Features.Requests.Persistence;
 
 public class RequestModelConfiguration : IEntityTypeConfiguration<RequestModel>
 {

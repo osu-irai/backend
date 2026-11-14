@@ -1,5 +1,6 @@
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Requests.Persistence;
+using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Tests.Infrastructure.Fixtures;
 

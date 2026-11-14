@@ -1,5 +1,6 @@
 using osuRequestor.Features.Requests.Models;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Requests.Persistence;
+using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Features.Requests.Services;
 

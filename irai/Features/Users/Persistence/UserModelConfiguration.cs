@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using osuRequestor.Infrastructure.Persistence.Models;
 
-namespace osuRequestor.Infrastructure.Persistence.Configurations;
+namespace osuRequestor.Features.Users.Persistence;
 
 public class UserModelConfiguration : IEntityTypeConfiguration<UserModel>
 {
@@ -14,6 +13,10 @@ public class UserModelConfiguration : IEntityTypeConfiguration<UserModel>
                .IsRequired();
         builder.Property(um => um.CountryCode)
                .IsRequired(false);
+        builder.HasOne(e => e.Settings)
+               .WithOne(e => e.User);
+        builder.HasOne(e => e.TwitchSettings)
+               .WithOne(e => e.User);
     }
 
     #endregion

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Requests.Persistence;
 
 #nullable disable
 
@@ -46,7 +46,7 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("DataProtectionKeys");
                 });
 
-            modelBuilder.Entity("osuRequestor.Infrastructure.Persistence.Models.BeatmapModel", b =>
+            modelBuilder.Entity("osuRequestor.Features.Requests.Persistence.BeatmapModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -104,7 +104,7 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("Beatmaps");
                 });
 
-            modelBuilder.Entity("osuRequestor.Infrastructure.Persistence.Models.BeatmapSetModel", b =>
+            modelBuilder.Entity("osuRequestor.Features.Requests.Persistence.BeatmapSetModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -128,7 +128,7 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("BeatmapSets");
                 });
 
-            modelBuilder.Entity("osuRequestor.Infrastructure.Persistence.Models.RequestModel", b =>
+            modelBuilder.Entity("osuRequestor.Features.Requests.Persistence.RequestModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -165,7 +165,7 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("Requests");
                 });
 
-            modelBuilder.Entity("osuRequestor.Infrastructure.Persistence.Models.TokenModel", b =>
+            modelBuilder.Entity("osuRequestor.Features.Authentication.Persistence.TokenModel", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -186,7 +186,7 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("Tokens");
                 });
 
-            modelBuilder.Entity("osuRequestor.Infrastructure.Persistence.Models.UserModel", b =>
+            modelBuilder.Entity("osuRequestor.Features.Users.Persistence.UserModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -212,9 +212,9 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("osuRequestor.Infrastructure.Persistence.Models.BeatmapModel", b =>
+            modelBuilder.Entity("osuRequestor.Features.Requests.Persistence.BeatmapModel", b =>
                 {
-                    b.HasOne("osuRequestor.Infrastructure.Persistence.Models.BeatmapSetModel", "BeatmapSet")
+                    b.HasOne("osuRequestor.Features.Requests.Persistence.BeatmapSetModel", "BeatmapSet")
                         .WithMany()
                         .HasForeignKey("BeatmapSetId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -223,19 +223,19 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.Navigation("BeatmapSet");
                 });
 
-            modelBuilder.Entity("osuRequestor.Infrastructure.Persistence.Models.RequestModel", b =>
+            modelBuilder.Entity("osuRequestor.Features.Requests.Persistence.RequestModel", b =>
                 {
-                    b.HasOne("osuRequestor.Infrastructure.Persistence.Models.BeatmapModel", "Beatmap")
+                    b.HasOne("osuRequestor.Features.Requests.Persistence.BeatmapModel", "Beatmap")
                         .WithMany()
                         .HasForeignKey("BeatmapId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("osuRequestor.Infrastructure.Persistence.Models.UserModel", "RequestedFrom")
+                    b.HasOne("osuRequestor.Features.Users.Persistence.UserModel", "RequestedFrom")
                         .WithMany()
                         .HasForeignKey("RequestedFromId");
 
-                    b.HasOne("osuRequestor.Infrastructure.Persistence.Models.UserModel", "RequestedTo")
+                    b.HasOne("osuRequestor.Features.Users.Persistence.UserModel", "RequestedTo")
                         .WithMany()
                         .HasForeignKey("RequestedToId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -248,18 +248,18 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.Navigation("RequestedTo");
                 });
 
-            modelBuilder.Entity("osuRequestor.Infrastructure.Persistence.Models.TokenModel", b =>
+            modelBuilder.Entity("osuRequestor.Features.Authentication.Persistence.TokenModel", b =>
                 {
-                    b.HasOne("osuRequestor.Infrastructure.Persistence.Models.UserModel", "User")
+                    b.HasOne("osuRequestor.Features.Users.Persistence.UserModel", "User")
                         .WithOne("Token")
-                        .HasForeignKey("osuRequestor.Infrastructure.Persistence.Models.TokenModel", "UserId")
+                        .HasForeignKey("osuRequestor.Features.Authentication.Persistence.TokenModel", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("osuRequestor.Infrastructure.Persistence.Models.UserModel", b =>
+            modelBuilder.Entity("osuRequestor.Features.Users.Persistence.UserModel", b =>
                 {
                     b.Navigation("Token")
                         .IsRequired();

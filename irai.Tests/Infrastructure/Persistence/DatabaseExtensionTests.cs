@@ -3,7 +3,9 @@ using NUnit.Framework;
 using osuRequestor.Common.Extensions;
 using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Infrastructure.Persistence.Extensions;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Authentication.Persistence;
+using osuRequestor.Features.Requests.Persistence;
+using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Tests.Infrastructure.Fixtures;
 
 namespace osuRequestor.Tests.Infrastructure.Persistence;

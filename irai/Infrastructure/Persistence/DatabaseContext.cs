@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using osuRequestor.Infrastructure.Persistence.Configurations;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Authentication.Persistence;
+using osuRequestor.Features.Requests.Persistence;
+using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Infrastructure.Persistence;
 
@@ -55,12 +56,5 @@ public class DatabaseContext(
         modelBuilder.ApplyConfiguration(new UserModelConfiguration());
         modelBuilder.ApplyConfiguration(new BeatmapModelConfiguration());
         modelBuilder.ApplyConfiguration(new SettingsModelConfiguration());
-
-        modelBuilder.Entity<UserModel>()
-                    .HasOne(e => e.Settings)
-                    .WithOne(e => e.User);
-        modelBuilder.Entity<UserModel>()
-                    .HasOne(e => e.TwitchSettings)
-                    .WithOne(e => e.User);
     }
 }

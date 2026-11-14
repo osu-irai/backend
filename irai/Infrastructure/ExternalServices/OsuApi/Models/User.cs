@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 

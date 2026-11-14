@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 
-namespace osuRequestor.Infrastructure.Persistence.Models;
+namespace osuRequestor.Features.Requests.Persistence;
 
 /// <summary>
 /// Database model for beatmapsets

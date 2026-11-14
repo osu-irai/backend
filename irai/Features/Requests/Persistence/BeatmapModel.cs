@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 
-namespace osuRequestor.Infrastructure.Persistence.Models;
+namespace osuRequestor.Features.Requests.Persistence;
 
 /// <summary>
 /// Database model for individual beatmaps

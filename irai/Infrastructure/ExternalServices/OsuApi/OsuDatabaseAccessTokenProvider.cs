@@ -4,7 +4,7 @@ using osuRequestor.Common.Exceptions;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Infrastructure.Persistence.Extensions;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Authentication.Persistence;
 
 namespace osuRequestor.Infrastructure.ExternalServices.OsuApi;
 

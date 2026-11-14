@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using osuRequestor.Common.Models;
+using osuRequestor.Features.Authentication.Persistence;
 using User = osuRequestor.Infrastructure.ExternalServices.OsuApi.Models.User;
 
-namespace osuRequestor.Infrastructure.Persistence.Models;
+namespace osuRequestor.Features.Users.Persistence;
 
 /// <summary>
 /// Database model for a registered user

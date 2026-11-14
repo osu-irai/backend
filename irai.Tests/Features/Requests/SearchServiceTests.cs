@@ -6,7 +6,7 @@ using osu.NET;
 using osu.NET.Authorization;
 using osuRequestor.Features.Requests.Services;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Tests.Features.Requests;
 

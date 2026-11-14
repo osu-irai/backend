@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using osuRequestor.Common.Extensions;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Authentication.Persistence;
+using osuRequestor.Features.Requests.Persistence;
+using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Infrastructure.Persistence.Extensions;
 

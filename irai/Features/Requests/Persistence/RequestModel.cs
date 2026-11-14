@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using osuRequestor.Features.Users.Persistence;
 
-namespace osuRequestor.Infrastructure.Persistence.Models;
+namespace osuRequestor.Features.Requests.Persistence;
 
 /// <summary>
 /// Database model for beatmap requests

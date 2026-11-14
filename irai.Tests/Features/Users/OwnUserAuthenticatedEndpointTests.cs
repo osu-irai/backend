@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using osuRequestor.Features.Users.Models;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Authentication.Persistence;
 using osuRequestor.Tests.Infrastructure.Factories;
 using osuRequestor.Tests.Infrastructure.Fixtures;
 using osuRequestor.Tests.Infrastructure.Harness;

@@ -14,7 +14,8 @@ using osuRequestor.Infrastructure.Messaging;
 using osuRequestor.Infrastructure.Messaging.Contracts;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Requests.Persistence;
+using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Tests.Features.Requests;
 

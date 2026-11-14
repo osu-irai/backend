@@ -2,7 +2,7 @@ using NUnit.Framework;
 using osuRequestor.Common.Models;
 using osuRequestor.Features.Requests.Mappings;
 using osuRequestor.Features.Requests.Models;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Requests.Persistence;
 
 namespace osuRequestor.Tests.Features.Requests;
 

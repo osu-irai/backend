@@ -4,7 +4,8 @@ using NUnit.Framework;
 using osuRequestor.Features.Authentication.Services;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Authentication.Persistence;
+using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Tests.Features.Authentication;
 

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using osuRequestor.Features.Users.Persistence;
 
-namespace osuRequestor.Infrastructure.Persistence.Models;
+namespace osuRequestor.Features.Authentication.Persistence;
 
 /// <summary>
 /// Database model for osu! authentication tokens

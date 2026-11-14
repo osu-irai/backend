@@ -11,7 +11,7 @@ using osuRequestor.Features.Requests.Models;
 using osuRequestor.Features.Requests.Services;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Requests.Persistence;
 
 namespace osuRequestor.Features.Bots.Controllers;
 

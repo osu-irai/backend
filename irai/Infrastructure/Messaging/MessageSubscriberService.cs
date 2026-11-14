@@ -1,7 +1,7 @@
 using MassTransit;
 using osuRequestor.Features.Requests.Models;
 using osuRequestor.Features.Requests.Services;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Requests.Persistence;
 
 namespace osuRequestor.Infrastructure.Messaging;
 

@@ -4,7 +4,7 @@ using osuRequestor.Features.Users.Models;
 using osuRequestor.Infrastructure.Messaging;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Models;
+using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Features.Users.Services;
 
