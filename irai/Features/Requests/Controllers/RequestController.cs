@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using osuRequestor.Common.Exceptions;
+using osuRequestor.Common.Extensions;
 using osuRequestor.Features.Requests.Models;
 using osuRequestor.Features.Requests.Services;
 
@@ -37,10 +38,8 @@ public class RequestController(
     {
         var sourceId = context.GetCurrentUserId(request);
 
-        var result = await requestService.CreateRequest(sourceId, request.DestinationId, request.BeatmapId);
+        await requestService.CreateRequest(sourceId, request.DestinationId, request.BeatmapId).ThrowIfRequestError();
 
-        return result.Match<IActionResult>(ok => Ok(), bnf => NotFound(), unf => NotFound(),
-                                           uperr => throw new BadGatewayException("osu!api error"),
-                                           interr => throw new ServerErrorException("internal error"));
+        return Ok();
     }
 }

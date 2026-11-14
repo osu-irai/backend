@@ -1,7 +1,8 @@
+using static ChiffadicErrors.Result;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OneOf;
-using OneOf.Types;
 using osu.NET;
 using osuRequestor.Common.Extensions;
 using osuRequestor.Common.Models;
@@ -22,12 +23,12 @@ public class RequestService(
     IRequestNotificationService notification,
     IMessageBusService messageBus) : IRequestService
 {
-    public async Task<RequestServiceResult<BeatmapModel>> GetBeatmap(int beatmapId)
+    public async Task<Result<BeatmapModel, RequestServiceError>> GetBeatmap(int beatmapId)
     {
         var beatmap = await dbContext.GetBeatmap(beatmapId);
-        if (beatmap.IsSome())
+        if (beatmap is Some<BeatmapModel> some)
         {
-            return beatmap.Value();
+            return Ok(some.Value);
         }
 
         logger.LogInformation("Missing beatmap: {BeatmapId}", beatmapId);
@@ -39,10 +40,10 @@ public class RequestService(
                 // This endpoint can't realistically hit anything outside BeatmapNotFound
                 case ApiErrorType.BeatmapNotFound:
                     logger.LogInformation("Failed to find a beatmap");
-                    return new BeatmapNotFound(beatmapId);
+                    return Error<RequestServiceError>(new BeatmapNotFound(beatmapId));
                 case ApiErrorType.Unknown:
                     logger.LogInformation("Unknown osu! api error, {ApiErrorDetails}", apiResponse.Error.Message);
-                    return new UpstreamError(apiResponse.Error.Message ?? "");
+                    return Error<RequestServiceError>(new UpstreamError(apiResponse.Error.Message ?? ""));
                 default:
                     throw new UnreachableException();
             }
@@ -50,35 +51,36 @@ public class RequestService(
 
         if (apiResponse.Value is null)
         {
-            return new BeatmapNotFound(beatmapId);
+            return Error<RequestServiceError>(new BeatmapNotFound(beatmapId));
         }
 
         var onlineBeatmap = apiResponse.Value!.ToModel();
-        return onlineBeatmap;
+        return Ok(onlineBeatmap);
     }
 
-    public async Task<RequestServiceResult<UserModel>> GetUser(int userId)
+    public async Task<Result<UserModel, RequestServiceError>> GetUser(int userId)
     {
+        logger.LogInformation("Looking up user: {UserId}", userId);
         var user = await dbContext.GetUser(userId);
-        if (user.IsSome())
+        
+        return user switch
         {
-            return user.Value();
-        }
-
-        logger.LogInformation("Missing user: {UserId}", userId);
-        return new UserNotFound(userId);
+            Some<UserModel> some => Ok(some.Value),
+            None _               => Error<RequestServiceError>(new UserNotFound(userId)),
+            null                 => throw new ArgumentOutOfRangeException(nameof(userId))
+        };
     }
 
-    public async Task<RequestServiceResult<UserModel>> GetUser(string userName)
+    public async Task<Result<UserModel, RequestServiceError>> GetUser(string userName)
     {
         var user = await dbContext.GetUserByName(userName);
-        if (user.IsSome())
-        {
-            return user.Value();
-        }
 
-        logger.LogInformation("Missing user: {UserId}", userName);
-        return new UserNotFound(null);
+        return user switch
+        {
+            Some<UserModel> some => Ok(some.Value),
+            None _               => Error<RequestServiceError>(new UserNotFound(null)),
+            null                 => throw new ArgumentOutOfRangeException(nameof(user))
+        };
     }
 
     public async Task<List<ReceivedRequestResponse>> GetRequestsToUser(int id)
@@ -126,9 +128,9 @@ public class RequestService(
         await dbContext.SaveChangesAsync();
     }
 
-    private async Task<OneOf<Success, Error>> InitializeRequest(UserModel? sourceUser, UserModel destinationUser,
-                                                                BeatmapModel beatmap,
-                                                                RequestSource source = RequestSource.Website)
+    private async Task<int> InitializeRequest(UserModel? sourceUser, UserModel destinationUser,
+                                              BeatmapModel beatmap,
+                                              RequestSource source = RequestSource.Website)
     {
         var request = new RequestModel
         {
@@ -148,7 +150,8 @@ public class RequestService(
 
         await notification.NotifyUserAsync(destinationUser.Username, notificationBody);
         await messageBus.SubmitRequestAsync(destinationUser.Username, notificationBody);
-        return new Success();
+
+        return request.Id;
     }
 
     /// <summary>
@@ -162,35 +165,38 @@ public class RequestService(
     /// <param name="beatmapId"></param>
     /// <param name="source"></param>
     /// <returns></returns>
-    public async Task<RequestServiceResult<Ok>> CreateRequest(int? sourceId, int destinationId, int beatmapId,
-                                                              RequestSource source = RequestSource.Website)
+    public async Task<Result<int, RequestServiceError>> CreateRequest(int? sourceId, int destinationId, int beatmapId,
+                                                                      RequestSource source = RequestSource.Website)
     {
         var sourceUser = sourceId is null
                              ? null
                              : await GetUser(sourceId.Value)
-                                   .ThrowIfNotFound();
+                                   .ThrowIfRequestError();
         var destinationUser = await GetUser(destinationId)
-                                  .ThrowIfNotFound();
+                                  .ThrowIfRequestError();
         var beatmap = await GetBeatmap(beatmapId)
-                          .ThrowIfNotFound();
+                          .ThrowIfRequestError();
 
         var result = await InitializeRequest(sourceUser, destinationUser, beatmap, source);
-        return result.Match<RequestServiceResult<Ok>>(ok => new Ok(), err => new InternalError());
+
+        return new OkVariant<int>(result);
     }
 
-    public async Task<RequestServiceResult<Ok>> CreateRequest(int? sourceId, string destinationName, int beatmapId,
-                                                              RequestSource source = RequestSource.Website)
+    public async Task<Result<int, RequestServiceError>> CreateRequest(int? sourceId, string destinationName,
+                                                                      int beatmapId,
+                                                                      RequestSource source = RequestSource.Website)
     {
         var sourceUser = sourceId is null
                              ? null
                              : await GetUser(sourceId.Value)
-                                   .ThrowIfNotFound();
+                                   .ThrowIfRequestError();
         var destinationUser = await GetUser(destinationName)
-                                  .ThrowIfNotFound();
+                                  .ThrowIfRequestError();
         var beatmap = await GetBeatmap(beatmapId)
-                          .ThrowIfNotFound();
+                          .ThrowIfRequestError();
 
         var result = await InitializeRequest(sourceUser, destinationUser, beatmap, source);
-        return result.Match<RequestServiceResult<Ok>>(ok => new Ok(), err => new InternalError());
+
+        return new OkVariant<int>(result);
     }
 }

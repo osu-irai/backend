@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.DataProtection;
+using Scalar.AspNetCore;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -51,7 +52,6 @@ public static class Program
         builder.Services.AddControllers();
 
         builder.Services.AddOpenApi();
-        builder.Services.AddSwaggerGen();
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient();
@@ -65,7 +65,7 @@ public static class Program
             options.AllowAnyHeader();
             if (app.Environment.IsDevelopment())
             {
-                options.WithOrigins("http://localhost:5076", "http://localhost:5077", "http://frontend:5077",
+                options.WithOrigins("http://localhost:5076", "http://localhost:5174",
                                     "http://irai-dev.comf.ee");
             }
             else
@@ -88,7 +88,7 @@ public static class Program
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
-            app.MapSwagger();
+            app.MapScalarApiReference();
             app.UseHttpLogging();
         }
 

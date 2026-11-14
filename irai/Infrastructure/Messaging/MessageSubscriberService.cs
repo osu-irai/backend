@@ -27,7 +27,7 @@ public class MessageSubscriberService : IConsumer<PostBaseRequest>
                                                               context.Message.BeatmapId.Value,
                                                               RequestSource.Twitch);
 
-        if (result.IsErr)
+        if (result.IsErr())
         {
             this._logger.LogWarning("Failed to create a request from Twitch: {Error}", result.Value);
         }

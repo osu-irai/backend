@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OneOf.Types;
 using osu.NET;
 using osuRequestor.Common.Exceptions;
 using osuRequestor.Features.Bots.Models;
@@ -42,7 +41,7 @@ public class TwitchController(
         var result =
             await requestSource.CreateRequest(null, destinationId!.Value, beatmapId!.Value, RequestSource.Twitch);
 
-        if (result.Value is Error)
+        if (result.Value is InternalError)
         {
             throw new ServerErrorException("Failed to create a request");
         }

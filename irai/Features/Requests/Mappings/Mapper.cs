@@ -59,7 +59,7 @@ public static class Mapper
         };
     }
 
-    public static List<BeatmapDTO> ToBeatmapDtoList(this BeatmapSetsBundle bundle)
+    public static List<BeatmapDTO> ToBeatmapDtoList(this BeatmapSetsSearchBundle bundle)
     {
         return bundle.Sets.SelectMany(s => s.Beatmaps!.Select(b => new BeatmapDTO
                      {

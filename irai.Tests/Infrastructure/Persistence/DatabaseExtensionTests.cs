@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using osuRequestor.Common.Extensions;
 using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Infrastructure.Persistence.Extensions;
 using osuRequestor.Infrastructure.Persistence.Models;
@@ -139,10 +140,10 @@ public class DatabaseExtensionTests
 
         var beatmap = await db.GetBeatmap(1);
 
-        Assert.That(beatmap.IsSome(), Is.True);
-        Assert.That(beatmap.Value()
+        Assert.That(beatmap is Some<BeatmapModel>);
+        Assert.That(beatmap.Unwrap()
                            .BeatmapSet, Is.Not.Null);
-        Assert.That(beatmap.Value()
+        Assert.That(beatmap.Unwrap()
                            .BeatmapSet.Title, Is.EqualTo("Title"));
     }
 
@@ -155,12 +156,12 @@ public class DatabaseExtensionTests
 
         var user = await db.GetUserByClaim(7);
 
-        Assert.That(user.IsSome(), Is.True);
-        Assert.That(user.Value()
+        Assert.That(user is Some<UserModel>);
+        Assert.That(user.Unwrap()
                         .Id, Is.EqualTo(7));
-        Assert.That(user.Value()
+        Assert.That(user.Unwrap()
                         .Token, Is.Not.Null);
-        Assert.That(user.Value()
+        Assert.That(user.Unwrap()
                         .Token.AccessToken, Is.EqualTo("access-token"));
     }
 
@@ -174,10 +175,10 @@ public class DatabaseExtensionTests
         var exact     = await db.GetUserByName("Alice");
         var otherCase = await db.GetUserByName("alice");
 
-        Assert.That(exact.IsSome(), Is.True);
-        Assert.That(exact.Value()
+        Assert.That(exact, Is.TypeOf<Option<UserModel>>());
+        Assert.That(exact.Unwrap()
                          .Id, Is.EqualTo(7));
-        Assert.That(otherCase.IsNone(), Is.True);
+        Assert.That(otherCase is None);
     }
 
     [Test]
@@ -189,7 +190,7 @@ public class DatabaseExtensionTests
 
         var user = await db.GetUser(null);
 
-        Assert.That(user.IsNone(), Is.True);
+        Assert.That(user is None);
     }
 
     [Test]
@@ -201,8 +202,8 @@ public class DatabaseExtensionTests
 
         var user = await db.GetUser(7);
 
-        Assert.That(user.IsSome(), Is.True);
-        Assert.That(user.Value()
+        Assert.That(user is Some<UserModel>);
+        Assert.That(user.Unwrap()
                         .Username, Is.EqualTo("alice"));
     }
 
@@ -213,7 +214,7 @@ public class DatabaseExtensionTests
 
         var user = await db.GetUser(404);
 
-        Assert.That(user.IsNone(), Is.True);
+        Assert.That(user is None, Is.True);
     }
 
     [Test]

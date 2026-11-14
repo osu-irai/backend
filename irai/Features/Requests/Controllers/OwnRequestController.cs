@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OneOf.Types;
 using osu.NET;
 using osuRequestor.Common.Controllers;
 using osuRequestor.Common.Exceptions;
@@ -41,17 +40,18 @@ public class OwnRequestController(
     [ProducesDefaultResponseType]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> PostRequest([FromBody] PostRequestWithName postBaseRequest)
+    [Authorize(Roles = "User,Proxy", AuthenticationSchemes = "Bearer,InternalCookies")]
+    public async Task<IActionResult> PostRequest([FromBody] PostBaseRequest postBaseRequest)
     {
         var sourceId = await GetOsuClaim();
 
-        var (beatmapId, destinationName) = postBaseRequest;
+        var (destinationId, beatmapId) = postBaseRequest;
 
-        logger.LogInformation("Found {destinationName} and {beatmapId}", destinationName, beatmapId);
+        logger.LogInformation("Found destination {destinationId} and map {beatmapId}", destinationId, beatmapId);
 
-        var result = await requestService.CreateRequest(sourceId, destinationName!, beatmapId!.Value);
+        var result = await requestService.CreateRequest(sourceId, destinationId!.Value, beatmapId!.Value);
 
-        if (result.Value is Error)
+        if (result.Value is InternalError)
         {
             throw new ServerErrorException("Failed to create a request");
         }

@@ -96,7 +96,7 @@ public class OAuthController(
     /// <summary>
     /// Sign out from current user.
     /// </summary>
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "InternalCookies")]
     [HttpGet("signout")]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> Logout()

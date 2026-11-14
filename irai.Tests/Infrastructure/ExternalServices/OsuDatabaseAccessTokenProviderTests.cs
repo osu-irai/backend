@@ -122,7 +122,7 @@ public class OsuDatabaseAccessTokenProviderTests
         var provider = CreateProvider(db, Substitute.For<IOsuApiProvider>(), result);
 
         var exception
-            = Assert.ThrowsAsync<ArgumentException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
+            = await Assert.ThrowsAsync<ArgumentException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
 
         Assert.That(exception!.Message, Is.EqualTo("Invalid user identity"));
     }
@@ -138,7 +138,7 @@ public class OsuDatabaseAccessTokenProviderTests
         var provider = CreateProvider(db, Substitute.For<IOsuApiProvider>(), result);
 
         var exception
-            = Assert.ThrowsAsync<ArgumentException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
+            = await Assert.ThrowsAsync<ArgumentException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
 
         Assert.That(exception!.Message, Is.EqualTo("Invalid user identity"));
     }

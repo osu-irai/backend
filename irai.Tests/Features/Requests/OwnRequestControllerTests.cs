@@ -245,9 +245,9 @@ public class OwnRequestControllerTests
         await db.SaveChangesAsync();
         TestControllerContext.SignIn(controller, 1);
 
-        var result = await controller.PostRequest(new PostRequestWithName
+        var result = await controller.PostRequest(new PostBaseRequest() 
         {
-            DestinationName = "bob",
+            DestinationId = 2,
             BeatmapId       = 100
         });
 

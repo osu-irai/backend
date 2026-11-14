@@ -1,3 +1,4 @@
+using ChiffadicErrors;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -104,16 +105,16 @@ public class RequestServiceTests
         AddBeatmap(db);
         await db.SaveChangesAsync();
 
-        Assert.ThrowsAsync<NotFoundException>(() => service.CreateRequest(1, 404, 100));
+        await Assert.ThrowsAsync<NotFoundException>(() => service.CreateRequest(1, 404, 100));
     }
 
     [Test]
-    public void CreateRequest_WhenDestinationIsMissing_ThrowsNotFound()
+    public async Task CreateRequest_WhenDestinationIsMissing_ThrowsNotFound()
     {
-        using var db = CreateDatabase();
+        await using var db = CreateDatabase();
         var (_, service, _, _) = CreateHarness(db);
 
-        Assert.ThrowsAsync<NotFoundException>(() =>
+        await Assert.ThrowsAsync<NotFoundException>(() =>
                                                   service.CreateRequest(null, "missing-user", 1));
     }
 
@@ -126,7 +127,7 @@ public class RequestServiceTests
         AddBeatmap(db);
         await db.SaveChangesAsync();
 
-        Assert.ThrowsAsync<NotFoundException>(() => service.CreateRequest(1, "nobody", 100));
+        await Assert.ThrowsAsync<NotFoundException>(() => service.CreateRequest(1, "nobody", 100));
     }
 
     [Test]
@@ -151,7 +152,7 @@ public class RequestServiceTests
         var result = await service.CreateRequest(1, 2, 100);
 
         var stored = await db.Requests.SingleAsync();
-        Assert.That(result.IsOk, Is.True);
+        Assert.That(result.IsOk(), Is.True, $"Expected Ok, received {result.GetType()}");
         Assert.That(stored.Date, Is.GreaterThan(oldDate));
         await notification.Received(1)
                           .NotifyUserAsync("bob", Arg.Any<ReceivedRequestResponse>());
@@ -166,7 +167,7 @@ public class RequestServiceTests
         AddBeatmap(db);
         await db.SaveChangesAsync();
 
-        Assert.ThrowsAsync<NotFoundException>(() => service.CreateRequest(404, 2, 100));
+        await Assert.ThrowsAsync<NotFoundException>(() => service.CreateRequest(404, 2, 100));
     }
 
     [Test]
@@ -184,7 +185,7 @@ public class RequestServiceTests
         var stored = await db.Requests.Include(requestModel => requestModel.RequestedFrom!)
                              .Include(requestModel => requestModel.RequestedTo)
                              .SingleAsync();
-        Assert.That(result.IsOk,              Is.True);
+        Assert.That(result.IsOk(),              Is.True);
         Assert.That(stored.RequestedFrom!.Id, Is.EqualTo(1));
         Assert.That(stored.RequestedTo.Id,    Is.EqualTo(2));
     }
@@ -204,7 +205,7 @@ public class RequestServiceTests
         var stored = await db.Requests.Include(requestModel => requestModel.RequestedFrom!)
                              .Include(requestModel => requestModel.RequestedTo)
                              .SingleAsync();
-        Assert.That(result.IsOk,              Is.True);
+        Assert.That(result.IsOk(),              Is.True);
         Assert.That(stored.RequestedFrom!.Id, Is.EqualTo(1));
         Assert.That(stored.RequestedTo.Id,    Is.EqualTo(2));
         Assert.That(stored.Source,            Is.EqualTo(RequestSource.Website));
@@ -233,7 +234,7 @@ public class RequestServiceTests
 
         var stored = await db.Requests.Include(requestModel => requestModel.RequestedFrom)
                              .SingleAsync();
-        Assert.That(result.IsOk,          Is.True);
+        Assert.That(result.IsOk(),          Is.True);
         Assert.That(stored.RequestedFrom, Is.Null);
         await notification.Received(1)
                           .NotifyUserAsync("bob",
@@ -254,10 +255,10 @@ public class RequestServiceTests
         var byName = await service.GetUser("alice");
         var byId   = await service.GetUser(1);
 
-        Assert.That(byName.IsOk, Is.True);
-        Assert.That(byId.IsOk,   Is.True);
+        Assert.That(byName.IsOk(), Is.True);
+        Assert.That(byId.IsOk(),   Is.True);
 
-        Assert.That(byName.AsT0, Is.EqualTo(byId.AsT0));
+        Assert.That(byName, Is.EqualTo(byId));
     }
 
     [Test]
@@ -270,8 +271,8 @@ public class RequestServiceTests
 
         var result = await service.GetUser("alice");
 
-        Assert.That(result.IsOk,    Is.True);
-        Assert.That(result.AsT0.Id, Is.EqualTo(1));
+        Assert.That(result.IsOk(),    Is.True);
+        Assert.That(result.Unwrap().Id, Is.EqualTo(1));
     }
 
     [Test]
@@ -282,8 +283,7 @@ public class RequestServiceTests
 
         var result = await service.GetUser("nobody");
 
-        Assert.That(result.IsT2,    Is.True);
-        Assert.That(result.AsT2.Id, Is.Null);
+        Assert.That(result.IsErr());
     }
 
     [Test]
@@ -296,8 +296,8 @@ public class RequestServiceTests
 
         var result = await service.GetUser(7);
 
-        Assert.That(result.IsOk,          Is.True);
-        Assert.That(result.AsT0.Username, Is.EqualTo("alice"));
+        Assert.That(result.IsOk(),          Is.True);
+        Assert.That(result.Unwrap().Username, Is.EqualTo("alice"));
     }
 
     [Test]
@@ -308,8 +308,7 @@ public class RequestServiceTests
 
         var result = await service.GetUser(404);
 
-        Assert.That(result.IsT2,    Is.True);
-        Assert.That(result.AsT2.Id, Is.EqualTo(404));
+        Assert.That(result.IsErrAnd(v => v is UserNotFound { Id: 404 }));
     }
 
     [Test]
@@ -446,6 +445,6 @@ public class RequestServiceTests
         var (db, service, _, _) = CreateHarness();
         await using var _db = db;
 
-        Assert.DoesNotThrowAsync(() => service.DeleteRequest(404));
+        await Assert.DoesNotThrowAsync(() => service.DeleteRequest(404));
     }
 }

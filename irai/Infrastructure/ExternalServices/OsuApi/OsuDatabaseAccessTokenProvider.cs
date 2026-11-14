@@ -47,7 +47,7 @@ public class OsuDatabaseAccessTokenProvider(
         var id   = int.Parse(userId);
         var user = await dbContext.GetUserByClaim(id);
         logger.LogInformation("Found valid user by claim id {id}", id);
-        var token = user.Value()
+        var token = user.Unwrap()
                         .Token;
         logger.LogInformation("Current time is {Time}, Token for {User} expires at {Expires}", DateTime.UtcNow, id,
                               token?.Expires);
@@ -61,7 +61,7 @@ public class OsuDatabaseAccessTokenProvider(
                 AccessToken  = newToken!.AccessToken,
                 RefreshToken = token.RefreshToken,
                 Expires      = DateTime.UtcNow.AddSeconds(newToken.ExpiresIn),
-                User         = user.Value()
+                User         = user.Unwrap()
             });
             return newToken.AccessToken;
         }

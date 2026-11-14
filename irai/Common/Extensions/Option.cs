@@ -1,5 +1,3 @@
-using OneOf;
-
 namespace osuRequestor.Common.Extensions;
 
 public struct Some<T>
@@ -14,39 +12,29 @@ public struct Some<T>
 
 public struct None { };
 
-[GenerateOneOf]
-public partial class Option<T> : OneOfBase<None, Some<T>>
+public union Option<T>(Some<T>, None) where T : notnull
 {
-    public static implicit operator Option<T>(T _)
+    public T Unwrap()
     {
-        return Some(_);
+        return this switch
+        {
+            None none    => throw new NullReferenceException(),
+            Some<T> some => some.Value,
+            _            => throw new NullReferenceException()
+        };
+    }
+};
+
+public static class NullableOption
+{
+    public static Option<T> IntoOption<T>(this T? value)
+    {
+        return value is null ? new None() : new Some<T>(value);
     }
 
-    public static Option<T> None()
+    public static async Task<Option<T>> IntoOptionAsync<T>(this Task<T?> value)
     {
-        return new None();
-    }
-
-    public static Option<T> Some(T value)
-    {
-        return new Some<T>(value);
-    }
-
-    public bool IsNone()
-    {
-        return this.IsT0;
-    }
-
-    public bool IsSome()
-    {
-        return this.IsT1;
-    }
-
-    /// <summary>
-    /// Returns the current value. Will throw <c>NullReferenceException</c> if current option state is None.
-    /// </summary>
-    public new T Value()
-    {
-        return IsSome() ? this.AsT1.Value : throw new NullReferenceException();
+        var awaited = await value;
+        return awaited is null ? new None() : new Some<T>(awaited);
     }
 }
