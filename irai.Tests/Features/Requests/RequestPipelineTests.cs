@@ -1,13 +1,11 @@
 using System.Net;
-using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using osuRequestor.Common.Constants;
 using osuRequestor.Features.Requests.Models;
-using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Authentication.Persistence;
 using osuRequestor.Features.Requests.Persistence;
+using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Tests.Infrastructure.Factories;
 using osuRequestor.Tests.Infrastructure.Fixtures;
 using osuRequestor.Tests.Infrastructure.Harness;
@@ -195,9 +193,13 @@ public class RequestPipelineTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task OwnRequestsSent_WithoutAuthentication_ReturnsUnauthorized()
+    public async Task OwnRequestsPost_WithoutAuthentication_ReturnsUnauthorized()
     {
-        var response = await this.Client.GetAsync("/requests/own/sent");
+        var response = await this.Client.PostAsJsonAsync("/requests/own", new
+        {
+            destinationName = "target",
+            beatmapId       = 100
+        });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
@@ -221,24 +223,20 @@ public class RequestPipelineTests : IntegrationTestBase
             return Task.CompletedTask;
         });
 
-        using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
-        var response = await client.GetAsync("/requests/own/sent");
+        using var client   = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
+        var       response = await client.GetAsync("/requests/own/sent");
         response.EnsureSuccessStatusCode();
         var requests = await response.Content.ReadFromJsonAsync<List<SentRequestResponse>>();
 
-        Assert.That(requests, Has.Count.EqualTo(1));
-        Assert.That(requests![0].To.Id, Is.EqualTo(2));
+        Assert.That(requests,                      Has.Count.EqualTo(1));
+        Assert.That(requests![0].To.Id,            Is.EqualTo(2));
         Assert.That(requests[0].Beatmap.BeatmapId, Is.EqualTo(100));
     }
 
     [Test]
-    public async Task OwnRequestsPost_WithoutAuthentication_ReturnsUnauthorized()
+    public async Task OwnRequestsSent_WithoutAuthentication_ReturnsUnauthorized()
     {
-        var response = await this.Client.PostAsJsonAsync("/requests/own", new
-        {
-            destinationName = "target",
-            beatmapId       = 100
-        });
+        var response = await this.Client.GetAsync("/requests/own/sent");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }

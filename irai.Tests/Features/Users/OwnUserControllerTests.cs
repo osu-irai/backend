@@ -1,24 +1,20 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using MassTransit;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
+using osuRequestor.Features.Authentication.Persistence;
+using osuRequestor.Features.Requests.Persistence;
 using osuRequestor.Features.Users.Controllers;
 using osuRequestor.Features.Users.Models;
+using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Features.Users.Services;
-using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.ExternalServices.TwitchApi;
 using osuRequestor.Infrastructure.Messaging;
 using osuRequestor.Infrastructure.Messaging.Contracts;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Tests.Common;
 
 namespace osuRequestor.Tests.Features.Users;
@@ -133,7 +129,7 @@ public class OwnUserControllerTests
         TestControllerContext.SignIn(harness.Controller, 1);
 
         var result = await harness.Controller.SelfGetSettings();
-        Assert.That(result,        Is.Not.Null);
+        Assert.That(result,       Is.Not.Null);
         Assert.That(result.Value, Is.Null);
     }
 
@@ -147,10 +143,10 @@ public class OwnUserControllerTests
         TestControllerContext.SignIn(harness.Controller, 1);
 
         var result = await harness.Controller.SelfGetSettings();
-        Assert.That(result,                        Is.Not.Null);
-        Assert.That(result.Value,                 Is.Not.Null);
-        Assert.That(result.Value!.EnableIrc,       Is.True);
-        Assert.That(result.Value.EnableTwitch,     Is.True);
+        Assert.That(result,                    Is.Not.Null);
+        Assert.That(result.Value,              Is.Not.Null);
+        Assert.That(result.Value!.EnableIrc,   Is.True);
+        Assert.That(result.Value.EnableTwitch, Is.True);
     }
 
     [Test]
@@ -275,7 +271,7 @@ public class OwnUserControllerTests
         TestControllerContext.SignIn(harness.Controller, 1);
 
         var result = await harness.Controller.SelfUserGet();
-        var ok = result.Result as Ok<SelfUserResponse>;
+        var ok     = result.Result as Ok<SelfUserResponse>;
         Assert.That(ok,                     Is.Not.Null);
         Assert.That(ok!.Value!.User.Id,     Is.EqualTo(1));
         Assert.That(ok.Value.User.Username, Is.EqualTo("alice"));

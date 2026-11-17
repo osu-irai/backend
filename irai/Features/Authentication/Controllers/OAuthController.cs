@@ -1,17 +1,13 @@
 using System.Security.Claims;
-using Hangfire;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using osuRequestor.Common.Constants;
 using osuRequestor.Common.Extensions;
-using osuRequestor.Features.Authentication.Services;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using IAuthenticationService = osuRequestor.Features.Authentication.Services.IAuthenticationService;
 
 namespace osuRequestor.Features.Authentication.Controllers;

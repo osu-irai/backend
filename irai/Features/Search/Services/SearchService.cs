@@ -12,6 +12,8 @@ public class SearchService(
     OsuApiClient osuClient,
     ILogger<SearchService> logger) : ISearchService
 {
+    #region ISearchService Members
+
     public async Task<SearchUserResponse> SearchPlayers(int currentUser, string? query)
     {
         logger.LogInformation("Queried players: {Query}", query);
@@ -21,8 +23,8 @@ public class SearchService(
                                    .Where(u =>
                                               u.Id                    == currentUser ||
                                               u.Settings!.FriendsOnly == false       ||
-                                              u.Settings!.FriendsOnly == true &&
-                                              u.Friends.Any(f => f.FriendId == currentUser))
+                                              (u.Settings!.FriendsOnly == true &&
+                                               u.Friends.Any(f => f.FriendId == currentUser)))
                                    .Where(u => u.Username.ToLower()
                                                 .StartsWith(queryString.ToLower()))
                                    .OrderBy(u => u.Username)
@@ -53,4 +55,6 @@ public class SearchService(
                               response.Count);
         return response;
     }
+
+    #endregion
 }

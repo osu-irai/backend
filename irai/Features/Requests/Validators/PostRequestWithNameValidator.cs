@@ -7,11 +7,14 @@ public class PostRequestWithNameValidator : AbstractValidator<PostRequestWithNam
 {
     public PostRequestWithNameValidator()
     {
-        RuleFor(x => x).NotNull();
+        RuleFor(x => x)
+            .NotNull();
         When(x => x is not null, () =>
         {
-            RuleFor(x => x!.DestinationName).NotNull();
-            RuleFor(x => x!.BeatmapId).NotNull();
+            RuleFor(x => x!.DestinationName)
+                .NotNull();
+            RuleFor(x => x!.BeatmapId)
+                .NotNull();
         });
     }
 }

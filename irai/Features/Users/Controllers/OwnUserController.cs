@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using osuRequestor.Common.Controllers;
@@ -42,7 +41,7 @@ public class OwnUserController(
     [Route("twitch")]
     public async Task<Results<ContentHttpResult, UnauthorizedHttpResult>> SelfGetTwitchUsername()
     {
-        var claim = await GetOsuClaim();
+        var claim    = await GetOsuClaim();
         var username = await userService.GetTwitchUsername(claim);
         return username is null ? TypedResults.Unauthorized() : TypedResults.Text(username);
     }

@@ -2,10 +2,10 @@ using osu.NET.Models.Beatmaps;
 using osu.NET.Models.Users;
 using osuRequestor.Common.Models;
 using osuRequestor.Features.Requests.Models;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Notifications.Data;
 using osuRequestor.Features.Requests.Persistence;
 using osuRequestor.Features.Users.Persistence;
+using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
+using osuRequestor.Infrastructure.Notifications.Data;
 using BeatmapSet = osu.NET.Models.Beatmaps.BeatmapSet;
 
 namespace osuRequestor.Features.Requests.Mappings;

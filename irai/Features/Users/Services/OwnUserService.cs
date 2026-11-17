@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using osuRequestor.Common.Models;
 using osuRequestor.Features.Users.Models;
+using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Infrastructure.Messaging;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Features.Users.Services;
 
@@ -14,6 +14,8 @@ public class OwnUserService(
     IRequestNotificationService notification,
     IMessageBusService messageBus) : IOwnUserService
 {
+    #region IOwnUserService Members
+
     public async Task<SelfUserResponse> GetSelf(int claim)
     {
         var user = await databaseContext.Users.AsNoTracking()
@@ -101,4 +103,6 @@ public class OwnUserService(
         logger.LogInformation("Got username for {TwitchUsername}", twitch.Username);
         return twitch.Username;
     }
+
+    #endregion
 }

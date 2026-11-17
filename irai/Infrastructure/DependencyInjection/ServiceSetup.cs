@@ -3,8 +3,8 @@ using MassTransit;
 using osu.NET;
 using osuRequestor.Features.Authentication.Services;
 using osuRequestor.Features.Bots.Services;
+using osuRequestor.Features.Bots.Validators;
 using osuRequestor.Features.Requests.Models;
-using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using osuRequestor.Features.Requests.Services;
 using osuRequestor.Features.Search.Services;
 using osuRequestor.Features.Users.Services;
@@ -13,6 +13,7 @@ using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using osuRequestor.Infrastructure.ExternalServices.TwitchApi;
 using osuRequestor.Infrastructure.Messaging;
 using osuRequestor.Infrastructure.Notifications;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 namespace osuRequestor.Infrastructure.DependencyInjection;
 
@@ -38,7 +39,7 @@ public static class ServiceSetup
 
     private static void AddExternalSetup(this IServiceCollection services)
     {
-        services.AddValidatorsFromAssemblyContaining<Features.Bots.Validators.PostBaseRequestValidator>();
+        services.AddValidatorsFromAssemblyContaining<PostBaseRequestValidator>();
         services.AddFluentValidationAutoValidation();
         services.AddScoped<OsuApiClient>(serviceProvider =>
         {
@@ -67,6 +68,6 @@ public static class ServiceSetup
                 bus.ReceiveEndpoint("send-request-userless", e => { e.Consumer<MessageSubscriberService>(context); });
             });
         });
-        services.AddScoped<IMessageBusService, MessageBusService>(); 
+        services.AddScoped<IMessageBusService, MessageBusService>();
     }
 }

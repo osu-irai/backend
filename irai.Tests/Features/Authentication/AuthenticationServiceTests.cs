@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.States;
@@ -6,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using NUnit.Framework;
+using osuRequestor.Features.Authentication.Persistence;
 using osuRequestor.Features.Authentication.Services;
+using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Tests.Features.Authentication;
 
@@ -23,7 +22,8 @@ public class AuthenticationServiceTests
     private static DatabaseContext CreateDatabase()
     {
         var options = new DbContextOptionsBuilder<DatabaseContext>()
-                      .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                      .UseInMemoryDatabase(Guid.NewGuid()
+                                               .ToString())
                       .Options;
 
         return new DatabaseContext(options);
@@ -32,8 +32,9 @@ public class AuthenticationServiceTests
     private AuthenticationService CreateService(DatabaseContext db)
     {
         this._backgroundJobClient = Substitute.For<IBackgroundJobClient>();
-        this._friendService          = Substitute.For<IFriendService>();
-        return new AuthenticationService(this._backgroundJobClient, this._friendService, db, NullLogger<AuthenticationService>.Instance);
+        this._friendService       = Substitute.For<IFriendService>();
+        return new AuthenticationService(this._backgroundJobClient, this._friendService, db,
+                                         NullLogger<AuthenticationService>.Instance);
     }
 
     private static UserModel AddUser(DatabaseContext db, int id, string username,
@@ -52,40 +53,10 @@ public class AuthenticationServiceTests
     }
 
     [Test]
-    public async Task SaveOsuLogin_WhenUserIsNew_CreatesUserSettingsAndToken()
-    {
-        await using var db = CreateDatabase();
-        var service = CreateService(db);
-        var before = DateTime.UtcNow;
-
-        var expiration = await service.SaveOsuLogin(new User
-        {
-            Id          = 1,
-            Username    = "alice",
-            CountryCode = "PL",
-            AvatarUrl   = "https://a.ppy.sh/1"
-        }, "access", "refresh");
-
-        var user = await db.Users.Include(u => u.Settings).SingleAsync();
-        var token = await db.Tokens.SingleAsync();
-        Assert.That(user.Id, Is.EqualTo(1));
-        Assert.That(user.Username, Is.EqualTo("alice"));
-        Assert.That(user.CountryCode, Is.EqualTo("PL"));
-        Assert.That(user.Settings, Is.Not.Null);
-        Assert.That(token.UserId, Is.EqualTo(1));
-        Assert.That(token.AccessToken, Is.EqualTo("access"));
-        Assert.That(token.RefreshToken, Is.EqualTo("refresh"));
-        Assert.That(expiration, Is.GreaterThanOrEqualTo(before.AddDays(1)));
-        Assert.That(expiration, Is.LessThanOrEqualTo(DateTime.UtcNow.AddDays(1)));
-        this._backgroundJobClient.Received(1)
-                        .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
-    }
-
-    [Test]
     public async Task SaveOsuLogin_WhenUserExists_UpdatesProfileAndExistingToken()
     {
-        await using var db = CreateDatabase();
-        var user = AddUser(db, 1, "old-name", new SettingsModel());
+        await using var db   = CreateDatabase();
+        var             user = AddUser(db, 1, "old-name", new SettingsModel());
         db.Tokens.Add(new TokenModel
         {
             UserId       = 1,
@@ -104,35 +75,46 @@ public class AuthenticationServiceTests
             AvatarUrl   = user.AvatarUrl
         }, "new-access", "new-refresh");
 
-        var storedUser = await db.Users.SingleAsync();
+        var storedUser  = await db.Users.SingleAsync();
         var storedToken = await db.Tokens.SingleAsync();
-        Assert.That(storedUser.Username, Is.EqualTo("new-name"));
-        Assert.That(storedUser.CountryCode, Is.EqualTo("DE"));
-        Assert.That(storedToken.AccessToken, Is.EqualTo("new-access"));
-        Assert.That(storedToken.RefreshToken, Is.EqualTo("new-refresh"));
+        Assert.That(storedUser.Username,            Is.EqualTo("new-name"));
+        Assert.That(storedUser.CountryCode,         Is.EqualTo("DE"));
+        Assert.That(storedToken.AccessToken,        Is.EqualTo("new-access"));
+        Assert.That(storedToken.RefreshToken,       Is.EqualTo("new-refresh"));
         Assert.That(await db.Settings.CountAsync(), Is.EqualTo(1));
         this._backgroundJobClient.Received(0)
             .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
     }
 
     [Test]
-    public async Task SaveTwitchLogin_WhenLinkIsNew_CreatesLinkAndEnablesSettings()
+    public async Task SaveOsuLogin_WhenUserIsNew_CreatesUserSettingsAndToken()
     {
-        await using var db = CreateDatabase();
-        AddUser(db, 1, "alice", new SettingsModel { EnableTwitch = false });
-        await db.SaveChangesAsync();
-        var service = CreateService(db);
+        await using var db      = CreateDatabase();
+        var             service = CreateService(db);
+        var             before  = DateTime.UtcNow;
 
-        await service.SaveTwitchLogin(1, 55, "alice_tv", "access", "refresh");
+        var expiration = await service.SaveOsuLogin(new User
+        {
+            Id          = 1,
+            Username    = "alice",
+            CountryCode = "PL",
+            AvatarUrl   = "https://a.ppy.sh/1"
+        }, "access", "refresh");
 
-        var twitch = await db.Twitch.SingleAsync();
-        var settings = await db.Settings.SingleAsync();
-        Assert.That(twitch.UserId, Is.EqualTo(1));
-        Assert.That(twitch.TwitchId, Is.EqualTo(55));
-        Assert.That(twitch.Username, Is.EqualTo("alice_tv"));
-        Assert.That(twitch.AccessToken, Is.EqualTo("access"));
-        Assert.That(twitch.RefreshToken, Is.EqualTo("refresh"));
-        Assert.That(settings.EnableTwitch, Is.True);
+        var user = await db.Users.Include(u => u.Settings)
+                           .SingleAsync();
+        var token = await db.Tokens.SingleAsync();
+        Assert.That(user.Id,            Is.EqualTo(1));
+        Assert.That(user.Username,      Is.EqualTo("alice"));
+        Assert.That(user.CountryCode,   Is.EqualTo("PL"));
+        Assert.That(user.Settings,      Is.Not.Null);
+        Assert.That(token.UserId,       Is.EqualTo(1));
+        Assert.That(token.AccessToken,  Is.EqualTo("access"));
+        Assert.That(token.RefreshToken, Is.EqualTo("refresh"));
+        Assert.That(expiration,         Is.GreaterThanOrEqualTo(before.AddDays(1)));
+        Assert.That(expiration,         Is.LessThanOrEqualTo(DateTime.UtcNow.AddDays(1)));
+        this._backgroundJobClient.Received(1)
+            .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
     }
 
     [Test]
@@ -153,12 +135,32 @@ public class AuthenticationServiceTests
 
         await service.SaveTwitchLogin(1, 99, "new_tv", "new-access", "new-refresh");
 
-        var twitch = await db.Twitch.SingleAsync();
+        var twitch   = await db.Twitch.SingleAsync();
         var settings = await db.Settings.SingleAsync();
-        Assert.That(twitch.Username, Is.EqualTo("new_tv"));
-        Assert.That(twitch.TwitchId, Is.EqualTo(55));
-        Assert.That(twitch.AccessToken, Is.EqualTo("old-access"));
-        Assert.That(twitch.RefreshToken, Is.EqualTo("old-refresh"));
+        Assert.That(twitch.Username,       Is.EqualTo("new_tv"));
+        Assert.That(twitch.TwitchId,       Is.EqualTo(55));
+        Assert.That(twitch.AccessToken,    Is.EqualTo("old-access"));
+        Assert.That(twitch.RefreshToken,   Is.EqualTo("old-refresh"));
+        Assert.That(settings.EnableTwitch, Is.True);
+    }
+
+    [Test]
+    public async Task SaveTwitchLogin_WhenLinkIsNew_CreatesLinkAndEnablesSettings()
+    {
+        await using var db = CreateDatabase();
+        AddUser(db, 1, "alice", new SettingsModel { EnableTwitch = false });
+        await db.SaveChangesAsync();
+        var service = CreateService(db);
+
+        await service.SaveTwitchLogin(1, 55, "alice_tv", "access", "refresh");
+
+        var twitch   = await db.Twitch.SingleAsync();
+        var settings = await db.Settings.SingleAsync();
+        Assert.That(twitch.UserId,         Is.EqualTo(1));
+        Assert.That(twitch.TwitchId,       Is.EqualTo(55));
+        Assert.That(twitch.Username,       Is.EqualTo("alice_tv"));
+        Assert.That(twitch.AccessToken,    Is.EqualTo("access"));
+        Assert.That(twitch.RefreshToken,   Is.EqualTo("refresh"));
         Assert.That(settings.EnableTwitch, Is.True);
     }
 }

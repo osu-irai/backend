@@ -8,14 +8,14 @@ using osu.NET;
 using osu.NET.Authorization;
 using osuRequestor.Common.Exceptions;
 using osuRequestor.Features.Requests.Models;
+using osuRequestor.Features.Requests.Persistence;
 using osuRequestor.Features.Requests.Services;
+using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Infrastructure.Messaging;
 using osuRequestor.Infrastructure.Messaging.Contracts;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Tests.Features.Requests;
 
@@ -116,7 +116,7 @@ public class RequestServiceTests
         var (_, service, _, _) = CreateHarness(db);
 
         await Assert.ThrowsAsync<NotFoundException>(() =>
-                                                  service.CreateRequest(null, "missing-user", 1));
+                                                        service.CreateRequest(null, "missing-user", 1));
     }
 
     [Test]
@@ -154,7 +154,7 @@ public class RequestServiceTests
 
         var stored = await db.Requests.SingleAsync();
         Assert.That(result.IsOk(), Is.True, $"Expected Ok, received {result.GetType()}");
-        Assert.That(stored.Date, Is.GreaterThan(oldDate));
+        Assert.That(stored.Date,   Is.GreaterThan(oldDate));
         await notification.Received(1)
                           .NotifyUserAsync("bob", Arg.Any<ReceivedRequestResponse>());
     }
@@ -186,7 +186,7 @@ public class RequestServiceTests
         var stored = await db.Requests.Include(requestModel => requestModel.RequestedFrom!)
                              .Include(requestModel => requestModel.RequestedTo)
                              .SingleAsync();
-        Assert.That(result.IsOk(),              Is.True);
+        Assert.That(result.IsOk(),            Is.True);
         Assert.That(stored.RequestedFrom!.Id, Is.EqualTo(1));
         Assert.That(stored.RequestedTo.Id,    Is.EqualTo(2));
     }
@@ -206,7 +206,7 @@ public class RequestServiceTests
         var stored = await db.Requests.Include(requestModel => requestModel.RequestedFrom!)
                              .Include(requestModel => requestModel.RequestedTo)
                              .SingleAsync();
-        Assert.That(result.IsOk(),              Is.True);
+        Assert.That(result.IsOk(),            Is.True);
         Assert.That(stored.RequestedFrom!.Id, Is.EqualTo(1));
         Assert.That(stored.RequestedTo.Id,    Is.EqualTo(2));
         Assert.That(stored.Source,            Is.EqualTo(RequestSource.Website));
@@ -235,11 +235,267 @@ public class RequestServiceTests
 
         var stored = await db.Requests.Include(requestModel => requestModel.RequestedFrom)
                              .SingleAsync();
-        Assert.That(result.IsOk(),          Is.True);
+        Assert.That(result.IsOk(),        Is.True);
         Assert.That(stored.RequestedFrom, Is.Null);
         await notification.Received(1)
                           .NotifyUserAsync("bob",
                                            Arg.Is<ReceivedRequestResponse>(r => r.From == null));
+    }
+
+    [Test]
+    public async Task DeleteRequest_WhenExists_SoftDeletes()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             beatmap = AddBeatmap(db);
+        var request = new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = null,
+            Source        = RequestSource.Twitch,
+            Date          = DateTime.UtcNow
+        };
+        db.Requests.Add(request);
+        await db.SaveChangesAsync();
+
+        await service.DeleteRequest(request.Id);
+
+        var stored = await db.Requests.SingleAsync();
+        Assert.That(stored.IsDeleted, Is.True);
+    }
+
+    [Test]
+    public async Task DeleteRequest_WhenMissing_DoesNotThrow()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db = db;
+
+        await Assert.DoesNotThrowAsync(() => service.DeleteRequest(404));
+    }
+
+    [Test]
+    public async Task GetRequestsByUser_ExcludesRequestsMadeByOthers()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             source  = AddUser(db, 1, "alice");
+        var             other   = AddUser(db, 3, "carol");
+        var             beatmap = AddBeatmap(db);
+        db.Requests.Add(new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = other,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow
+        });
+        db.Requests.Add(new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsByUser(1);
+
+        Assert.That(result, Has.Count.EqualTo(1));
+        Assert.That(result.Single()
+                          .To.Username, Is.EqualTo("bob"));
+    }
+
+    [Test]
+    public async Task GetRequestsByUser_ReturnsAtMostFifty()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             source  = AddUser(db, 1, "alice");
+        var             beatmap = AddBeatmap(db);
+        for (var i = 0; i < 55; i++)
+        {
+            db.Requests.Add(new RequestModel
+            {
+                Beatmap       = beatmap,
+                RequestedTo   = target,
+                RequestedFrom = source,
+                Source        = RequestSource.Website,
+                Date          = DateTime.UtcNow.AddSeconds(i)
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsByUser(1);
+
+        Assert.That(result, Has.Count.EqualTo(50));
+    }
+
+    [Test]
+    public async Task GetRequestsByUser_ReturnsNewestFirstWithDestination()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             source  = AddUser(db, 1, "alice");
+        var             beatmap = AddBeatmap(db);
+        var older = new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow.AddHours(-1)
+        };
+        var newer = new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow
+        };
+        db.Requests.AddRange(older, newer);
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsByUser(1);
+
+        Assert.That(result.Select(r => r.Id), Is.EqualTo(new[] { newer.Id, older.Id }));
+        Assert.That(result.All(r => r.To.Id == 2 && r.Beatmap.BeatmapId == 100), Is.True);
+    }
+
+    [Test]
+    public async Task GetRequestsByUser_WhenRequestIsDeleted_ExcludesIt()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             source  = AddUser(db, 1, "alice");
+        var             beatmap = AddBeatmap(db);
+        db.Requests.Add(new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow,
+            IsDeleted     = true
+        });
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsByUser(1);
+
+        Assert.That(result, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetRequestsToUser_ReturnsAtMostFifty()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             beatmap = AddBeatmap(db);
+        for (var i = 0; i < 55; i++)
+        {
+            db.Requests.Add(new RequestModel
+            {
+                Beatmap       = beatmap,
+                RequestedTo   = target,
+                RequestedFrom = null,
+                Source        = RequestSource.Twitch,
+                Date          = DateTime.UtcNow.AddSeconds(i)
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsToUser(2);
+
+        Assert.That(result, Has.Count.EqualTo(50));
+    }
+
+    [Test]
+    public async Task GetRequestsToUser_ReturnsNewestFirst()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             source  = AddUser(db, 1, "alice");
+        var             beatmap = AddBeatmap(db);
+        var older = new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow.AddHours(-1)
+        };
+        var newer = new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow
+        };
+        db.Requests.AddRange(older, newer);
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsToUser(2);
+
+        Assert.That(result.Select(r => r.Id), Is.EqualTo(new[] { newer.Id, older.Id }));
+    }
+
+    [Test]
+    public async Task GetRequestsToUser_WhenRequestIsDeleted_ExcludesIt()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             source  = AddUser(db, 1, "alice");
+        var             beatmap = AddBeatmap(db);
+        db.Requests.Add(new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow,
+            IsDeleted     = true
+        });
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsToUser(2);
+
+        Assert.That(result, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetRequestsToUser_WithNoSource_ReturnsNullFrom()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             beatmap = AddBeatmap(db);
+        db.Requests.Add(new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = null,
+            Source        = RequestSource.Twitch,
+            Date          = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsToUser(2);
+
+        Assert.That(result.Single()
+                          .From, Is.Null);
     }
 
     /// <summary>
@@ -272,8 +528,9 @@ public class RequestServiceTests
 
         var result = await service.GetUser("alice");
 
-        Assert.That(result.IsOk(),    Is.True);
-        Assert.That(result.Unwrap().Id, Is.EqualTo(1));
+        Assert.That(result.IsOk(), Is.True);
+        Assert.That(result.Unwrap()
+                          .Id, Is.EqualTo(1));
     }
 
     [Test]
@@ -297,8 +554,9 @@ public class RequestServiceTests
 
         var result = await service.GetUser(7);
 
-        Assert.That(result.IsOk(),          Is.True);
-        Assert.That(result.Unwrap().Username, Is.EqualTo("alice"));
+        Assert.That(result.IsOk(), Is.True);
+        Assert.That(result.Unwrap()
+                          .Username, Is.EqualTo("alice"));
     }
 
     [Test]
@@ -310,259 +568,5 @@ public class RequestServiceTests
         var result = await service.GetUser(404);
 
         Assert.That(result.IsErrAnd(v => v is UserNotFound { Id: 404 }));
-    }
-
-    [Test]
-    public async Task GetRequestsToUser_WhenRequestIsDeleted_ExcludesIt()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db = db;
-        var target = AddUser(db, 2, "bob");
-        var source = AddUser(db, 1, "alice");
-        var beatmap = AddBeatmap(db);
-        db.Requests.Add(new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = source,
-            Source        = RequestSource.Website,
-            Date          = DateTime.UtcNow,
-            IsDeleted     = true
-        });
-        await db.SaveChangesAsync();
-
-        var result = await service.GetRequestsToUser(2);
-
-        Assert.That(result, Is.Empty);
-    }
-
-    [Test]
-    public async Task GetRequestsToUser_ReturnsNewestFirst()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db = db;
-        var target = AddUser(db, 2, "bob");
-        var source = AddUser(db, 1, "alice");
-        var beatmap = AddBeatmap(db);
-        var older = new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = source,
-            Source        = RequestSource.Website,
-            Date          = DateTime.UtcNow.AddHours(-1)
-        };
-        var newer = new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = source,
-            Source        = RequestSource.Website,
-            Date          = DateTime.UtcNow
-        };
-        db.Requests.AddRange(older, newer);
-        await db.SaveChangesAsync();
-
-        var result = await service.GetRequestsToUser(2);
-
-        Assert.That(result.Select(r => r.Id), Is.EqualTo(new[] { newer.Id, older.Id }));
-    }
-
-    [Test]
-    public async Task GetRequestsToUser_WithNoSource_ReturnsNullFrom()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db = db;
-        var target = AddUser(db, 2, "bob");
-        var beatmap = AddBeatmap(db);
-        db.Requests.Add(new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = null,
-            Source        = RequestSource.Twitch,
-            Date          = DateTime.UtcNow
-        });
-        await db.SaveChangesAsync();
-
-        var result = await service.GetRequestsToUser(2);
-
-        Assert.That(result.Single().From, Is.Null);
-    }
-
-    [Test]
-    public async Task GetRequestsToUser_ReturnsAtMostFifty()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db = db;
-        var target = AddUser(db, 2, "bob");
-        var beatmap = AddBeatmap(db);
-        for (var i = 0; i < 55; i++)
-        {
-            db.Requests.Add(new RequestModel
-            {
-                Beatmap       = beatmap,
-                RequestedTo   = target,
-                RequestedFrom = null,
-                Source        = RequestSource.Twitch,
-                Date          = DateTime.UtcNow.AddSeconds(i)
-            });
-        }
-
-        await db.SaveChangesAsync();
-
-        var result = await service.GetRequestsToUser(2);
-
-        Assert.That(result, Has.Count.EqualTo(50));
-    }
-
-    [Test]
-    public async Task GetRequestsByUser_WhenRequestIsDeleted_ExcludesIt()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db = db;
-        var target = AddUser(db, 2, "bob");
-        var source = AddUser(db, 1, "alice");
-        var beatmap = AddBeatmap(db);
-        db.Requests.Add(new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = source,
-            Source        = RequestSource.Website,
-            Date          = DateTime.UtcNow,
-            IsDeleted     = true
-        });
-        await db.SaveChangesAsync();
-
-        var result = await service.GetRequestsByUser(1);
-
-        Assert.That(result, Is.Empty);
-    }
-
-    [Test]
-    public async Task GetRequestsByUser_ReturnsNewestFirstWithDestination()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db = db;
-        var target = AddUser(db, 2, "bob");
-        var source = AddUser(db, 1, "alice");
-        var beatmap = AddBeatmap(db);
-        var older = new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = source,
-            Source        = RequestSource.Website,
-            Date          = DateTime.UtcNow.AddHours(-1)
-        };
-        var newer = new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = source,
-            Source        = RequestSource.Website,
-            Date          = DateTime.UtcNow
-        };
-        db.Requests.AddRange(older, newer);
-        await db.SaveChangesAsync();
-
-        var result = await service.GetRequestsByUser(1);
-
-        Assert.That(result.Select(r => r.Id), Is.EqualTo(new[] { newer.Id, older.Id }));
-        Assert.That(result.All(r => r.To.Id == 2 && r.Beatmap.BeatmapId == 100), Is.True);
-    }
-
-    [Test]
-    public async Task GetRequestsByUser_ExcludesRequestsMadeByOthers()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db = db;
-        var target = AddUser(db, 2, "bob");
-        var source = AddUser(db, 1, "alice");
-        var other = AddUser(db, 3, "carol");
-        var beatmap = AddBeatmap(db);
-        db.Requests.Add(new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = other,
-            Source        = RequestSource.Website,
-            Date          = DateTime.UtcNow
-        });
-        db.Requests.Add(new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = source,
-            Source        = RequestSource.Website,
-            Date          = DateTime.UtcNow
-        });
-        await db.SaveChangesAsync();
-
-        var result = await service.GetRequestsByUser(1);
-
-        Assert.That(result, Has.Count.EqualTo(1));
-        Assert.That(result.Single().To.Username, Is.EqualTo("bob"));
-    }
-
-    [Test]
-    public async Task GetRequestsByUser_ReturnsAtMostFifty()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db = db;
-        var target = AddUser(db, 2, "bob");
-        var source = AddUser(db, 1, "alice");
-        var beatmap = AddBeatmap(db);
-        for (var i = 0; i < 55; i++)
-        {
-            db.Requests.Add(new RequestModel
-            {
-                Beatmap       = beatmap,
-                RequestedTo   = target,
-                RequestedFrom = source,
-                Source        = RequestSource.Website,
-                Date          = DateTime.UtcNow.AddSeconds(i)
-            });
-        }
-
-        await db.SaveChangesAsync();
-
-        var result = await service.GetRequestsByUser(1);
-
-        Assert.That(result, Has.Count.EqualTo(50));
-    }
-
-    [Test]
-    public async Task DeleteRequest_WhenExists_SoftDeletes()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db = db;
-        var target = AddUser(db, 2, "bob");
-        var beatmap = AddBeatmap(db);
-        var request = new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = null,
-            Source        = RequestSource.Twitch,
-            Date          = DateTime.UtcNow
-        };
-        db.Requests.Add(request);
-        await db.SaveChangesAsync();
-
-        await service.DeleteRequest(request.Id);
-
-        var stored = await db.Requests.SingleAsync();
-        Assert.That(stored.IsDeleted, Is.True);
-    }
-
-    [Test]
-    public async Task DeleteRequest_WhenMissing_DoesNotThrow()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db = db;
-
-        await Assert.DoesNotThrowAsync(() => service.DeleteRequest(404));
     }
 }

@@ -1,16 +1,15 @@
+using Hangfire;
 using Microsoft.AspNetCore.DataProtection;
-using Scalar.AspNetCore;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Hangfire;
-using Hangfire.InMemory;
+using osuRequestor.Features.Requests.Persistence;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.DependencyInjection;
 using osuRequestor.Infrastructure.ExceptionHandling;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Requests.Persistence;
+using Scalar.AspNetCore;
 
 namespace osuRequestor;
 
@@ -54,7 +53,7 @@ public static class Program
         builder.Services.AddHangfire(conf => conf
                                          .UseInMemoryStorage());
         builder.Services.AddHangfireServer();
-        
+
         builder.Services.AddControllers();
 
         builder.Services.AddOpenApi();

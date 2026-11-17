@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
 using NUnit.Framework;
 using osuRequestor.Tests.Infrastructure.Harness;
 

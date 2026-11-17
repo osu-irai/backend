@@ -1,4 +1,3 @@
-using static ChiffadicErrors.Result;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using osu.NET;
@@ -6,12 +5,13 @@ using osuRequestor.Common.Extensions;
 using osuRequestor.Common.Models;
 using osuRequestor.Features.Requests.Mappings;
 using osuRequestor.Features.Requests.Models;
+using osuRequestor.Features.Requests.Persistence;
+using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Infrastructure.Messaging;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Infrastructure.Persistence.Extensions;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
+using static ChiffadicErrors.Result;
 
 namespace osuRequestor.Features.Requests.Services;
 
@@ -22,6 +22,8 @@ public class RequestService(
     IRequestNotificationService notification,
     IMessageBusService messageBus) : IRequestService
 {
+    #region IRequestService Members
+
     public async Task<Result<BeatmapModel, RequestServiceError>> GetBeatmap(int beatmapId)
     {
         var beatmap = await dbContext.GetBeatmap(beatmapId);
@@ -61,7 +63,7 @@ public class RequestService(
     {
         logger.LogInformation("Looking up user: {UserId}", userId);
         var user = await dbContext.GetUser(userId);
-        
+
         return user switch
         {
             Some<UserModel> some => Ok(some.Value),
@@ -158,32 +160,6 @@ public class RequestService(
         await dbContext.SaveChangesAsync();
     }
 
-    private async Task<int> InitializeRequest(UserModel? sourceUser, UserModel destinationUser,
-                                              BeatmapModel beatmap,
-                                              RequestSource source = RequestSource.Website)
-    {
-        var request = new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedFrom = sourceUser,
-            RequestedTo   = destinationUser,
-            Source        = source
-        };
-        await dbContext.AddRequest(request);
-        var notificationBody = new ReceivedRequestResponse
-        {
-            Id      = request.Id,
-            Beatmap = request.Beatmap.IntoDTO(),
-            From    = request.RequestedFrom?.IntoDTO(),
-            Source  = request.Source
-        };
-
-        await notification.NotifyUserAsync(destinationUser.Username, notificationBody);
-        await messageBus.SubmitRequestAsync(destinationUser.Username, notificationBody);
-
-        return request.Id;
-    }
-
     /// <summary>
     /// </summary>
     /// <param name="sourceId">
@@ -228,5 +204,33 @@ public class RequestService(
         var result = await InitializeRequest(sourceUser, destinationUser, beatmap, source);
 
         return new OkVariant<int>(result);
+    }
+
+    #endregion
+
+    private async Task<int> InitializeRequest(UserModel? sourceUser, UserModel destinationUser,
+                                              BeatmapModel beatmap,
+                                              RequestSource source = RequestSource.Website)
+    {
+        var request = new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedFrom = sourceUser,
+            RequestedTo   = destinationUser,
+            Source        = source
+        };
+        await dbContext.AddRequest(request);
+        var notificationBody = new ReceivedRequestResponse
+        {
+            Id      = request.Id,
+            Beatmap = request.Beatmap.IntoDTO(),
+            From    = request.RequestedFrom?.IntoDTO(),
+            Source  = request.Source
+        };
+
+        await notification.NotifyUserAsync(destinationUser.Username, notificationBody);
+        await messageBus.SubmitRequestAsync(destinationUser.Username, notificationBody);
+
+        return request.Id;
     }
 }

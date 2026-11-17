@@ -20,10 +20,10 @@ public union Option<T>(Some<T>, None) where T : notnull
         {
             None none    => throw new NullReferenceException(),
             Some<T> some => some.Value,
-            _            => throw new NullReferenceException()
+            var _        => throw new NullReferenceException()
         };
     }
-};
+}
 
 public static class NullableOption
 {

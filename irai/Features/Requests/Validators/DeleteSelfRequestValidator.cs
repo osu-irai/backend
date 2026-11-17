@@ -6,6 +6,7 @@ public class DeleteSelfRequestValidator : AbstractValidator<int?>
 {
     public DeleteSelfRequestValidator()
     {
-        RuleFor(x => x).NotNull();
+        RuleFor(x => x)
+            .NotNull();
     }
 }

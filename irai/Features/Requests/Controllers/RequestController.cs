@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using osuRequestor.Common.Constants;
@@ -41,7 +40,8 @@ public class RequestController(
     {
         var sourceId = context.GetCurrentUserId(request);
 
-        await requestService.CreateRequest(sourceId, request.DestinationId, request.BeatmapId).ThrowIfRequestError();
+        await requestService.CreateRequest(sourceId, request.DestinationId, request.BeatmapId)
+                            .ThrowIfRequestError();
 
         return TypedResults.Ok();
     }

@@ -49,8 +49,10 @@ public class OsuApiProvider : IOsuApiProvider
         {
             var response = await this._httpClient.SendAsync(requestMessage);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<User>().IntoOptionAsync();
-        } catch  (Exception e)
+            return await response.Content.ReadFromJsonAsync<User>()
+                                 .IntoOptionAsync();
+        }
+        catch (Exception e)
         {
             return new None();
         }

@@ -1,11 +1,10 @@
 using System.Net;
-using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using osuRequestor.Features.Authentication.Persistence;
 using osuRequestor.Features.Users.Models;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Authentication.Persistence;
 using osuRequestor.Tests.Infrastructure.Factories;
 using osuRequestor.Tests.Infrastructure.Fixtures;
 using osuRequestor.Tests.Infrastructure.Harness;
@@ -21,7 +20,7 @@ public class OwnUserAuthenticatedEndpointTests : IntegrationTestBase
     {
         await SeedAsync(db =>
         {
-            db.Users.Add(TestDataBuilder.User(1, "alice", true, false));
+            db.Users.Add(TestDataBuilder.User(1, "alice", true));
             return Task.CompletedTask;
         });
 
@@ -113,7 +112,7 @@ public class OwnUserAuthenticatedEndpointTests : IntegrationTestBase
     {
         await SeedAsync(db =>
         {
-            db.Users.Add(TestDataBuilder.User(1, "alice", false, false));
+            db.Users.Add(TestDataBuilder.User(1, "alice"));
             return Task.CompletedTask;
         });
 

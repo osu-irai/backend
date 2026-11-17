@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,14 +13,14 @@ using osu.NET.Authorization;
 using osuRequestor.Common.Exceptions;
 using osuRequestor.Features.Requests.Controllers;
 using osuRequestor.Features.Requests.Models;
+using osuRequestor.Features.Requests.Persistence;
 using osuRequestor.Features.Requests.Services;
 using osuRequestor.Features.Requests.Validators;
+using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Infrastructure.Messaging;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Tests.Common;
 
 namespace osuRequestor.Tests.Features.Requests;
@@ -222,9 +222,9 @@ public class OwnRequestControllerTests
 
         var ok       = result.Result as Ok<List<SentRequestResponse>>;
         var requests = ok?.Value;
-        Assert.That(ok,                  Is.Not.Null);
-        Assert.That(requests,            Has.Count.EqualTo(1));
-        Assert.That(requests![0].To.Id,  Is.EqualTo(2));
+        Assert.That(ok,                             Is.Not.Null);
+        Assert.That(requests,                       Has.Count.EqualTo(1));
+        Assert.That(requests![0].To.Id,             Is.EqualTo(2));
         Assert.That(requests![0].Beatmap.BeatmapId, Is.EqualTo(100));
     }
 
@@ -287,10 +287,10 @@ public class OwnRequestControllerTests
         await db.SaveChangesAsync();
         TestControllerContext.SignIn(controller, 1);
 
-        var result = await controller.PostRequest(new PostBaseRequest() 
+        var result = await controller.PostRequest(new PostBaseRequest
         {
             DestinationId = 2,
-            BeatmapId       = 100
+            BeatmapId     = 100
         });
 
         var stored = await db.Requests.Include(requestModel => requestModel.RequestedFrom!)

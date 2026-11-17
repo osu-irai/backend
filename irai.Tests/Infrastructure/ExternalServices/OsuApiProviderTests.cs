@@ -138,7 +138,8 @@ public class OsuApiProviderTests
         var provider = CreateProvider(handler);
         var data     = await provider.GetSelfUser("token");
 
-        Assert.That(data, Is.EqualTo(new Option<osuRequestor.Infrastructure.ExternalServices.OsuApi.Models.User>(new None())));
+        Assert.That(
+            data, Is.EqualTo(new Option<osuRequestor.Infrastructure.ExternalServices.OsuApi.Models.User>(new None())));
     }
 
     [Test]

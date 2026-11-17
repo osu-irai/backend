@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using System.Security.Claims;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -18,6 +18,7 @@ using osuRequestor.Features.Authentication.Services;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.TwitchApi;
 using osuRequestor.Infrastructure.Persistence;
+using AuthenticationService = osuRequestor.Features.Authentication.Services.AuthenticationService;
 using IAuthenticationService = Microsoft.AspNetCore.Authentication.IAuthenticationService;
 
 namespace osuRequestor.Tests.Features.Authentication;
@@ -55,10 +56,11 @@ public class TwitchAuthControllerTests
             NullLogger<TwitchApiProvider>.Instance);
 
         this._backgroundJobClient = Substitute.For<IBackgroundJobClient>();
-        this._friendService          = Substitute.For<IFriendService>();
+        this._friendService       = Substitute.For<IFriendService>();
         var controller = new TwitchAuthController(
             NullLogger<TwitchAuthController>.Instance,
-            new global::osuRequestor.Features.Authentication.Services.AuthenticationService(this._backgroundJobClient, this._friendService, db, NullLogger<global::osuRequestor.Features.Authentication.Services.AuthenticationService>.Instance),
+            new AuthenticationService(this._backgroundJobClient, this._friendService, db,
+                                      NullLogger<AuthenticationService>.Instance),
             twitch,
             Options.Create(new ServerConfig { HomePage = "/home" }));
 
@@ -111,7 +113,7 @@ public class TwitchAuthControllerTests
 
         var result = await harness.Controller.CompleteAuthentication();
 
-        Assert.That(result, Is.Not.Null);
+        Assert.That(result,        Is.Not.Null);
         Assert.That(result.Result, Is.InstanceOf<UnauthorizedHttpResult>());
     }
 
@@ -146,7 +148,7 @@ public class TwitchAuthControllerTests
         using var db      = harness.Db;
 
         var result = harness.Controller.Login();
-        Assert.That(result,                        Is.Not.Null);
+        Assert.That(result,                       Is.Not.Null);
         Assert.That(result.AuthenticationSchemes, Is.EquivalentTo(new[] { "Twitch" }));
     }
 }

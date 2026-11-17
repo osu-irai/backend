@@ -5,8 +5,8 @@ using NUnit.Framework;
 using osu.NET;
 using osu.NET.Authorization;
 using osuRequestor.Features.Search.Services;
-using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Features.Users.Persistence;
+using osuRequestor.Infrastructure.Persistence;
 
 namespace osuRequestor.Tests.Features.Search;
 
@@ -41,9 +41,45 @@ public class SearchServiceTests
             AvatarUrl   = $"https://a.ppy.sh/{id}",
             CountryCode = "US", Settings = new SettingsModel
             {
-                FriendsOnly = false,
+                FriendsOnly = false
             }
         });
+    }
+
+    [Test]
+    public async Task SearchPlayers_ReturnsAtMostTenMatches()
+    {
+        await using var db = CreateDatabase();
+        for (var i = 0; i < 12; i++)
+        {
+            AddUser(db, i + 1, $"user{i:00}");
+        }
+
+        await db.SaveChangesAsync();
+
+        var result = await CreateService(db)
+                         .SearchPlayers(1, "user");
+
+        Assert.That(result.Count, Is.EqualTo(10));
+        Assert.That(result.Players.Select(p => p.Username), Is.EqualTo(new[]
+        {
+            "user00", "user01", "user02", "user03", "user04",
+            "user05", "user06", "user07", "user08", "user09"
+        }));
+    }
+
+    [Test]
+    public async Task SearchPlayers_WithNoMatch_ReturnsEmpty()
+    {
+        await using var db = CreateDatabase();
+        AddUser(db, 1, "alice");
+        await db.SaveChangesAsync();
+
+        var result = await CreateService(db)
+                         .SearchPlayers(1, "zzz");
+
+        Assert.That(result.Count,   Is.EqualTo(0));
+        Assert.That(result.Players, Is.Empty);
     }
 
     [Test]
@@ -76,41 +112,5 @@ public class SearchServiceTests
         Assert.That(result.Count, Is.EqualTo(1));
         Assert.That(result.Players.Single()
                           .Username, Is.EqualTo("Alice"));
-    }
-
-    [Test]
-    public async Task SearchPlayers_WithNoMatch_ReturnsEmpty()
-    {
-        await using var db = CreateDatabase();
-        AddUser(db, 1, "alice");
-        await db.SaveChangesAsync();
-
-        var result = await CreateService(db)
-                         .SearchPlayers(1, "zzz");
-
-        Assert.That(result.Count,   Is.EqualTo(0));
-        Assert.That(result.Players, Is.Empty);
-    }
-
-    [Test]
-    public async Task SearchPlayers_ReturnsAtMostTenMatches()
-    {
-        await using var db = CreateDatabase();
-        for (var i = 0; i < 12; i++)
-        {
-            AddUser(db, i + 1, $"user{i:00}");
-        }
-
-        await db.SaveChangesAsync();
-
-        var result = await CreateService(db)
-                         .SearchPlayers(1, "user");
-
-        Assert.That(result.Count, Is.EqualTo(10));
-        Assert.That(result.Players.Select(p => p.Username), Is.EqualTo(new[]
-        {
-            "user00", "user01", "user02", "user03", "user04",
-            "user05", "user06", "user07", "user08", "user09"
-        }));
     }
 }

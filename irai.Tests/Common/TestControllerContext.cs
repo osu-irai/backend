@@ -1,10 +1,10 @@
 using System.Security.Claims;
-using osuRequestor.Common.Constants;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using osuRequestor.Common.Constants;
 
 namespace osuRequestor.Tests.Common;
 

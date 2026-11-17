@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using System.Security.Claims;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.States;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -17,13 +17,14 @@ using NSubstitute;
 using NUnit.Framework;
 using osuRequestor.Common.Extensions;
 using osuRequestor.Features.Authentication.Controllers;
+using osuRequestor.Features.Authentication.Persistence;
+using osuRequestor.Features.Authentication.Services;
+using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Authentication.Services;
-using osuRequestor.Features.Users.Persistence;
+using AuthenticationService = osuRequestor.Features.Authentication.Services.AuthenticationService;
 using IAuthenticationService = Microsoft.AspNetCore.Authentication.IAuthenticationService;
 
 namespace osuRequestor.Tests.Features.Authentication;
@@ -71,11 +72,12 @@ public class OAuthControllerTests
                       .Returns(Task.CompletedTask);
 
         this._backgroundJobClient = Substitute.For<IBackgroundJobClient>();
-        this._friendService          = Substitute.For<IFriendService>();
+        this._friendService       = Substitute.For<IFriendService>();
         var controller = new OAuthController(
             NullLogger<OAuthController>.Instance,
             osuApi,
-            new global::osuRequestor.Features.Authentication.Services.AuthenticationService(this._backgroundJobClient, this._friendService, db, NullLogger<global::osuRequestor.Features.Authentication.Services.AuthenticationService>.Instance),
+            new AuthenticationService(this._backgroundJobClient, this._friendService, db,
+                                      NullLogger<AuthenticationService>.Instance),
             Options.Create(new ServerConfig { HomePage = "/home" }));
 
         var services = new ServiceCollection()
@@ -247,16 +249,16 @@ public class OAuthControllerTests
 
         var user = await db.Users.Include(userModel => userModel.Settings)
                            .SingleAsync();
-        var token = await db.Tokens.SingleAsync();
+        var token    = await db.Tokens.SingleAsync();
         var redirect = result.Result as RedirectHttpResult;
-        Assert.That(redirect,      Is.Not.Null);
-        Assert.That(redirect!.Url, Is.EqualTo("/home"));
-        Assert.That(user.Id,                      Is.EqualTo(7));
-        Assert.That(user.Username,                Is.EqualTo("alice"));
-        Assert.That(user.Settings,                Is.Not.Null);
-        Assert.That(token.UserId,                 Is.EqualTo(7));
-        Assert.That(token.AccessToken,            Is.EqualTo("access-token"));
-        Assert.That(token.RefreshToken,           Is.EqualTo("refresh-token"));
+        Assert.That(redirect,           Is.Not.Null);
+        Assert.That(redirect!.Url,      Is.EqualTo("/home"));
+        Assert.That(user.Id,            Is.EqualTo(7));
+        Assert.That(user.Username,      Is.EqualTo("alice"));
+        Assert.That(user.Settings,      Is.Not.Null);
+        Assert.That(token.UserId,       Is.EqualTo(7));
+        Assert.That(token.AccessToken,  Is.EqualTo("access-token"));
+        Assert.That(token.RefreshToken, Is.EqualTo("refresh-token"));
         this._backgroundJobClient.Received(1)
             .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
         await harness.Authentication.Received(1)

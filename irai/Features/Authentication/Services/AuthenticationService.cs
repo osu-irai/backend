@@ -1,8 +1,8 @@
 using Hangfire;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Features.Authentication.Persistence;
 using osuRequestor.Features.Users.Persistence;
+using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
+using osuRequestor.Infrastructure.Persistence;
 
 namespace osuRequestor.Features.Authentication.Services;
 
@@ -12,6 +12,8 @@ public class AuthenticationService(
     DatabaseContext databaseContext,
     ILogger<AuthenticationService> logger) : IAuthenticationService
 {
+    #region IAuthenticationService Members
+
     public async Task<DateTime> SaveOsuLogin(User user, string accessToken, string refreshToken)
     {
         var existingUser = await databaseContext.Users.FindAsync(user.Id);
@@ -27,7 +29,6 @@ public class AuthenticationService(
                 Settings    = new SettingsModel()
             });
             backgroundJobClient.Enqueue(() => friendService.GetFriends(user.Id, accessToken));
-            
         }
         else
         {
@@ -93,4 +94,6 @@ public class AuthenticationService(
 
         await databaseContext.SaveChangesAsync();
     }
+
+    #endregion
 }

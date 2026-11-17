@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
 using NUnit.Framework;
 using osuRequestor.Tests.Infrastructure.Factories;
 using osuRequestor.Tests.Infrastructure.Fixtures;
@@ -18,7 +17,7 @@ public class BotEndpointTests : IntegrationTestBase
         {
             db.Users.AddRange(
                 TestDataBuilder.User(1, "alice", true),
-                TestDataBuilder.User(2, "bob",   false));
+                TestDataBuilder.User(2, "bob"));
 
             return Task.CompletedTask;
         });

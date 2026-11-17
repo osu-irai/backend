@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using osuRequestor.Features.Bots.Controllers;
 using osuRequestor.Features.Bots.Services;
-using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Features.Users.Persistence;
+using osuRequestor.Infrastructure.Persistence;
 
 namespace osuRequestor.Tests.Features.Bots;
 

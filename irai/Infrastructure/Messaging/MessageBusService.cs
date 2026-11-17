@@ -18,6 +18,8 @@ public class MessageBusService : IMessageBusService
         this._logger           = logger;
     }
 
+    #region IMessageBusService Members
+
     public Task SubmitRequestAsync(string target, ReceivedRequestResponse request)
     {
         return this._publish.Publish(new RequestContract
@@ -42,4 +44,6 @@ public class MessageBusService : IMessageBusService
         await endpoint.Send(new TwitchSettingsChangeContract
                                 { TwitchUserId = twitchUserId, OsuId = osuId, IsEnabled = isEnabled });
     }
+
+    #endregion
 }

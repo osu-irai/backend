@@ -1,26 +1,24 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using MassTransit;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using NUnit.Framework;
 using osu.NET;
 using osu.NET.Authorization;
+using osuRequestor.Features.Authentication.Persistence;
 using osuRequestor.Features.Bots.Controllers;
 using osuRequestor.Features.Bots.Models;
 using osuRequestor.Features.Bots.Services;
-using osuRequestor.Features.Bots.Validators;
 using osuRequestor.Features.Requests.Controllers;
 using osuRequestor.Features.Requests.Models;
+using osuRequestor.Features.Requests.Persistence;
 using osuRequestor.Features.Requests.Services;
+using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Infrastructure.Messaging;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Tests.Features.Bots;
 
@@ -128,7 +126,7 @@ public class TwitchControllerTests
         var controller = CreateController(db);
 
         var result = await controller.GetAuthenticatedUsers();
-        var users = (result.Result as Ok<IList<TwitchDTO>>)!.Value;
+        var users  = (result.Result as Ok<IList<TwitchDTO>>)!.Value;
 
         Assert.That(users,             Has.Count.EqualTo(1));
         Assert.That(users[0].TwitchId, Is.EqualTo("11"));

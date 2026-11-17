@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using MassTransit;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
@@ -10,13 +9,13 @@ using osu.NET.Authorization;
 using osuRequestor.Common.Exceptions;
 using osuRequestor.Features.Requests.Controllers;
 using osuRequestor.Features.Requests.Models;
+using osuRequestor.Features.Requests.Persistence;
 using osuRequestor.Features.Requests.Services;
+using osuRequestor.Features.Users.Persistence;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Infrastructure.Messaging;
 using osuRequestor.Infrastructure.Notifications;
 using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
 
 namespace osuRequestor.Tests.Features.Requests;
 

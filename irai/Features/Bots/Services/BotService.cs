@@ -7,6 +7,8 @@ namespace osuRequestor.Features.Bots.Services;
 public class BotService(
     DatabaseContext dbContext) : IBotService
 {
+    #region IBotService Members
+
     public async Task<IList<string>> GetIrcUsers()
     {
         return await dbContext.Users.Include(u => u.Settings)
@@ -23,4 +25,6 @@ public class BotService(
                               .Select(u => new TwitchDTO { TwitchId = u.TwitchId.ToString(), OsuId = u.UserId })
                               .ToListAsync();
     }
+
+    #endregion
 }

@@ -8,9 +8,10 @@ namespace osuRequestor.Common.Extensions;
 
 public static class ApiExceptionHelper
 {
-    public static async Task<T> ThrowIfUnauthorized<T>(this Task<Result<T, RequestServiceError>> value) where T : notnull
+    public static async Task<T> ThrowIfUnauthorized<T>(this Task<Result<T, RequestServiceError>> value)
+        where T : notnull
     {
-        return (await value) switch
+        return await value switch
         {
             OkVariant<T> okVariant => okVariant.Value,
             ErrorVariant<RequestServiceError> { Value: BeatmapNotFound val } =>
@@ -19,14 +20,14 @@ public static class ApiExceptionHelper
                 throw new UnauthorizedException(),
             ErrorVariant<RequestServiceError> { Value: UpstreamError val } =>
                 throw new BadGatewayException(val.Details),
-            ErrorVariant<RequestServiceError> { Value: InternalError } => throw new ServerErrorException("Internal"),
+            ErrorVariant<RequestServiceError> { Value: InternalError } => throw new ServerErrorException("Internal")
         };
     }
 
     public static async Task<T> ThrowIfRequestError<T>(this Task<Result<T, RequestServiceError>> value)
         where T : notnull
     {
-        return (await value) switch
+        return await value switch
         {
             ErrorVariant<RequestServiceError> { Value: BeatmapNotFound val } =>
                 throw new NotFoundException($"Beatmap {val.Id}"),
@@ -35,7 +36,7 @@ public static class ApiExceptionHelper
             ErrorVariant<RequestServiceError> { Value: UpstreamError val } =>
                 throw new ServerErrorException(val.Details),
             ErrorVariant<RequestServiceError> { Value: InternalError } => throw new ServerErrorException("Internal"),
-            OkVariant<T> okVariant                                     => okVariant.Value,
+            OkVariant<T> okVariant                                     => okVariant.Value
         };
     }
 

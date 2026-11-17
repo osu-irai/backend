@@ -1,6 +1,6 @@
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Features.Requests.Persistence;
 using osuRequestor.Features.Users.Persistence;
+using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 
 namespace osuRequestor.Tests.Infrastructure.Fixtures;
 
@@ -18,7 +18,7 @@ public static class TestDataBuilder
             {
                 EnableIrc    = enableIrc,
                 EnableTwitch = enableTwitch,
-                FriendsOnly = false,
+                FriendsOnly  = false
             }
         };
     }

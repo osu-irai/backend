@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authentication;
 using osu.NET.Authorization;
 using osuRequestor.Common.Exceptions;
+using osuRequestor.Features.Authentication.Persistence;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Infrastructure.Persistence.Extensions;
-using osuRequestor.Features.Authentication.Persistence;
 
 namespace osuRequestor.Infrastructure.ExternalServices.OsuApi;
 
