@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using osuRequestor.Common.Constants;
 using osuRequestor.Common.Extensions;
 using osuRequestor.Features.Requests.Models;
 
@@ -23,13 +24,13 @@ public class HttpUserContext(
             throw new UnreachableException();
         }
 
-        if (httpContextAccessor.HttpContext.User.IsInRole("User"))
+        if (httpContextAccessor.HttpContext.User.IsInRole(Roles.USER))
         {
             return httpContextAccessor.HttpContext.User.Identity.ThrowIfUnauthorized()
                                       .OrOnNullName();
         }
 
-        if (httpContextAccessor.HttpContext.User.IsInRole("Proxy"))
+        if (httpContextAccessor.HttpContext.User.IsInRole(Roles.PROXY))
         {
             return request.SourceId.OrBadRequest("Proxy user has not provided source user ID");
         }

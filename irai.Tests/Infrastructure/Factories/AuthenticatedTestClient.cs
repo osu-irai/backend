@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using osuRequestor.Common.Constants;
 using osuRequestor.Tests.Infrastructure.Harness;
 
 namespace osuRequestor.Tests.Infrastructure.Factories;
@@ -45,7 +46,7 @@ public static class AuthenticatedTestClient
 
     public static string CreateJwt(
         int userId,
-        string? role = "User",
+        string? role = Roles.USER,
         string? audience = null,
         string? signingKey = null,
         string? issuer = null)
@@ -79,7 +80,7 @@ public static class AuthenticatedTestClient
     public static HttpClient CreateJwtClient(
         CustomWebApplicationFactory factory,
         int userId,
-        string? role = "User",
+        string? role = Roles.USER,
         string? audience = null)
     {
         return CreateClientWithToken(factory, CreateJwt(userId, role, audience));
@@ -92,7 +93,7 @@ public static class AuthenticatedTestClient
     public static HttpClient CreateInternalCookiesClient(
         CustomWebApplicationFactory factory,
         int userId,
-        string role = "User")
+        string role = Roles.USER)
     {
         var options = factory.Services
                              .GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()

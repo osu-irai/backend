@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using osuRequestor.Common.Extensions;
 using osuRequestor.Features.Authentication.Services;
 using IAuthenticationService = osuRequestor.Features.Authentication.Services.IAuthenticationService;
+using osuRequestor.Common.Constants;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
@@ -74,7 +75,7 @@ public class OAuthController(
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, user.Id.ToString()),
-            new Claim(ClaimTypes.Role, "User")
+            new Claim(ClaimTypes.Role, Roles.USER)
         };
 
         var id = new ClaimsIdentity(claims, "InternalCookies");

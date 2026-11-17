@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using osuRequestor.Common.Constants;
 using osuRequestor.Common.Exceptions;
 using osuRequestor.Common.Extensions;
 using osuRequestor.Features.Requests.Models;
@@ -33,7 +34,7 @@ public class RequestController(
     }
 
     [HttpPost]
-    [Authorize(Roles = "User,Proxy", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = Roles.USER_OR_PROXY, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PostRequest(PostRequestRequest request)
     {
         var sourceId = context.GetCurrentUserId(request);

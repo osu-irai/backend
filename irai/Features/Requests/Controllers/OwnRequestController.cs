@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using osu.NET;
+using osuRequestor.Common.Constants;
 using osuRequestor.Common.Controllers;
 using osuRequestor.Common.Exceptions;
 using osuRequestor.Features.Requests.Models;
@@ -22,7 +23,7 @@ public class OwnRequestController(
     [HttpGet]
     [ProducesResponseType(typeof(ReceivedRequestResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [Authorize(Roles = "User,Proxy", AuthenticationSchemes = "Bearer,InternalCookies")]
+    [Authorize(Roles = Roles.USER_OR_PROXY, AuthenticationSchemes = "Bearer,InternalCookies")]
     public async Task<ActionResult<ReceivedRequestResponse>> GetSelfRequests()
     {
         logger.LogInformation("Received request list");
@@ -39,7 +40,7 @@ public class OwnRequestController(
     [HttpGet]
     [Route("sent")]
     [ProducesResponseType(typeof(SentRequestResponse), StatusCodes.Status200OK)]
-    [Authorize(Roles = "User,Proxy", AuthenticationSchemes = "Bearer,InternalCookies")]
+    [Authorize(Roles = Roles.USER_OR_PROXY, AuthenticationSchemes = "Bearer,InternalCookies")]
     public async Task<ActionResult<SentRequestResponse>> GetSentRequests()
     {
         var claim    = await GetOsuClaim();
@@ -55,7 +56,7 @@ public class OwnRequestController(
     [ProducesDefaultResponseType]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [Authorize(Roles = "User,Proxy", AuthenticationSchemes = "Bearer,InternalCookies")]
+    [Authorize(Roles = Roles.USER_OR_PROXY, AuthenticationSchemes = "Bearer,InternalCookies")]
     public async Task<IActionResult> PostRequest([FromBody] PostBaseRequest postBaseRequest)
     {
         var sourceId = await GetOsuClaim();

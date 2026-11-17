@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using osuRequestor.Common.Constants;
 using osuRequestor.Features.Requests.Models;
 using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Features.Authentication.Persistence;
@@ -314,7 +315,7 @@ public class RequestPipelineTests : IntegrationTestBase
     {
         await SeedAsync(SeedSourceDestinationAndBeatmap);
 
-        using var client = AuthenticatedTestClient.CreateJwtClient(this.Factory, 1, "Proxy");
+        using var client = AuthenticatedTestClient.CreateJwtClient(this.Factory, 1, Roles.PROXY);
 
         var response = await client.PostAsJsonAsync("/request", new
         {

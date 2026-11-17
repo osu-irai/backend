@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using osuRequestor.Common.Constants;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,7 @@ namespace osuRequestor.Tests.Common;
 
 internal static class TestControllerContext
 {
-    public static void SignIn(ControllerBase controller, int userId, string role = "User")
+    public static void SignIn(ControllerBase controller, int userId, string role = Roles.USER)
     {
         var identity = new ClaimsIdentity(
             [

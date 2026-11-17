@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using NUnit.Framework;
+using osuRequestor.Common.Constants;
 using osuRequestor.Common.Exceptions;
 using osuRequestor.Features.Requests.Models;
 using osuRequestor.Features.Requests.Services;
@@ -43,7 +44,7 @@ public class HttpUserContextTests
     [Test]
     public void GetCurrentUserId_WhenProxyHasNoSourceId_ThrowsBadRequest()
     {
-        var context = CreateContext("42", "Proxy");
+        var context = CreateContext("42", Roles.PROXY);
 
         var exception = Assert.Throws<BadRequestException>(() => context.GetCurrentUserId(new PostRequestRequest()));
 
@@ -53,7 +54,7 @@ public class HttpUserContextTests
     [Test]
     public void GetCurrentUserId_WhenProxyHasSourceId_ReturnsSourceId()
     {
-        var context = CreateContext("42", "Proxy");
+        var context = CreateContext("42", Roles.PROXY);
         var request = new PostRequestRequest { SourceId = 7 };
 
         var id = context.GetCurrentUserId(request);
@@ -74,7 +75,7 @@ public class HttpUserContextTests
     [Test]
     public void GetCurrentUserId_WhenUserRoleHasNumericName_ReturnsUserId()
     {
-        var context = CreateContext("42", "User");
+        var context = CreateContext("42", Roles.USER);
 
         var id = context.GetCurrentUserId(new PostRequestRequest());
 
@@ -84,7 +85,7 @@ public class HttpUserContextTests
     [Test]
     public void GetCurrentUserId_WhenUserRoleNameIsNotNumeric_ThrowsFormatException()
     {
-        var context = CreateContext("alice", "User");
+        var context = CreateContext("alice", Roles.USER);
 
         Assert.Throws<FormatException>(() => context.GetCurrentUserId(new PostRequestRequest()));
     }
