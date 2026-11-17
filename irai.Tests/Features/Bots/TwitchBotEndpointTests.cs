@@ -64,7 +64,7 @@ public class TwitchBotEndpointTests : IntegrationTestBase
     {
         using var client = await AuthenticatedTestClient.CreateTwitchClientAsync(this.Factory);
 
-        var response = await client.GetAsync("/api/bot/irc");
+        var response = await client.GetAsync("/bot/irc");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
     }
@@ -77,7 +77,7 @@ public class TwitchBotEndpointTests : IntegrationTestBase
     {
         using var client = await AuthenticatedTestClient.CreateIrcClientAsync(this.Factory);
 
-        var response = await client.GetAsync("/api/twitch/info");
+        var response = await client.GetAsync("/twitch/info");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
     }
@@ -102,7 +102,7 @@ public class TwitchBotEndpointTests : IntegrationTestBase
 
         using var client = await AuthenticatedTestClient.CreateTwitchClientAsync(this.Factory);
 
-        var users = await client.GetFromJsonAsync<List<TwitchDTO>>("/api/twitch/info");
+        var users = await client.GetFromJsonAsync<List<TwitchDTO>>("/twitch/info");
 
         Assert.That(users,             Has.Count.EqualTo(1));
         Assert.That(users![0].OsuId,   Is.EqualTo(1));
@@ -115,7 +115,7 @@ public class TwitchBotEndpointTests : IntegrationTestBase
     [Test]
     public async Task TwitchInfo_WithoutToken_ReturnsUnauthorized()
     {
-        var response = await this.Client.GetAsync("/api/twitch/info");
+        var response = await this.Client.GetAsync("/twitch/info");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
@@ -131,8 +131,8 @@ public class TwitchBotEndpointTests : IntegrationTestBase
         using var client  = await AuthenticatedTestClient.CreateTwitchClientAsync(this.Factory);
         var       payload = new { destinationId = 2, beatmapId = 100 };
 
-        var first  = await client.PostAsJsonAsync("/api/twitch/info", payload);
-        var second = await client.PostAsJsonAsync("/api/twitch/info", payload);
+        var first  = await client.PostAsJsonAsync("/twitch/info", payload);
+        var second = await client.PostAsJsonAsync("/twitch/info", payload);
 
         Assert.That(first.StatusCode,  Is.EqualTo(HttpStatusCode.OK));
         Assert.That(second.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -151,7 +151,7 @@ public class TwitchBotEndpointTests : IntegrationTestBase
     {
         using var client = await AuthenticatedTestClient.CreateTwitchClientAsync(this.Factory);
 
-        var response = await client.PostAsJsonAsync("/api/twitch/info", new { });
+        var response = await client.PostAsJsonAsync("/twitch/info", new { });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }
@@ -166,7 +166,7 @@ public class TwitchBotEndpointTests : IntegrationTestBase
 
         using var client = await AuthenticatedTestClient.CreateTwitchClientAsync(this.Factory);
 
-        var response = await client.PostAsJsonAsync("/api/twitch/info", new
+        var response = await client.PostAsJsonAsync("/twitch/info", new
         {
             destinationId = 2,
             beatmapId     = 100
@@ -191,7 +191,7 @@ public class TwitchBotEndpointTests : IntegrationTestBase
     {
         using var client = await AuthenticatedTestClient.CreateTwitchClientAsync(this.Factory);
 
-        var response = await client.PostAsJsonAsync<object>("/api/twitch/info", null!);
+        var response = await client.PostAsJsonAsync<object>("/twitch/info", null!);
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }

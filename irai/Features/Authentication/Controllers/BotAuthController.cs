@@ -9,7 +9,7 @@ using osuRequestor.Infrastructure.Configuration;
 namespace osuRequestor.Features.Authentication.Controllers;
 
 [ApiController]
-[Route("api/bot/auth")]
+[Route("bot/auth")]
 public class BotAuthController(
     ILogger<BotAuthController> logger,
     IOptions<AuthClientsConfig> clients,
@@ -31,7 +31,8 @@ public class BotAuthController(
         var key          = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this._config.SecretKey));
         var signingCreds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var token = new JwtSecurityToken(this._config.Issuer, $"{this._config.Audience}/{auth.Name.ToLower()}",
+        var token = new JwtSecurityToken(this._config.Issuer,
+                                         $"{this._config.Audience.TrimEnd('/')}/{client.Name.ToLowerInvariant()}",
                                          expires: DateTime.Today.AddMinutes(this._config.ExpirationMinutes),
                                          signingCredentials: signingCreds);
 

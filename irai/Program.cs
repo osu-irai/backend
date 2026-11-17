@@ -97,7 +97,7 @@ public static class Program
             app.UseHttpLogging();
         }
 
-        app.MapHub<NotificationHub>("api/ws/notifications");
+        app.MapHub<NotificationHub>("ws/notifications");
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseHangfireDashboard();

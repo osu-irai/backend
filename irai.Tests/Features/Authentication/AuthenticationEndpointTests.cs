@@ -14,7 +14,7 @@ public class AuthenticationEndpointTests : IntegrationTestBase
     [Test]
     public async Task BotLogin_WithValidCredentials_ReturnsJwt()
     {
-        var response = await this.Client.PostAsJsonAsync("/api/bot/auth", new
+        var response = await this.Client.PostAsJsonAsync("/bot/auth", new
         {
             name         = "Irc",
             clientSecret = "irc-test-secret"
@@ -26,13 +26,13 @@ public class AuthenticationEndpointTests : IntegrationTestBase
 
         Assert.That(token,         Is.Not.Null.And.Not.Empty);
         Assert.That(jwt.Issuer,    Is.EqualTo("https://tests.local/"));
-        Assert.That(jwt.Audiences, Has.Member("http://localhost:5076/api/bot/irc"));
+        Assert.That(jwt.Audiences, Has.Member("http://localhost:5076/bot/irc"));
     }
 
     [Test]
     public async Task BotLogin_WithWrongSecret_ReturnsUnauthorized()
     {
-        var response = await this.Client.PostAsJsonAsync("/api/bot/auth", new
+        var response = await this.Client.PostAsJsonAsync("/bot/auth", new
         {
             name         = "Irc",
             clientSecret = "wrong"
@@ -49,7 +49,7 @@ public class AuthenticationEndpointTests : IntegrationTestBase
             AllowAutoRedirect = false
         });
 
-        var response = await client.GetAsync("/api/oauth/auth");
+        var response = await client.GetAsync("/oauth/auth");
 
         Assert.That(response.StatusCode,       Is.EqualTo(HttpStatusCode.Redirect));
         Assert.That(response.Headers.Location, Is.Not.Null);

@@ -4,7 +4,7 @@ using osuRequestor.Common.Controllers;
 namespace osuRequestor.Features.Health.Controllers;
 
 [ApiController]
-[Route("api/health")]
+[Route("health")]
 public class HealthController : CrudController
 {
     [HttpGet]

@@ -6,7 +6,7 @@ using osuRequestor.Features.Users.Services;
 namespace osuRequestor.Features.Users.Controllers;
 
 [ApiController]
-[Route("api/users/own")]
+[Route("users/own")]
 public class OwnUserController(
     IOwnUserService userService)
     : CrudController

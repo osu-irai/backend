@@ -15,7 +15,7 @@ public class SearchPipelineTests : IntegrationTestBase
     [Test]
     public async Task SearchBeatmaps_WithoutInternalCookie_ReturnsUnauthorized()
     {
-        var response = await this.Client.GetAsync("/api/search/beatmap?query=test");
+        var response = await this.Client.GetAsync("/search/beatmap?query=test");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
@@ -34,7 +34,7 @@ public class SearchPipelineTests : IntegrationTestBase
         });
 
         using var client   = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
-        var       response = await client.GetAsync("/api/search/player?query=AL");
+        var       response = await client.GetAsync("/search/player?query=AL");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<SearchUserResponse>();
 
@@ -55,7 +55,7 @@ public class SearchPipelineTests : IntegrationTestBase
         });
 
         using var client   = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
-        var       response = await client.GetAsync("/api/search/player?query=");
+        var       response = await client.GetAsync("/search/player?query=");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<SearchUserResponse>();
 
@@ -76,7 +76,7 @@ public class SearchPipelineTests : IntegrationTestBase
         });
 
         using var client   = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
-        var       response = await client.GetAsync("/api/search/player");
+        var       response = await client.GetAsync("/search/player");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<SearchUserResponse>();
 

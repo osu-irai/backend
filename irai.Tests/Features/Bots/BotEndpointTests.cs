@@ -25,7 +25,7 @@ public class BotEndpointTests : IntegrationTestBase
 
         using var client = await AuthenticatedTestClient.CreateIrcClientAsync(this.Factory);
 
-        var names = await client.GetFromJsonAsync<List<string>>("/api/bot/irc");
+        var names = await client.GetFromJsonAsync<List<string>>("/bot/irc");
 
         Assert.That(names, Is.EquivalentTo(new[] { "alice" }));
     }
@@ -33,7 +33,7 @@ public class BotEndpointTests : IntegrationTestBase
     [Test]
     public async Task IrcNames_WithoutToken_ReturnsUnauthorized()
     {
-        var response = await this.Client.GetAsync("/api/bot/irc");
+        var response = await this.Client.GetAsync("/bot/irc");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }

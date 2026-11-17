@@ -9,7 +9,7 @@ using osuRequestor.Infrastructure.ExternalServices.TwitchApi;
 namespace osuRequestor.Features.Authentication.Controllers;
 
 [ApiController]
-[Route("api/twitch/auth")]
+[Route("twitch/auth")]
 public class TwitchAuthController : CrudController
 {
     private readonly IAuthenticationService _authenticationService;

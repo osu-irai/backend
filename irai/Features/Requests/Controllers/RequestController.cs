@@ -9,7 +9,7 @@ using osuRequestor.Features.Requests.Services;
 namespace osuRequestor.Features.Requests.Controllers;
 
 [ApiController]
-[Route("api/request")]
+[Route("request")]
 public class RequestController(
     ILogger<RequestController> logger,
     IUserContext context,

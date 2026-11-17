@@ -16,7 +16,7 @@ using osuRequestor.Features.Requests.Persistence;
 namespace osuRequestor.Features.Bots.Controllers;
 
 [ApiController]
-[Route("api/twitch/info")]
+[Route("twitch/info")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "Twitch")]
 public class TwitchController(
     IRequestService requestSource,

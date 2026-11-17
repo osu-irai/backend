@@ -15,9 +15,9 @@ namespace osuRequestor.Tests.Infrastructure.Factories;
 public static class AuthenticatedTestClient
 {
     // Must match the values configured by CustomWebApplicationFactory.
-    public const string SigningKey = "test-signing-key-with-at-least-thirty-two-bytes";
-    public const string Issuer = "https://tests.local/";
-    public const string Audience = "http://localhost:5076/api/bot";
+    public const string SIGNING_KEY = "test-signing-key-with-at-least-thirty-two-bytes";
+    public const string ISSUER = "https://tests.local/";
+    public const string AUDIENCE = "http://localhost:5076/bot";
 
     public static async Task<HttpClient> CreateIrcClientAsync(
         CustomWebApplicationFactory factory,
@@ -25,7 +25,7 @@ public static class AuthenticatedTestClient
         string clientSecret = "irc-test-secret")
     {
         var client   = factory.CreateClient();
-        var response = await client.PostAsJsonAsync("/api/bot/auth", new { name, clientSecret });
+        var response = await client.PostAsJsonAsync("/bot/auth", new { name, clientSecret });
         response.EnsureSuccessStatusCode();
 
         var token = await response.Content.ReadAsStringAsync();
@@ -50,7 +50,7 @@ public static class AuthenticatedTestClient
         string? signingKey = null,
         string? issuer = null)
     {
-        var key                = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey ?? SigningKey));
+        var key                = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey ?? SIGNING_KEY));
         var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim> { new Claim(ClaimTypes.Name, userId.ToString()) };
@@ -60,8 +60,8 @@ public static class AuthenticatedTestClient
         }
 
         var token = new JwtSecurityToken(
-            issuer   ?? Issuer,
-            audience ?? $"{Audience}/user",
+            issuer   ?? ISSUER,
+            audience ?? $"{AUDIENCE}/user",
             claims,
             expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: signingCredentials);

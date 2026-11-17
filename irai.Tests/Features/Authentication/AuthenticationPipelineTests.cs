@@ -25,7 +25,7 @@ public class AuthenticationPipelineTests : IntegrationTestBase
     [Test]
     public async Task BotLogin_WithTwitchCredentials_ReturnsRawJwtForTwitchAudience()
     {
-        var response = await this.Client.PostAsJsonAsync("/api/bot/auth", new
+        var response = await this.Client.PostAsJsonAsync("/bot/auth", new
         {
             name         = "Twitch",
             clientSecret = "twitch-test-secret"
@@ -38,7 +38,7 @@ public class AuthenticationPipelineTests : IntegrationTestBase
 
         Assert.That(token,         Does.Not.StartWith("\""));
         Assert.That(jwt.Issuer,    Is.EqualTo("https://tests.local/"));
-        Assert.That(jwt.Audiences, Has.Member("http://localhost:5076/api/bot/twitch"));
+        Assert.That(jwt.Audiences, Has.Member("http://localhost:5076/bot/twitch"));
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public class AuthenticationPipelineTests : IntegrationTestBase
     [Test]
     public async Task BotLogin_WithUnknownClientName_ReturnsUnauthorized()
     {
-        var response = await this.Client.PostAsJsonAsync("/api/bot/auth", new
+        var response = await this.Client.PostAsJsonAsync("/bot/auth", new
         {
             name         = "DoesNotExist",
             clientSecret = "whatever"
@@ -67,7 +67,7 @@ public class AuthenticationPipelineTests : IntegrationTestBase
     {
         using var client = CreateNoRedirectClient();
 
-        var response = await client.GetAsync("/api/oauth/complete");
+        var response = await client.GetAsync("/oauth/complete");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
     }
@@ -80,7 +80,7 @@ public class AuthenticationPipelineTests : IntegrationTestBase
     {
         using var client = CreateNoRedirectClient();
 
-        var response = await client.GetAsync("/api/twitch/auth");
+        var response = await client.GetAsync("/twitch/auth");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Redirect));
         Assert.That(

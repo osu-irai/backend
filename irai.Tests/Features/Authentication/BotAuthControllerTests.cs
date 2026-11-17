@@ -24,7 +24,7 @@ public class BotAuthControllerTests
         {
             SecretKey         = "this-is-a-test-signing-key-with-enough-bytes",
             Issuer            = "https://tests.local/",
-            Audience          = "https://tests.local/api/bot",
+            Audience          = "https://tests.local/bot",
             ExpirationMinutes = 60
         };
 
@@ -93,7 +93,7 @@ public class BotAuthControllerTests
         Assert.That(ok,            Is.Not.Null);
         Assert.That(token,         Is.Not.Null.And.Not.Empty);
         Assert.That(jwt.Issuer,    Is.EqualTo("https://tests.local/"));
-        Assert.That(jwt.Audiences, Is.EquivalentTo(["https://tests.local/api/bot/irc"]));
+        Assert.That(jwt.Audiences, Is.EquivalentTo(["https://tests.local/bot/irc"]));
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public class BotAuthControllerTests
         var ok  = result as OkObjectResult;
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(ok?.Value as string);
         Assert.That(ok,            Is.Not.Null);
-        Assert.That(jwt.Audiences, Is.EquivalentTo(["https://tests.local/api/bot/twitch"]));
+        Assert.That(jwt.Audiences, Is.EquivalentTo(["https://tests.local/bot/twitch"]));
     }
 
     /// <summary>

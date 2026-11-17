@@ -6,7 +6,7 @@ using osuRequestor.Features.Search.Services;
 namespace osuRequestor.Features.Search.Controllers;
 
 [ApiController]
-[Route("api/search")]
+[Route("search")]
 public class SearchController(
     ISearchService searchService)
     : CrudController

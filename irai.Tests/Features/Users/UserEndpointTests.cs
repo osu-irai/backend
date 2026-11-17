@@ -11,7 +11,7 @@ public class UserEndpointTests : IntegrationTestBase
     [Test]
     public async Task OwnSettings_WithoutAuthentication_ReturnsUnauthorized()
     {
-        var response = await this.Client.GetAsync("/api/users/own/settings");
+        var response = await this.Client.GetAsync("/users/own/settings");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
@@ -19,7 +19,7 @@ public class UserEndpointTests : IntegrationTestBase
     [Test]
     public async Task OwnTwitch_WithoutAuthentication_ReturnsUnauthorized()
     {
-        var response = await this.Client.GetAsync("/api/users/own/twitch");
+        var response = await this.Client.GetAsync("/users/own/twitch");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
@@ -27,7 +27,7 @@ public class UserEndpointTests : IntegrationTestBase
     [Test]
     public async Task OwnUser_WithoutAuthentication_ReturnsUnauthorized()
     {
-        var response = await this.Client.GetAsync("/api/users/own");
+        var response = await this.Client.GetAsync("/users/own");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }

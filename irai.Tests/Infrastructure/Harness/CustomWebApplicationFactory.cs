@@ -41,20 +41,21 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Database
                 ["Database:Password"]             = database.Password,
                 ["osuApi:ClientId"]               = "1",
                 ["osuApi:ClientSecret"]           = "test-osu-secret",
-                ["osuApi:CallbackUrl"]            = "/api/oauth/callback",
+                ["osuApi:CallbackUrl"]            = "/oauth/callback",
                 ["Twitch:ClientId"]               = "test-twitch-client",
                 ["Twitch:ClientSecret"]           = "test-twitch-secret",
-                ["Twitch:RedirectUrl"]            = "/api/twitch/auth/callback",
+                ["Twitch:RedirectUrl"]            = "/twitch/auth/callback",
                 ["JwtSettings:SecretKey"]         = "test-signing-key-with-at-least-thirty-two-bytes",
                 ["JwtSettings:Issuer"]            = "https://tests.local/",
-                // Must match the hard-coded audience in the Irc authorization policy.
-                ["JwtSettings:Audience"]          = "http://localhost:5076/api/bot",
+                ["JwtSettings:Audience"]          = "http://localhost:5076/bot",
                 ["JwtSettings:ExpirationMinutes"] = "100000",
                 ["ServerConfig:HomePage"]         = "https://tests.local/",
                 ["Clients:Irc:Name"]              = "Irc",
                 ["Clients:Irc:ClientSecret"]      = "irc-test-secret",
                 ["Clients:Twitch:Name"]           = "Twitch",
-                ["Clients:Twitch:ClientSecret"]   = "twitch-test-secret"
+                ["Clients:Twitch:ClientSecret"]   = "twitch-test-secret",
+                ["Clients:User:Name"]             = "User",
+                ["Clients:User:ClientSecret"]     = "user-test-secret"
             });
         });
 

@@ -9,7 +9,7 @@ using osuRequestor.Features.Requests.Services;
 namespace osuRequestor.Features.Requests.Controllers;
 
 [ApiController]
-[Route("api/requests/own")]
+[Route("requests/own")]
 public class OwnRequestController(
     ILogger<OwnRequestController> logger,
     IRequestService requestService)

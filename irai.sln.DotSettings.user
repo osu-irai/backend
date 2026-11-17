@@ -18,6 +18,9 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003ASwaggerBuilderExtensions_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002E_002E_003F_002E_002E_003F_002Econfig_003FJetBrains_003FRider2025_002E1_003Fresharper_002Dhost_003FSourcesCache_003F9bae921d5e577286a62bc9714760c02b298d2a69edd5d83915e882f63f71b9_003FSwaggerBuilderExtensions_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/dotCover/Editor/HighlightingSourceSnapshotLocation/@EntryValue">/home/chiffa/.cache/JetBrains/Rider2026.3/resharper-host/temp/Rider/vAny/CoverageData/_irai.1952586164/Snapshot/snapshot.utdcvr</s:String>
 	<s:Boolean x:Key="/Default/Environment/Hierarchy/Build/BuildTool/AutoDownloadSdk/@EntryValue">False</s:Boolean>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=3c6d3036_002D7ab8_002D4a14_002Da427_002Dd92fd01ad120/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;irai.Tests&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Project Location="/home/chiffa/Dev/Projects/irai/backend/irai.Tests" Presentation="&amp;lt;irai.Tests&amp;gt;" /&gt;
+&lt;/SessionState&gt;</s:String>
 	
 	
 	

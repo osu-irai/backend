@@ -14,7 +14,7 @@ using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 namespace osuRequestor.Features.Authentication.Controllers;
 
 [ApiController]
-[Route("api/oauth")]
+[Route("oauth")]
 public class OAuthController(
     ILogger<OAuthController> logger,
     IOsuApiProvider osuApiDataService,

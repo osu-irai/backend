@@ -70,7 +70,7 @@ public class RequestPipelineTests : IntegrationTestBase
     [Test]
     public async Task GetRequests_ForUnknownPlayer_ReturnsEmptyList()
     {
-        var response = await this.Client.GetAsync("/api/request?playerId=0");
+        var response = await this.Client.GetAsync("/request?playerId=0");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var requests = await response.Content.ReadFromJsonAsync<List<ReceivedRequestResponse>>();
@@ -100,7 +100,7 @@ public class RequestPipelineTests : IntegrationTestBase
             return Task.CompletedTask;
         });
 
-        var response = await this.Client.GetAsync("/api/request?playerId=2");
+        var response = await this.Client.GetAsync("/request?playerId=2");
         response.EnsureSuccessStatusCode();
         var requests = await response.Content.ReadFromJsonAsync<List<ReceivedRequestResponse>>();
 
@@ -132,7 +132,7 @@ public class RequestPipelineTests : IntegrationTestBase
             return Task.CompletedTask;
         });
 
-        var response = await this.Client.GetAsync("/api/request?playerId=2");
+        var response = await this.Client.GetAsync("/request?playerId=2");
         response.EnsureSuccessStatusCode();
         var requests = await response.Content.ReadFromJsonAsync<List<ReceivedRequestResponse>>();
 
@@ -143,7 +143,7 @@ public class RequestPipelineTests : IntegrationTestBase
     [Test]
     public async Task GetRequests_WithoutPlayerId_ReturnsBadRequestWithApiMessage()
     {
-        var response = await this.Client.GetAsync("/api/request");
+        var response = await this.Client.GetAsync("/request");
         var body     = await response.Content.ReadAsStringAsync();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
@@ -157,7 +157,7 @@ public class RequestPipelineTests : IntegrationTestBase
 
         using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
 
-        var response = await client.DeleteAsync($"/api/requests/own?requestId={requestId}");
+        var response = await client.DeleteAsync($"/requests/own?requestId={requestId}");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
@@ -170,7 +170,7 @@ public class RequestPipelineTests : IntegrationTestBase
     [Test]
     public async Task OwnRequestsDelete_WithoutAuthentication_ReturnsUnauthorized()
     {
-        var response = await this.Client.DeleteAsync("/api/requests/own?requestId=1");
+        var response = await this.Client.DeleteAsync("/requests/own?requestId=1");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
@@ -180,7 +180,7 @@ public class RequestPipelineTests : IntegrationTestBase
     {
         using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
 
-        var response = await client.DeleteAsync("/api/requests/own");
+        var response = await client.DeleteAsync("/requests/own");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }
@@ -188,7 +188,7 @@ public class RequestPipelineTests : IntegrationTestBase
     [Test]
     public async Task OwnRequestsGet_WithoutAuthentication_ReturnsUnauthorized()
     {
-        var response = await this.Client.GetAsync("/api/requests/own");
+        var response = await this.Client.GetAsync("/requests/own");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
@@ -196,7 +196,7 @@ public class RequestPipelineTests : IntegrationTestBase
     [Test]
     public async Task OwnRequestsSent_WithoutAuthentication_ReturnsUnauthorized()
     {
-        var response = await this.Client.GetAsync("/api/requests/own/sent");
+        var response = await this.Client.GetAsync("/requests/own/sent");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
@@ -221,7 +221,7 @@ public class RequestPipelineTests : IntegrationTestBase
         });
 
         using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
-        var response = await client.GetAsync("/api/requests/own/sent");
+        var response = await client.GetAsync("/requests/own/sent");
         response.EnsureSuccessStatusCode();
         var requests = await response.Content.ReadFromJsonAsync<List<SentRequestResponse>>();
 
@@ -233,7 +233,7 @@ public class RequestPipelineTests : IntegrationTestBase
     [Test]
     public async Task OwnRequestsPost_WithoutAuthentication_ReturnsUnauthorized()
     {
-        var response = await this.Client.PostAsJsonAsync("/api/requests/own", new
+        var response = await this.Client.PostAsJsonAsync("/requests/own", new
         {
             destinationName = "target",
             beatmapId       = 100
@@ -247,7 +247,7 @@ public class RequestPipelineTests : IntegrationTestBase
     {
         using var client = AuthenticatedTestClient.CreateClientWithToken(this.Factory, "not-a-jwt");
 
-        var response = await client.PostAsJsonAsync("/api/request", new
+        var response = await client.PostAsJsonAsync("/request", new
         {
             destinationId = 2,
             beatmapId     = 100
@@ -273,7 +273,7 @@ public class RequestPipelineTests : IntegrationTestBase
 
         using var client = AuthenticatedTestClient.CreateJwtClient(this.Factory, 1);
 
-        var response = await client.PostAsJsonAsync("/api/request", new
+        var response = await client.PostAsJsonAsync("/request", new
         {
             destinationId = 2,
             beatmapId     = 999
@@ -300,7 +300,7 @@ public class RequestPipelineTests : IntegrationTestBase
 
         using var client = AuthenticatedTestClient.CreateJwtClient(this.Factory, 1);
 
-        var response = await client.PostAsJsonAsync("/api/request", new
+        var response = await client.PostAsJsonAsync("/request", new
         {
             destinationId = 999,
             beatmapId     = 100
@@ -316,7 +316,7 @@ public class RequestPipelineTests : IntegrationTestBase
 
         using var client = AuthenticatedTestClient.CreateJwtClient(this.Factory, 1, "Proxy");
 
-        var response = await client.PostAsJsonAsync("/api/request", new
+        var response = await client.PostAsJsonAsync("/request", new
         {
             destinationId = 2,
             beatmapId     = 100
@@ -330,7 +330,7 @@ public class RequestPipelineTests : IntegrationTestBase
     {
         using var client = await AuthenticatedTestClient.CreateIrcClientAsync(this.Factory);
 
-        var response = await client.PostAsJsonAsync("/api/request", new
+        var response = await client.PostAsJsonAsync("/request", new
         {
             destinationId = 2,
             beatmapId     = 100
@@ -346,7 +346,7 @@ public class RequestPipelineTests : IntegrationTestBase
 
         using var client = AuthenticatedTestClient.CreateJwtClient(this.Factory, 1);
 
-        var response = await client.PostAsJsonAsync("/api/request", new
+        var response = await client.PostAsJsonAsync("/request", new
         {
             destinationId = 2,
             beatmapId     = 100
@@ -363,7 +363,7 @@ public class RequestPipelineTests : IntegrationTestBase
     [Test]
     public async Task PostRequest_WithoutToken_ReturnsUnauthorized()
     {
-        var response = await this.Client.PostAsJsonAsync("/api/request", new
+        var response = await this.Client.PostAsJsonAsync("/request", new
         {
             destinationId = 2,
             beatmapId     = 100

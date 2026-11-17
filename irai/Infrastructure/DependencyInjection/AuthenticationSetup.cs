@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using osu.Game.Extensions;
@@ -21,22 +22,18 @@ public static class AuthenticationSetup
 
     private static void AddJwtAuthentication(this IServiceCollection services)
     {
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy("Twitch",
-                              policy =>
-                              {
-                                  policy.RequireClaim("aud", "http://localhost:5076/api/bot/twitch/",
-                                                      "http://localhost:5076/api/bot/twitch");
-                              });
-            options.AddPolicy(
-                "Irc",
-                policy =>
+        services.AddAuthorization();
+        services.AddOptions<AuthorizationOptions>()
+                .Configure<IOptions<AuthConfig>, IOptions<AuthClientsConfig>>((options, authConfig, clients) =>
                 {
-                    policy.RequireClaim("aud", "http://localhost:5076/api/bot/irc/",
-                                        "http://localhost:5076/api/bot/irc");
+                    var cfg = authConfig.Value;
+                    foreach (var (policyName, client) in clients.Value)
+                    {
+                        var audience = GetAudience(cfg, client);
+                        options.AddPolicy(policyName,
+                                          policy => policy.RequireClaim("aud", audience, audience + "/"));
+                    }
                 });
-        });
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(_ => { });
         services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
@@ -44,21 +41,26 @@ public static class AuthenticationSetup
                 {
                     var cfg        = authConfig.Value;
                     var clientDict = clients.Value;
-                    var audiences = clientDict.Values.Select(v => $"{cfg.Audience}/{v.Name.ToLower()}")
+                    var audiences = clientDict.Values.Select(v => GetAudience(cfg, v))
                                               .ToList();
                     var securityKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(cfg.SecretKey ?? throw new NotImplementedException()));
                     jwt.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer           = true,
-                        ValidateAudience         = false,
+                        ValidateAudience         = true,
                         ValidateIssuerSigningKey = true,
                         ValidIssuer              = cfg.Issuer,
-                        // ValidAudiences = audiences,
+                        ValidAudiences           = audiences,
                         IssuerSigningKey         = securityKey
                     };
                 })
                 .ValidateOnStart();
+    }
+
+    private static string GetAudience(AuthConfig cfg, AuthClient client)
+    {
+        return $"{cfg.Audience.TrimEnd('/')}/{client.Name.ToLowerInvariant()}";
     }
 
     private static void AddOsuAuthentication(this IServiceCollection services)
@@ -131,7 +133,7 @@ public static class AuthenticationSetup
                     options.DefaultScheme          = "Cookies";
                     options.DefaultChallengeScheme = "Twitch";
                 })
-                .AddCookie("Cookies", options => { options.LoginPath = "/api/twitch/auth"; })
+                .AddCookie("Cookies", options => { options.LoginPath = "/twitch/auth"; })
                 .AddOAuth("Twitch", _ => { });
 
         services.AddOptions<OAuthOptions>("Twitch")

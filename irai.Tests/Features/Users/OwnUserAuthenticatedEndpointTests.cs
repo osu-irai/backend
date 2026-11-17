@@ -27,7 +27,7 @@ public class OwnUserAuthenticatedEndpointTests : IntegrationTestBase
 
         using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
 
-        var settings = await client.GetFromJsonAsync<SettingsDTO>("/api/users/own/settings");
+        var settings = await client.GetFromJsonAsync<SettingsDTO>("/users/own/settings");
 
         Assert.That(settings,              Is.Not.Null);
         Assert.That(settings!.EnableIrc,   Is.True);
@@ -56,7 +56,7 @@ public class OwnUserAuthenticatedEndpointTests : IntegrationTestBase
 
         using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
 
-        var response = await client.GetAsync("/api/users/own/twitch");
+        var response = await client.GetAsync("/users/own/twitch");
         response.EnsureSuccessStatusCode();
 
         // Controller returns Ok(string); ASP.NET's string formatter writes it as plain text.
@@ -75,7 +75,7 @@ public class OwnUserAuthenticatedEndpointTests : IntegrationTestBase
 
         using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
 
-        var response = await client.GetAsync("/api/users/own/twitch");
+        var response = await client.GetAsync("/users/own/twitch");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
@@ -99,7 +99,7 @@ public class OwnUserAuthenticatedEndpointTests : IntegrationTestBase
 
         using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
 
-        var response = await client.GetAsync("/api/users/own");
+        var response = await client.GetAsync("/users/own");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<SelfUserResponse>();
 
@@ -119,7 +119,7 @@ public class OwnUserAuthenticatedEndpointTests : IntegrationTestBase
 
         using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
 
-        var response = await client.PostAsJsonAsync("/api/users/own/settings", new
+        var response = await client.PostAsJsonAsync("/users/own/settings", new
         {
             enableIrc    = true,
             enableTwitch = true

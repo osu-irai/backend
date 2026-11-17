@@ -12,7 +12,7 @@ public class ApiExceptionPipelineTests : IntegrationTestBase
     [Test]
     public async Task ApiException_IsMappedToStatusAndResponseMessage()
     {
-        var response = await this.Client.GetAsync("/api/request");
+        var response = await this.Client.GetAsync("/request");
         var body     = await response.Content.ReadAsStringAsync();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
@@ -24,7 +24,7 @@ public class ApiExceptionPipelineTests : IntegrationTestBase
     [Test]
     public async Task ApiException_UnknownBotClient_ReturnsUnauthorizedWithoutExceptionDetails()
     {
-        var response = await this.Client.PostAsJsonAsync("/api/bot/auth", new
+        var response = await this.Client.PostAsJsonAsync("/bot/auth", new
         {
             name         = "UnknownBot",
             clientSecret = "whatever"

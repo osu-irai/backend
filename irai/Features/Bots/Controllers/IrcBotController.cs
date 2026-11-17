@@ -8,7 +8,7 @@ using osuRequestor.Infrastructure.Persistence;
 namespace osuRequestor.Features.Bots.Controllers;
 
 [ApiController]
-[Route("api/bot/irc")]
+[Route("bot/irc")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "Irc")]
 public class IrcBotController(
     IBotService botService
