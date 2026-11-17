@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using osuRequestor.Features.Bots.Services;
-using osuRequestor.Infrastructure.Persistence;
 
 namespace osuRequestor.Features.Bots.Controllers;
 
@@ -11,13 +11,12 @@ namespace osuRequestor.Features.Bots.Controllers;
 [Route("bot/irc")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "Irc")]
 public class IrcBotController(
-    IBotService botService
-)
+    IBotService botService)
     : ControllerBase
 {
     [HttpGet]
-    public async Task<IList<string>> GetNames()
+    public async Task<Results<Ok<IList<string>>, UnauthorizedHttpResult, ForbidHttpResult>> GetNames()
     {
-        return await botService.GetIrcUsers();
+        return TypedResults.Ok(await botService.GetIrcUsers());
     }
 }

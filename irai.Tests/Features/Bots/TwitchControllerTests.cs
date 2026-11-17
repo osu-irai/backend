@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using NUnit.Framework;
 using osu.NET;
 using osu.NET.Authorization;
 using osuRequestor.Features.Bots.Controllers;
+using osuRequestor.Features.Bots.Models;
 using osuRequestor.Features.Bots.Services;
 using osuRequestor.Features.Bots.Validators;
 using osuRequestor.Features.Requests.Controllers;
@@ -125,7 +127,8 @@ public class TwitchControllerTests
 
         var controller = CreateController(db);
 
-        var users = await controller.GetAuthenticatedUsers();
+        var result = await controller.GetAuthenticatedUsers();
+        var users = (result.Result as Ok<IList<TwitchDTO>>)!.Value;
 
         Assert.That(users,             Has.Count.EqualTo(1));
         Assert.That(users[0].TwitchId, Is.EqualTo("11"));
@@ -155,7 +158,7 @@ public class TwitchControllerTests
                              .Include(requestModel => requestModel.RequestedTo)
                              .Include(requestModel => requestModel.Beatmap)
                              .SingleAsync();
-        Assert.That(result,                Is.InstanceOf<OkResult>());
+        Assert.That(result.Result,         Is.InstanceOf<Ok>());
         Assert.That(stored.Source,         Is.EqualTo(RequestSource.Twitch));
         Assert.That(stored.RequestedFrom,  Is.Null);
         Assert.That(stored.RequestedTo.Id, Is.EqualTo(2));

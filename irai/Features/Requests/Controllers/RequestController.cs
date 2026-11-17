@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using osuRequestor.Common.Constants;
 using osuRequestor.Common.Exceptions;
@@ -22,25 +24,25 @@ public class RequestController(
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    [ProducesResponseType(typeof(ReceivedRequestResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ReceivedRequestResponse>> GetRequests(int? playerId)
+    public async Task<Results<Ok<List<ReceivedRequestResponse>>, BadRequest, InternalServerError>> GetRequests(
+        int? playerId)
     {
         var id = playerId ?? throw new BadRequestException("Request player ID is null");
 
         var requests = await requestService.GetRequestsToUser(id);
         logger.LogInformation($"Found requests for {id}: {requests.Count}");
-        return Ok(requests);
+        return TypedResults.Ok(requests);
     }
 
     [HttpPost]
     [Authorize(Roles = Roles.USER_OR_PROXY, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> PostRequest(PostRequestRequest request)
+    public async Task<Results<Ok, BadRequest, UnauthorizedHttpResult, ForbidHttpResult, NotFound, InternalServerError>>
+        PostRequest(PostRequestRequest request)
     {
         var sourceId = context.GetCurrentUserId(request);
 
         await requestService.CreateRequest(sourceId, request.DestinationId, request.BeatmapId).ThrowIfRequestError();
 
-        return Ok();
+        return TypedResults.Ok();
     }
 }

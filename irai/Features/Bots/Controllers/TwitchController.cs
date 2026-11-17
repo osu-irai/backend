@@ -1,17 +1,17 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using osu.NET;
 using osuRequestor.Common.Exceptions;
 using osuRequestor.Features.Bots.Models;
 using osuRequestor.Features.Bots.Services;
 using osuRequestor.Features.Requests.Controllers;
 using osuRequestor.Features.Requests.Models;
+using osuRequestor.Features.Requests.Persistence;
 using osuRequestor.Features.Requests.Services;
 using osuRequestor.Infrastructure.Notifications;
-using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Features.Requests.Persistence;
 
 namespace osuRequestor.Features.Bots.Controllers;
 
@@ -27,13 +27,15 @@ public class TwitchController(
     : ControllerBase
 {
     [HttpGet]
-    public async Task<IList<TwitchDTO>> GetAuthenticatedUsers()
+    public async Task<Results<Ok<IList<TwitchDTO>>, UnauthorizedHttpResult, ForbidHttpResult>>
+        GetAuthenticatedUsers()
     {
-        return await botService.GetTwitchUsers();
+        return TypedResults.Ok(await botService.GetTwitchUsers());
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostRequest([FromBody] PostBaseRequest baseRequest)
+    public async Task<Results<Ok, BadRequest, UnauthorizedHttpResult, ForbidHttpResult, NotFound, InternalServerError>>
+        PostRequest([FromBody] PostBaseRequest baseRequest)
     {
         var (destinationId, beatmapId) = baseRequest;
         logger.LogInformation("Found {destinationName} and {beatmapId}", destinationId, beatmapId);
@@ -46,6 +48,6 @@ public class TwitchController(
             throw new ServerErrorException("Failed to create a request");
         }
 
-        return Ok();
+        return TypedResults.Ok();
     }
 }

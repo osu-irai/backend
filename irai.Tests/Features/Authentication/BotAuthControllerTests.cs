@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -48,7 +49,7 @@ public class BotAuthControllerTests
             ClientSecret = "irc-secret"
         });
 
-        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(((OkObjectResult)result).Value as string);
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(((ContentHttpResult)result.Result!).ResponseContent);
         var expected = DateTime.Today.AddMinutes(60)
                                .ToUniversalTime();
         Assert.That(jwt.ValidTo, Is.EqualTo(expected)
@@ -69,7 +70,7 @@ public class BotAuthControllerTests
             ClientSecret = "irc-secret"
         });
 
-        Assert.That(result, Is.InstanceOf<UnauthorizedResult>());
+        Assert.That(result.Result, Is.InstanceOf<UnauthorizedHttpResult>());
     }
 
     /// <summary>
@@ -86,8 +87,8 @@ public class BotAuthControllerTests
             ClientSecret = "irc-secret"
         });
 
-        var ok    = result as OkObjectResult;
-        var token = ok?.Value as string;
+        var ok    = result.Result as ContentHttpResult;
+        var token = ok?.ResponseContent;
         var jwt   = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
         Assert.That(ok,            Is.Not.Null);
@@ -110,9 +111,7 @@ public class BotAuthControllerTests
             ClientSecret = "twitch-secret"
         });
 
-        var ok  = result as OkObjectResult;
-        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(ok?.Value as string);
-        Assert.That(ok,            Is.Not.Null);
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(((ContentHttpResult)result.Result!).ResponseContent);
         Assert.That(jwt.Audiences, Is.EquivalentTo(["https://tests.local/bot/twitch"]));
     }
 
@@ -130,6 +129,6 @@ public class BotAuthControllerTests
             ClientSecret = "wrong"
         });
 
-        Assert.That(result, Is.InstanceOf<UnauthorizedResult>());
+        Assert.That(result.Result, Is.InstanceOf<UnauthorizedHttpResult>());
     }
 }

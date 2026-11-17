@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using osuRequestor.Common.Controllers;
 using osuRequestor.Features.Users.Models;
@@ -12,36 +14,36 @@ public class OwnUserController(
     : CrudController
 {
     [HttpGet]
-    [ProducesResponseType(typeof(SelfUserResponse), 200)]
-    public async Task<ActionResult<SelfUserResponse>> SelfUserGet()
+    public async Task<Results<Ok<SelfUserResponse>, UnauthorizedHttpResult, InternalServerError>> SelfUserGet()
     {
         var claim = await GetOsuClaim();
-        return await userService.GetSelf(claim);
+        return TypedResults.Ok(await userService.GetSelf(claim));
     }
 
     [HttpGet]
     [Route("settings")]
-    public async Task<ActionResult<SettingsDTO>?> SelfGetSettings()
+    public async Task<Ok<SettingsDTO>> SelfGetSettings()
     {
         var claim = await GetOsuClaim();
-        return await userService.GetSettings(claim);
+        return TypedResults.Ok(await userService.GetSettings(claim));
     }
 
     [HttpPost]
     [Route("settings")]
-    public async Task<IActionResult> SelfSetSettings([FromBody] SettingsDTO settings)
+    public async Task<Results<Ok, BadRequest, UnauthorizedHttpResult, InternalServerError>> SelfSetSettings(
+        [FromBody] SettingsDTO settings)
     {
         var claim = await GetOsuClaim();
         await userService.UpdateSettings(claim, settings);
-        return Ok();
+        return TypedResults.Ok();
     }
 
     [HttpGet]
     [Route("twitch")]
-    public async Task<IActionResult> SelfGetTwitchUsername()
+    public async Task<Results<ContentHttpResult, UnauthorizedHttpResult>> SelfGetTwitchUsername()
     {
         var claim = await GetOsuClaim();
         var username = await userService.GetTwitchUsername(claim);
-        return username is null ? Unauthorized() : Ok(username);
+        return username is null ? TypedResults.Unauthorized() : TypedResults.Text(username);
     }
 }

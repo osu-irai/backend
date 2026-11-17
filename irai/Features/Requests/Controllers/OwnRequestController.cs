@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using osu.NET;
 using osuRequestor.Common.Constants;
@@ -21,16 +23,15 @@ public class OwnRequestController(
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    [ProducesResponseType(typeof(ReceivedRequestResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Authorize(Roles = Roles.USER_OR_PROXY, AuthenticationSchemes = "Bearer,InternalCookies")]
-    public async Task<ActionResult<ReceivedRequestResponse>> GetSelfRequests()
+    public async Task<Results<Ok<List<ReceivedRequestResponse>>, UnauthorizedHttpResult, ForbidHttpResult>>
+        GetSelfRequests()
     {
         logger.LogInformation("Received request list");
         var claim    = await GetOsuClaim();
         var requests = await requestService.GetRequestsToUser(claim);
         logger.LogInformation($"Found requests for {claim}: {requests.Count}");
-        return Ok(requests);
+        return TypedResults.Ok(requests);
     }
 
     /// <summary>
@@ -39,13 +40,13 @@ public class OwnRequestController(
     /// <returns></returns>
     [HttpGet]
     [Route("sent")]
-    [ProducesResponseType(typeof(SentRequestResponse), StatusCodes.Status200OK)]
     [Authorize(Roles = Roles.USER_OR_PROXY, AuthenticationSchemes = "Bearer,InternalCookies")]
-    public async Task<ActionResult<SentRequestResponse>> GetSentRequests()
+    public async Task<Results<Ok<List<SentRequestResponse>>, UnauthorizedHttpResult, ForbidHttpResult>>
+        GetSentRequests()
     {
         var claim    = await GetOsuClaim();
         var requests = await requestService.GetRequestsByUser(claim);
-        return Ok(requests);
+        return TypedResults.Ok(requests);
     }
 
     /// <summary>
@@ -53,11 +54,9 @@ public class OwnRequestController(
     /// </summary>
     /// <returns>HTTP 200 on success, HTTP 400 on missing parameters</returns>
     [HttpPost]
-    [ProducesDefaultResponseType]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Authorize(Roles = Roles.USER_OR_PROXY, AuthenticationSchemes = "Bearer,InternalCookies")]
-    public async Task<IActionResult> PostRequest([FromBody] PostBaseRequest postBaseRequest)
+    public async Task<Results<Ok, BadRequest, UnauthorizedHttpResult, ForbidHttpResult, NotFound, InternalServerError>>
+        PostRequest([FromBody] PostBaseRequest postBaseRequest)
     {
         var sourceId = await GetOsuClaim();
 
@@ -72,7 +71,7 @@ public class OwnRequestController(
             throw new ServerErrorException("Failed to create a request");
         }
 
-        return Ok();
+        return TypedResults.Ok();
     }
 
     /// <summary>
@@ -81,18 +80,16 @@ public class OwnRequestController(
     /// <param name="requestId">request ID to delete</param>
     /// <returns>200/400</returns>
     [HttpDelete]
-    [ProducesDefaultResponseType]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> DeleteSelfRequest(int? requestId)
+    public async Task<Results<Ok, BadRequest, UnauthorizedHttpResult, InternalServerError>>
+        DeleteSelfRequest(int? requestId)
     {
         await TryAuthenticateOsu();
         if (requestId is null)
         {
-            return BadRequest();
+            return TypedResults.BadRequest();
         }
 
         await requestService.DeleteRequest(requestId.Value);
-        return Ok();
+        return TypedResults.Ok();
     }
 }

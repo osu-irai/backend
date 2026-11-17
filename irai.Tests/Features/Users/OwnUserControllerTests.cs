@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -132,8 +133,8 @@ public class OwnUserControllerTests
         TestControllerContext.SignIn(harness.Controller, 1);
 
         var result = await harness.Controller.SelfGetSettings();
-
-        Assert.That(result?.Value, Is.Null);
+        Assert.That(result,        Is.Not.Null);
+        Assert.That(result.Value, Is.Null);
     }
 
     [Test]
@@ -146,10 +147,10 @@ public class OwnUserControllerTests
         TestControllerContext.SignIn(harness.Controller, 1);
 
         var result = await harness.Controller.SelfGetSettings();
-
-        Assert.That(result!.Value,             Is.Not.Null);
-        Assert.That(result.Value!.EnableIrc,   Is.True);
-        Assert.That(result.Value.EnableTwitch, Is.True);
+        Assert.That(result,                        Is.Not.Null);
+        Assert.That(result.Value,                 Is.Not.Null);
+        Assert.That(result.Value!.EnableIrc,       Is.True);
+        Assert.That(result.Value.EnableTwitch,     Is.True);
     }
 
     [Test]
@@ -163,7 +164,7 @@ public class OwnUserControllerTests
 
         var result = await harness.Controller.SelfGetTwitchUsername();
 
-        Assert.That(result, Is.InstanceOf<UnauthorizedResult>());
+        Assert.That(result.Result, Is.InstanceOf<UnauthorizedHttpResult>());
     }
 
     [Test]
@@ -184,9 +185,9 @@ public class OwnUserControllerTests
 
         var result = await harness.Controller.SelfGetTwitchUsername();
 
-        var ok = result as OkObjectResult;
-        Assert.That(ok,        Is.Not.Null);
-        Assert.That(ok!.Value, Is.EqualTo("alice_tv"));
+        var ok = result.Result as ContentHttpResult;
+        Assert.That(ok,                  Is.Not.Null);
+        Assert.That(ok!.ResponseContent, Is.EqualTo("alice_tv"));
     }
 
     [Test]
@@ -205,7 +206,7 @@ public class OwnUserControllerTests
         });
 
         var stored = await db.Settings.SingleAsync();
-        Assert.That(result,              Is.InstanceOf<OkResult>());
+        Assert.That(result.Result,       Is.InstanceOf<Ok>());
         Assert.That(stored.UserId,       Is.EqualTo(1));
         Assert.That(stored.EnableIrc,    Is.True);
         Assert.That(stored.EnableTwitch, Is.False);
@@ -238,7 +239,7 @@ public class OwnUserControllerTests
         });
 
         var stored = await db.Settings.SingleAsync();
-        Assert.That(result,              Is.InstanceOf<OkResult>());
+        Assert.That(result.Result,       Is.InstanceOf<Ok>());
         Assert.That(stored.EnableIrc,    Is.True);
         Assert.That(stored.EnableTwitch, Is.True);
         await harness.Notification.Received(1)
@@ -274,10 +275,10 @@ public class OwnUserControllerTests
         TestControllerContext.SignIn(harness.Controller, 1);
 
         var result = await harness.Controller.SelfUserGet();
-
-        Assert.That(result.Value,               Is.Not.Null);
-        Assert.That(result.Value!.User.Id,      Is.EqualTo(1));
-        Assert.That(result.Value.User.Username, Is.EqualTo("alice"));
-        Assert.That(result.Value.RequestCount,  Is.EqualTo(2));
+        var ok = result.Result as Ok<SelfUserResponse>;
+        Assert.That(ok,                     Is.Not.Null);
+        Assert.That(ok!.Value!.User.Id,     Is.EqualTo(1));
+        Assert.That(ok.Value.User.Username, Is.EqualTo("alice"));
+        Assert.That(ok.Value.RequestCount,  Is.EqualTo(2));
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using System.Security.Claims;
 using Hangfire;
 using Hangfire.Common;
@@ -123,10 +124,8 @@ public class OAuthControllerTests
         using var db      = harness.Db;
 
         var result = harness.Controller.Authenticate();
-
-        var challenge = result as ChallengeResult;
-        Assert.That(challenge,                        Is.Not.Null);
-        Assert.That(challenge!.AuthenticationSchemes, Is.EquivalentTo(["osu"]));
+        Assert.That(result,                        Is.Not.Null);
+        Assert.That(result!.AuthenticationSchemes, Is.EquivalentTo(["osu"]));
     }
 
     /// <summary>
@@ -143,7 +142,7 @@ public class OAuthControllerTests
 
         var result = await harness.Controller.CompleteAuthentication();
 
-        Assert.That(result, Is.InstanceOf<ForbidResult>());
+        Assert.That(result.Result, Is.InstanceOf<ForbidHttpResult>());
     }
 
     [Test]
@@ -157,7 +156,7 @@ public class OAuthControllerTests
 
         var result = await harness.Controller.CompleteAuthentication();
 
-        Assert.That(result, Is.InstanceOf<ForbidResult>());
+        Assert.That(result.Result, Is.InstanceOf<ForbidHttpResult>());
     }
 
     [Test]
@@ -177,7 +176,7 @@ public class OAuthControllerTests
 
         var result = await harness.Controller.CompleteAuthentication();
 
-        Assert.That(result, Is.InstanceOf<ForbidResult>());
+        Assert.That(result.Result, Is.InstanceOf<ForbidHttpResult>());
     }
 
     /// <summary>
@@ -218,7 +217,7 @@ public class OAuthControllerTests
 
         var user  = await db.Users.SingleAsync();
         var token = await db.Tokens.SingleAsync();
-        Assert.That(result,             Is.InstanceOf<RedirectResult>());
+        Assert.That(result.Result,      Is.InstanceOf<RedirectHttpResult>());
         Assert.That(user.Username,      Is.EqualTo("new-name"));
         Assert.That(token.AccessToken,  Is.EqualTo("access-token"));
         Assert.That(token.RefreshToken, Is.EqualTo("refresh-token"));
@@ -249,8 +248,9 @@ public class OAuthControllerTests
         var user = await db.Users.Include(userModel => userModel.Settings)
                            .SingleAsync();
         var token = await db.Tokens.SingleAsync();
-        Assert.That(result,                       Is.InstanceOf<RedirectResult>());
-        Assert.That(((RedirectResult)result).Url, Is.EqualTo("/home"));
+        var redirect = result.Result as RedirectHttpResult;
+        Assert.That(redirect,      Is.Not.Null);
+        Assert.That(redirect!.Url, Is.EqualTo("/home"));
         Assert.That(user.Id,                      Is.EqualTo(7));
         Assert.That(user.Username,                Is.EqualTo("alice"));
         Assert.That(user.Settings,                Is.Not.Null);

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using System.Security.Claims;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication;
@@ -111,7 +112,7 @@ public class TwitchAuthControllerTests
         var result = await harness.Controller.CompleteAuthentication();
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.InstanceOf<UnauthorizedResult>());
+        Assert.That(result.Result, Is.InstanceOf<UnauthorizedHttpResult>());
     }
 
     /// <summary>
@@ -132,7 +133,7 @@ public class TwitchAuthControllerTests
 
         var result = await harness.Controller.CompleteAuthentication();
 
-        Assert.That(result, Is.InstanceOf<UnauthorizedResult>());
+        Assert.That(result.Result, Is.InstanceOf<UnauthorizedHttpResult>());
     }
 
     /// <summary>
@@ -145,9 +146,7 @@ public class TwitchAuthControllerTests
         using var db      = harness.Db;
 
         var result = harness.Controller.Login();
-
-        var challenge = result as ChallengeResult;
-        Assert.That(challenge,                        Is.Not.Null);
-        Assert.That(challenge!.AuthenticationSchemes, Is.EquivalentTo(new[] { "Twitch" }));
+        Assert.That(result,                        Is.Not.Null);
+        Assert.That(result.AuthenticationSchemes, Is.EquivalentTo(new[] { "Twitch" }));
     }
 }

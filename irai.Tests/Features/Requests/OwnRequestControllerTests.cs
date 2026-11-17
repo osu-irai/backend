@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -144,7 +145,7 @@ public class OwnRequestControllerTests
         var result = await controller.DeleteSelfRequest(request.Id);
 
         var stored = await db.Requests.SingleAsync();
-        Assert.That(result,           Is.InstanceOf<OkResult>());
+        Assert.That(result.Result,    Is.InstanceOf<Ok>());
         Assert.That(stored.IsDeleted, Is.True);
     }
 
@@ -180,8 +181,8 @@ public class OwnRequestControllerTests
 
         var result = await controller.GetSelfRequests();
 
-        var ok       = result.Result as OkObjectResult;
-        var requests = ok?.Value as List<ReceivedRequestResponse>;
+        var ok       = result.Result as Ok<List<ReceivedRequestResponse>>;
+        var requests = ok?.Value;
         Assert.That(ok,                    Is.Not.Null);
         Assert.That(requests,              Has.Count.EqualTo(1));
         Assert.That(requests![0].From!.Id, Is.EqualTo(2));
@@ -219,8 +220,8 @@ public class OwnRequestControllerTests
 
         var result = await controller.GetSentRequests();
 
-        var ok       = result.Result as OkObjectResult;
-        var requests = ok?.Value as List<SentRequestResponse>;
+        var ok       = result.Result as Ok<List<SentRequestResponse>>;
+        var requests = ok?.Value;
         Assert.That(ok,                  Is.Not.Null);
         Assert.That(requests,            Has.Count.EqualTo(1));
         Assert.That(requests![0].To.Id,  Is.EqualTo(2));
@@ -295,7 +296,7 @@ public class OwnRequestControllerTests
         var stored = await db.Requests.Include(requestModel => requestModel.RequestedFrom!)
                              .Include(requestModel => requestModel.RequestedTo)
                              .SingleAsync();
-        Assert.That(result,                   Is.InstanceOf<OkResult>());
+        Assert.That(result.Result,            Is.InstanceOf<Ok>());
         Assert.That(stored.RequestedFrom!.Id, Is.EqualTo(1));
         Assert.That(stored.RequestedTo.Id,    Is.EqualTo(2));
         Assert.That(stored.Source,            Is.EqualTo(RequestSource.Website));

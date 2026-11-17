@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using osuRequestor.Common.Controllers;
-using IAuthenticationService = osuRequestor.Features.Authentication.Services.IAuthenticationService;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.TwitchApi;
+using IAuthenticationService = osuRequestor.Features.Authentication.Services.IAuthenticationService;
 
 namespace osuRequestor.Features.Authentication.Controllers;
 
@@ -26,28 +28,26 @@ public class TwitchAuthController : CrudController
         this._serverConfig          = config.Value;
     }
 
-    [ProducesResponseType(StatusCodes.Status302Found)]
-    public IActionResult Login()
+    [HttpGet]
+    public ChallengeHttpResult Login()
     {
         var authenticationProperties = new AuthenticationProperties
         {
             RedirectUri = this.Url.Action("CompleteAuthentication", "TwitchAuth")
         };
-        return Challenge(authenticationProperties, "Twitch");
+        return TypedResults.Challenge(authenticationProperties, new[] { "Twitch" });
     }
-
 
     [HttpGet("complete")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    [ProducesResponseType(StatusCodes.Status302Found)]
-    public async Task<IActionResult> CompleteAuthentication()
+    public async Task<Results<RedirectHttpResult, UnauthorizedHttpResult>> CompleteAuthentication()
     {
         this._logger.LogInformation("Completed twitch auth");
 
         var success = await TryAuthenticateTwitch();
         if (!success)
         {
-            return Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
         var id = await GetOsuClaim();
@@ -58,14 +58,14 @@ public class TwitchAuthController : CrudController
         if (accessToken is null || refreshToken is null)
         {
             this._logger.LogWarning("Failed to authenticate a Twitch user");
-            return Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
         var twitchUserValidation = await this._twitchApi.ValidateUser(accessToken);
         if (twitchUserValidation is null)
         {
             this._logger.LogWarning("Failed to validate a Twitch user");
-            return Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
         var twitchUser
@@ -76,6 +76,6 @@ public class TwitchAuthController : CrudController
         await this._authenticationService.SaveTwitchLogin(id, twitchId, twitchUser.Data[0].Login, accessToken,
                                                           refreshToken);
 
-        return Redirect(this._serverConfig.HomePage);
+        return TypedResults.Redirect(this._serverConfig.HomePage);
     }
 }

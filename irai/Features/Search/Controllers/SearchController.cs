@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using osuRequestor.Common.Controllers;
 using osuRequestor.Features.Search.Models;
@@ -18,10 +20,10 @@ public class SearchController(
     /// <returns>List of usernames <see cref="SearchUserResponse" /></returns>
     [HttpGet]
     [Route("player")]
-    public async Task<ActionResult<SearchUserResponse>> GetPlayers(string? query)
+    public async Task<Results<Ok<SearchUserResponse>, UnauthorizedHttpResult>> GetPlayers(string? query)
     {
         var id = await GetOsuClaim();
-        return Ok(await searchService.SearchPlayers(id, query));
+        return TypedResults.Ok(await searchService.SearchPlayers(id, query));
     }
 
     /// <summary>
@@ -31,9 +33,10 @@ public class SearchController(
     /// <returns>List of first 20 beatmaps found</returns>
     [HttpGet]
     [Route("beatmap")]
-    public async Task<ActionResult<SearchBeatmapResponse>> GetBeatmaps(string? query)
+    public async Task<Results<Ok<SearchBeatmapResponse>, UnauthorizedHttpResult, NotFound, StatusCodeHttpResult>>
+        GetBeatmaps(string? query)
     {
         await GetOsuClaim();
-        return Ok(await searchService.SearchBeatmaps(query));
+        return TypedResults.Ok(await searchService.SearchBeatmaps(query));
     }
 }

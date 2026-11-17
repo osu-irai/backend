@@ -1,5 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -20,11 +22,11 @@ public class BotAuthController(
     private readonly AuthConfig _config = config.Value;
 
     [HttpPost]
-    public IActionResult Login([FromBody] TokenRequest auth)
+    public Results<ContentHttpResult, BadRequest, UnauthorizedHttpResult> Login([FromBody] TokenRequest auth)
     {
         if (!this._clients.TryGetValue(auth.Name, out var client) || client.ClientSecret != auth.ClientSecret)
         {
-            return Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
         logger.LogInformation("Logging in user {AuthName}", auth.Name);
@@ -36,6 +38,6 @@ public class BotAuthController(
                                          expires: DateTime.Today.AddMinutes(this._config.ExpirationMinutes),
                                          signingCredentials: signingCreds);
 
-        return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+        return TypedResults.Text(new JwtSecurityTokenHandler().WriteToken(token));
     }
 }

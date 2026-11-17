@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -128,8 +129,8 @@ public class RequestControllerTests
 
         var result = await controller.GetRequests(2);
 
-        var ok       = result.Result as OkObjectResult;
-        var requests = ok?.Value as List<ReceivedRequestResponse>;
+        var ok       = result.Result as Ok<List<ReceivedRequestResponse>>;
+        var requests = ok?.Value;
         Assert.That(ok,                             Is.Not.Null);
         Assert.That(requests,                       Has.Count.EqualTo(1));
         Assert.That(requests![0].Beatmap.BeatmapId, Is.EqualTo(beatmap.Id));
@@ -155,7 +156,7 @@ public class RequestControllerTests
 
         var stored = await db.Requests.Include(requestModel => requestModel.RequestedFrom)
                              .SingleAsync();
-        Assert.That(result,               Is.InstanceOf<OkResult>());
+        Assert.That(result.Result,        Is.InstanceOf<Ok>());
         Assert.That(stored.RequestedFrom, Is.Null);
     }
 
@@ -170,7 +171,7 @@ public class RequestControllerTests
         AddUser(db, 1, "alice");
         await db.SaveChangesAsync();
 
-        Assert.ThrowsAsync<NotFoundException>(() => controller.PostRequest(new PostRequestRequest
+        await Assert.ThrowsAsync<NotFoundException>(() => controller.PostRequest(new PostRequestRequest
         {
             DestinationId = 404,
             BeatmapId     = 100
@@ -199,7 +200,7 @@ public class RequestControllerTests
         var stored = await db.Requests.Include(requestModel => requestModel.RequestedFrom!)
                              .Include(requestModel => requestModel.RequestedTo)
                              .SingleAsync();
-        Assert.That(result,                   Is.InstanceOf<OkResult>());
+        Assert.That(result.Result,            Is.InstanceOf<Ok>());
         Assert.That(stored.RequestedFrom!.Id, Is.EqualTo(1));
         Assert.That(stored.RequestedTo.Id,    Is.EqualTo(2));
     }

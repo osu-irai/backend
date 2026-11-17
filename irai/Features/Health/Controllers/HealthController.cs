@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using osuRequestor.Common.Controllers;
 
@@ -8,8 +9,8 @@ namespace osuRequestor.Features.Health.Controllers;
 public class HealthController : CrudController
 {
     [HttpGet]
-    public async Task<ActionResult<string>> GetHealth()
+    public ContentHttpResult GetHealth()
     {
-        return Ok("ok");
+        return TypedResults.Text("ok");
     }
 }

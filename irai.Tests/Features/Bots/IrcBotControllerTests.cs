@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
@@ -46,7 +47,8 @@ public class IrcBotControllerTests
         var service    = new BotService(db);
         var controller = new IrcBotController(service);
 
-        var names = await controller.GetNames();
+        var result = await controller.GetNames();
+        var names  = ((Ok<IList<string>>)result.Result!).Value;
 
         Assert.That(names, Is.Empty);
     }
@@ -61,7 +63,8 @@ public class IrcBotControllerTests
         var             service    = new BotService(db);
         var             controller = new IrcBotController(service);
 
-        var names = await controller.GetNames();
+        var result = await controller.GetNames();
+        var names  = ((Ok<IList<string>>)result.Result!).Value;
 
         Assert.That(names, Is.Empty);
     }
@@ -85,7 +88,8 @@ public class IrcBotControllerTests
         var service    = new BotService(db);
         var controller = new IrcBotController(service);
 
-        var names = await controller.GetNames();
+        var result = await controller.GetNames();
+        var names  = ((Ok<IList<string>>)result.Result!).Value;
 
         Assert.That(names, Does.Not.Contain("alice"));
     }
@@ -104,7 +108,8 @@ public class IrcBotControllerTests
         var service    = new BotService(db);
         var controller = new IrcBotController(service);
 
-        var names = await controller.GetNames();
+        var result = await controller.GetNames();
+        var names  = ((Ok<IList<string>>)result.Result!).Value;
 
         Assert.That(names, Is.EquivalentTo(new[] { "alice", "carol" }));
     }
