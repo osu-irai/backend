@@ -15,4 +15,6 @@ public class SettingsModel
     public bool EnableIrc { get; set; } = false;
 
     public bool? EnableTwitch { get; set; } = false;
+
+    public bool? FriendsOnly { get; set; } = true;
 }

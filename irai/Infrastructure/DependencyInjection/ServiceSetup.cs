@@ -22,17 +22,23 @@ public static class ServiceSetup
         services.AddHttpContextAccessor();
         services.AddHttpClient<OsuApiProvider>();
         services.AddSignalR();
-        services.AddTransient<IRequestService, RequestService>();
+        services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<IBotService, BotService>();
         services.AddScoped<IOwnUserService, OwnUserService>();
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
-        services.AddValidatorsFromAssemblyContaining<Features.Bots.Validators.PostBaseRequestValidator>();
-        services.AddFluentValidationAutoValidation();
 
         services.AddScoped<IRequestNotificationService, RequestNotificationService>();
         services.AddScoped<IUserContext, HttpUserContext>();
         services.AddScoped<OsuDatabaseAccessTokenProvider>();
+        services.AddScoped<IFriendService, FriendService>();
+        services.AddExternalSetup();
+    }
+
+    private static void AddExternalSetup(this IServiceCollection services)
+    {
+        services.AddValidatorsFromAssemblyContaining<Features.Bots.Validators.PostBaseRequestValidator>();
+        services.AddFluentValidationAutoValidation();
         services.AddScoped<OsuApiClient>(serviceProvider =>
         {
             var provider      = serviceProvider.GetRequiredService<OsuDatabaseAccessTokenProvider>();
@@ -60,6 +66,6 @@ public static class ServiceSetup
                 bus.ReceiveEndpoint("send-request-userless", e => { e.Consumer<MessageSubscriberService>(context); });
             });
         });
-        services.AddScoped<IMessageBusService, MessageBusService>();
+        services.AddScoped<IMessageBusService, MessageBusService>(); 
     }
 }

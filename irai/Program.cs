@@ -3,6 +3,8 @@ using Scalar.AspNetCore;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Hangfire;
+using Hangfire.InMemory;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.DependencyInjection;
 using osuRequestor.Infrastructure.ExceptionHandling;
@@ -48,7 +50,11 @@ public static class Program
         // TODO: Add rate limiting
         builder.Services.AddServiceSetup();
 
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+        // Background job processing
+        builder.Services.AddHangfire(conf => conf
+                                         .UseInMemoryStorage());
+        builder.Services.AddHangfireServer();
+        
         builder.Services.AddControllers();
 
         builder.Services.AddOpenApi();
@@ -58,7 +64,6 @@ public static class Program
         builder.Services.AddAuthenticationSetup();
 
         var app = builder.Build();
-
 
         app.UseCors(options =>
         {
@@ -95,6 +100,7 @@ public static class Program
         app.MapHub<NotificationHub>("api/ws/notifications");
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseHangfireDashboard();
         app.MapControllers();
 
         app.Run();

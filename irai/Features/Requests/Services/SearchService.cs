@@ -12,12 +12,17 @@ public class SearchService(
     OsuApiClient osuClient,
     ILogger<SearchService> logger) : ISearchService
 {
-    public async Task<SearchUserResponse> SearchPlayers(string? query)
+    public async Task<SearchUserResponse> SearchPlayers(int currentUser, string? query)
     {
         logger.LogInformation("Queried players: {Query}", query);
         var queryString = query ?? "";
         var users = await dbContext.Users
                                    .AsNoTracking()
+                                   .Where(u =>
+                                              u.Id                    == currentUser ||
+                                              u.Settings!.FriendsOnly == false       ||
+                                              u.Settings!.FriendsOnly == true &&
+                                              u.Friends.Any(f => f.FriendId == currentUser))
                                    .Where(u => u.Username.ToLower()
                                                 .StartsWith(queryString.ToLower()))
                                    .OrderBy(u => u.Username)

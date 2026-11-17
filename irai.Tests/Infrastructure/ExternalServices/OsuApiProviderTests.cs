@@ -3,6 +3,8 @@ using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
+using osu.NET.Models.Users;
+using osuRequestor.Common.Extensions;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi;
 
@@ -75,8 +77,9 @@ public class OsuApiProviderTests
         var provider = CreateProvider(handler);
         var user     = await provider.GetSelfUser("token");
 
-        Assert.That(user,             Is.Not.Null);
-        Assert.That(user!.Username,   Is.EqualTo("alice"));
+        Assert.That(user, Is.Not.Null);
+        Assert.That(user.Unwrap()
+                        .Username, Is.EqualTo("alice"));
         Assert.That(handler.Requests, Has.Count.EqualTo(2));
     }
 
@@ -97,14 +100,15 @@ public class OsuApiProviderTests
     }
 
     [Test]
-    public void GetFriends_WhenResponseIsNotSuccessful_ThrowsHttpRequestException()
+    public async Task GetFriends_WhenResponseIsNotSuccessful_ReturnsEmptyArray()
     {
         var handler = new StubHandler(request => request.Method == HttpMethod.Post
                                                      ? UserlessToken()
                                                      : new HttpResponseMessage(HttpStatusCode.BadGateway));
         var provider = CreateProvider(handler);
+        var data     = await provider.GetFriends("token");
 
-        Assert.ThrowsAsync<HttpRequestException>(() => provider.GetFriends("token"));
+        Assert.That(data, Is.EqualTo(Array.Empty<User>()));
     }
 
     [Test]
@@ -126,14 +130,15 @@ public class OsuApiProviderTests
     }
 
     [Test]
-    public void GetSelfUser_WhenResponseIsNotSuccessful_ThrowsHttpRequestException()
+    public async Task GetSelfUser_WhenResponseIsNotSuccessful_ReturnsNone()
     {
         var handler = new StubHandler(request => request.Method == HttpMethod.Post
                                                      ? UserlessToken()
                                                      : new HttpResponseMessage(HttpStatusCode.Unauthorized));
         var provider = CreateProvider(handler);
+        var data     = await provider.GetSelfUser("token");
 
-        Assert.ThrowsAsync<HttpRequestException>(() => provider.GetSelfUser("token"));
+        Assert.That(data, Is.EqualTo(new Option<osuRequestor.Infrastructure.ExternalServices.OsuApi.Models.User>(new None())));
     }
 
     [Test]
@@ -147,9 +152,11 @@ public class OsuApiProviderTests
 
         var user = await provider.GetSelfUser("token");
 
-        Assert.That(user,          Is.Not.Null);
-        Assert.That(user!.Id,      Is.EqualTo(7));
-        Assert.That(user.Username, Is.EqualTo("alice"));
+        Assert.That(user.Unwrap(), Is.Not.Null);
+        Assert.That(user.Unwrap()
+                        .Id, Is.EqualTo(7));
+        Assert.That(user.Unwrap()
+                        .Username, Is.EqualTo("alice"));
         var request = handler.Requests[1];
         Assert.That(request.Method,                          Is.EqualTo(HttpMethod.Get));
         Assert.That(request.RequestUri,                      Is.EqualTo(new Uri("https://osu.ppy.sh/api/v2/me/")));

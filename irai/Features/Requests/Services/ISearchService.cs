@@ -4,6 +4,6 @@ namespace osuRequestor.Features.Requests.Services;
 
 public interface ISearchService
 {
-    Task<SearchUserResponse> SearchPlayers(string? query);
+    Task<SearchUserResponse> SearchPlayers(int currentUser, string? query);
     Task<SearchBeatmapResponse> SearchBeatmaps(string? query);
 }

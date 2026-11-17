@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,15 +13,20 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
 using osuRequestor.Features.Authentication.Controllers;
+using osuRequestor.Features.Authentication.Services;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.TwitchApi;
 using osuRequestor.Infrastructure.Persistence;
+using IAuthenticationService = Microsoft.AspNetCore.Authentication.IAuthenticationService;
 
 namespace osuRequestor.Tests.Features.Authentication;
 
 [TestFixture]
 public class TwitchAuthControllerTests
 {
+    private IBackgroundJobClient _backgroundJobClient = null!;
+    private IFriendService _friendService = null!;
+
     private static AuthenticationTicket Ticket(string scheme, int? userId = null,
                                                params (string Name, string Value)[] tokens)
     {
@@ -33,7 +39,7 @@ public class TwitchAuthControllerTests
         return new AuthenticationTicket(new ClaimsPrincipal(identity), properties, scheme);
     }
 
-    private static Harness CreateHarness()
+    private Harness CreateHarness()
     {
         var db             = CreateDatabase();
         var authentication = Substitute.For<IAuthenticationService>();
@@ -47,10 +53,11 @@ public class TwitchAuthControllerTests
             new HttpClient(),
             NullLogger<TwitchApiProvider>.Instance);
 
+        this._backgroundJobClient = Substitute.For<IBackgroundJobClient>();
+        this._friendService          = Substitute.For<IFriendService>();
         var controller = new TwitchAuthController(
             NullLogger<TwitchAuthController>.Instance,
-            new global::osuRequestor.Features.Authentication.Services.AuthenticationService(
-                db, NullLogger<global::osuRequestor.Features.Authentication.Services.AuthenticationService>.Instance),
+            new global::osuRequestor.Features.Authentication.Services.AuthenticationService(this._backgroundJobClient, this._friendService, db, NullLogger<global::osuRequestor.Features.Authentication.Services.AuthenticationService>.Instance),
             twitch,
             Options.Create(new ServerConfig { HomePage = "/home" }));
 

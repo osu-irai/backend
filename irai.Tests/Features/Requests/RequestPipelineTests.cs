@@ -356,7 +356,8 @@ public class RequestPipelineTests : IntegrationTestBase
             return Task.CompletedTask;
         });
 
-        var response = await this.Client.GetAsync("/api/search/player?query=AL");
+        using var client   = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
+        var       response = await client.GetAsync("/api/search/player?query=AL");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<SearchUserResponse>();
 
@@ -376,7 +377,8 @@ public class RequestPipelineTests : IntegrationTestBase
             return Task.CompletedTask;
         });
 
-        var response = await this.Client.GetAsync("/api/search/player?query=");
+        using var client   = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
+        var       response = await client.GetAsync("/api/search/player?query=");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<SearchUserResponse>();
 
@@ -396,7 +398,8 @@ public class RequestPipelineTests : IntegrationTestBase
             return Task.CompletedTask;
         });
 
-        var response = await this.Client.GetAsync("/api/search/player");
+        using var client   = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
+        var       response = await client.GetAsync("/api/search/player");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<SearchUserResponse>();
 

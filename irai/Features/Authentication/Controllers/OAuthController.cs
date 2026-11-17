@@ -1,8 +1,11 @@
 using System.Security.Claims;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using osuRequestor.Common.Extensions;
+using osuRequestor.Features.Authentication.Services;
 using IAuthenticationService = osuRequestor.Features.Authentication.Services.IAuthenticationService;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
@@ -52,21 +55,18 @@ public class OAuthController(
         var accessToken  = await this.HttpContext.GetTokenAsync("ExternalCookies", "access_token");
         var refreshToken = await this.HttpContext.GetTokenAsync("ExternalCookies", "refresh_token");
 
-        User? user;
-        try
-        {
-            user = await osuApiDataService.GetSelfUser(accessToken!);
+        var apiUser = await osuApiDataService.GetSelfUser(accessToken!);
+        if (apiUser is None) {
+            logger.LogError("osu!api provider error!");
+            return Forbid();
         }
-        catch (Exception e)
+        
+        if (accessToken is null || refreshToken is null)
         {
-            logger.LogError(e, "osu!api provider error!");
             return Forbid();
         }
 
-        if (user is null || accessToken is null || refreshToken is null)
-        {
-            return Forbid();
-        }
+        var user = apiUser.Unwrap();
 
         var tokenExpiration = await authenticationService.SaveOsuLogin(user, accessToken, refreshToken);
         logger.LogInformation($"Token expires at {tokenExpiration}");
@@ -86,7 +86,7 @@ public class OAuthController(
 
         await this.HttpContext.SignInAsync("InternalCookies", new ClaimsPrincipal(id), authProperties);
         await this.HttpContext.SignOutAsync("ExternalCookies");
-
+        
         logger.LogInformation("User {Username} logged in, toke expires on {TokenExpiration}", user.Username,
                               tokenExpiration);
 

@@ -20,7 +20,8 @@ public class SearchController(
     [Route("player")]
     public async Task<ActionResult<SearchUserResponse>> GetPlayers(string? query)
     {
-        return Ok(await searchService.SearchPlayers(query));
+        var id = await GetOsuClaim();
+        return Ok(await searchService.SearchPlayers(id, query));
     }
 
     /// <summary>

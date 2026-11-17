@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using osuRequestor.Common.Extensions;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
@@ -35,7 +36,7 @@ public class OsuApiProvider : IOsuApiProvider
 
     #region IOsuApiProvider Members
 
-    public async Task<User?> GetSelfUser(string token)
+    public async Task<Option<User>> GetSelfUser(string token)
     {
         var requestMessage = new HttpRequestMessage
         {
@@ -44,14 +45,18 @@ public class OsuApiProvider : IOsuApiProvider
             Headers    = { Authorization = new AuthenticationHeaderValue("Bearer", token) }
         };
 
-        var response = await this._httpClient.SendAsync(requestMessage);
-
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadFromJsonAsync<User>();
+        try
+        {
+            var response = await this._httpClient.SendAsync(requestMessage);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<User>().IntoOptionAsync();
+        } catch  (Exception e)
+        {
+            return new None();
+        }
     }
 
-    public async Task<User[]?> GetFriends(string token)
+    public async Task<User[]> GetFriends(string token)
     {
         var requestMessage = new HttpRequestMessage
         {
@@ -60,11 +65,17 @@ public class OsuApiProvider : IOsuApiProvider
             Headers    = { Authorization = new AuthenticationHeaderValue("Bearer", token) }
         };
 
-        var response = await this._httpClient.SendAsync(requestMessage);
+        try
+        {
+            var response = await this._httpClient.SendAsync(requestMessage);
+            response.EnsureSuccessStatusCode();
 
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadFromJsonAsync<User[]>();
+            return await response.Content.ReadFromJsonAsync<User[]>() ?? [];
+        }
+        catch (Exception e)
+        {
+            return [];
+        }
     }
 
     public async Task<TokenResponse?> RefreshToken(string refreshToken, string accessToken)

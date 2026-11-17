@@ -30,6 +30,8 @@ public class UserModel
 
     public TwitchModel? TwitchSettings { get; set; } = null;
 
+    public ICollection<FriendModel> Friends { get; set; } = [];
+
     public User IntoApiModel()
     {
         return new User

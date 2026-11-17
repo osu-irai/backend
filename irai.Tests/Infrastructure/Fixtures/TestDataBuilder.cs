@@ -17,7 +17,8 @@ public static class TestDataBuilder
             Settings = new SettingsModel
             {
                 EnableIrc    = enableIrc,
-                EnableTwitch = enableTwitch
+                EnableTwitch = enableTwitch,
+                FriendsOnly = false,
             }
         };
     }

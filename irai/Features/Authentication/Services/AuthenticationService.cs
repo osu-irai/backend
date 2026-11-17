@@ -1,3 +1,4 @@
+using Hangfire;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Features.Authentication.Persistence;
@@ -6,6 +7,8 @@ using osuRequestor.Features.Users.Persistence;
 namespace osuRequestor.Features.Authentication.Services;
 
 public class AuthenticationService(
+    IBackgroundJobClient backgroundJobClient,
+    IFriendService friendService,
     DatabaseContext databaseContext,
     ILogger<AuthenticationService> logger) : IAuthenticationService
 {
@@ -23,6 +26,8 @@ public class AuthenticationService(
                 CountryCode = user.CountryCode,
                 Settings    = new SettingsModel()
             });
+            backgroundJobClient.Enqueue(() => friendService.GetFriends(user.Id, accessToken));
+            
         }
         else
         {

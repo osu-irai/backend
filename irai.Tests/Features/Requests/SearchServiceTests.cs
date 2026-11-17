@@ -25,7 +25,8 @@ public class SearchServiceTests
     private static DatabaseContext CreateDatabase()
     {
         var options = new DbContextOptionsBuilder<DatabaseContext>()
-                      .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                      .UseInMemoryDatabase(Guid.NewGuid()
+                                               .ToString())
                       .Options;
 
         return new DatabaseContext(options);
@@ -38,7 +39,10 @@ public class SearchServiceTests
             Id          = id,
             Username    = username,
             AvatarUrl   = $"https://a.ppy.sh/{id}",
-            CountryCode = "US"
+            CountryCode = "US", Settings = new SettingsModel
+            {
+                FriendsOnly = false,
+            }
         });
     }
 
@@ -51,9 +55,10 @@ public class SearchServiceTests
         AddUser(db, 3, "bob");
         await db.SaveChangesAsync();
 
-        var result = await CreateService(db).SearchPlayers(null);
+        var result = await CreateService(db)
+                         .SearchPlayers(1, null);
 
-        Assert.That(result.Count, Is.EqualTo(3));
+        Assert.That(result.Count,                           Is.EqualTo(3));
         Assert.That(result.Players.Select(p => p.Username), Is.EqualTo(new[] { "alice", "bob", "carol" }));
     }
 
@@ -65,10 +70,12 @@ public class SearchServiceTests
         AddUser(db, 2, "bob");
         await db.SaveChangesAsync();
 
-        var result = await CreateService(db).SearchPlayers("al");
+        var result = await CreateService(db)
+                         .SearchPlayers(1, "al");
 
         Assert.That(result.Count, Is.EqualTo(1));
-        Assert.That(result.Players.Single().Username, Is.EqualTo("Alice"));
+        Assert.That(result.Players.Single()
+                          .Username, Is.EqualTo("Alice"));
     }
 
     [Test]
@@ -78,9 +85,10 @@ public class SearchServiceTests
         AddUser(db, 1, "alice");
         await db.SaveChangesAsync();
 
-        var result = await CreateService(db).SearchPlayers("zzz");
+        var result = await CreateService(db)
+                         .SearchPlayers(1, "zzz");
 
-        Assert.That(result.Count, Is.EqualTo(0));
+        Assert.That(result.Count,   Is.EqualTo(0));
         Assert.That(result.Players, Is.Empty);
     }
 
@@ -95,7 +103,8 @@ public class SearchServiceTests
 
         await db.SaveChangesAsync();
 
-        var result = await CreateService(db).SearchPlayers("user");
+        var result = await CreateService(db)
+                         .SearchPlayers(1, "user");
 
         Assert.That(result.Count, Is.EqualTo(10));
         Assert.That(result.Players.Select(p => p.Username), Is.EqualTo(new[]

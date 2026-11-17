@@ -44,6 +44,11 @@ public class DatabaseContext(
     /// </summary>
     public DbSet<TokenModel> Tokens { get; set; } = null!;
 
+    /// <summary>
+    /// Table with osu! friendships
+    /// </summary>
+    public DbSet<FriendModel> Friends { get; set; } = null!;
+
     #region IDataProtectionKeyContext Members
 
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
@@ -56,5 +61,6 @@ public class DatabaseContext(
         modelBuilder.ApplyConfiguration(new UserModelConfiguration());
         modelBuilder.ApplyConfiguration(new BeatmapModelConfiguration());
         modelBuilder.ApplyConfiguration(new SettingsModelConfiguration());
+        modelBuilder.ApplyConfiguration(new FriendModelConfiguration());
     }
 }

@@ -1,5 +1,10 @@
+using System.Linq.Expressions;
+using Hangfire;
+using Hangfire.Common;
+using Hangfire.States;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using NUnit.Framework;
 using osuRequestor.Features.Authentication.Services;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
@@ -12,6 +17,9 @@ namespace osuRequestor.Tests.Features.Authentication;
 [TestFixture]
 public class AuthenticationServiceTests
 {
+    private IBackgroundJobClient _backgroundJobClient;
+    private IFriendService _friendService;
+
     private static DatabaseContext CreateDatabase()
     {
         var options = new DbContextOptionsBuilder<DatabaseContext>()
@@ -21,9 +29,11 @@ public class AuthenticationServiceTests
         return new DatabaseContext(options);
     }
 
-    private static AuthenticationService CreateService(DatabaseContext db)
+    private AuthenticationService CreateService(DatabaseContext db)
     {
-        return new AuthenticationService(db, NullLogger<AuthenticationService>.Instance);
+        this._backgroundJobClient = Substitute.For<IBackgroundJobClient>();
+        this._friendService          = Substitute.For<IFriendService>();
+        return new AuthenticationService(this._backgroundJobClient, this._friendService, db, NullLogger<AuthenticationService>.Instance);
     }
 
     private static UserModel AddUser(DatabaseContext db, int id, string username,
@@ -67,6 +77,8 @@ public class AuthenticationServiceTests
         Assert.That(token.RefreshToken, Is.EqualTo("refresh"));
         Assert.That(expiration, Is.GreaterThanOrEqualTo(before.AddDays(1)));
         Assert.That(expiration, Is.LessThanOrEqualTo(DateTime.UtcNow.AddDays(1)));
+        this._backgroundJobClient.Received(1)
+                        .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
     }
 
     [Test]
@@ -99,6 +111,8 @@ public class AuthenticationServiceTests
         Assert.That(storedToken.AccessToken, Is.EqualTo("new-access"));
         Assert.That(storedToken.RefreshToken, Is.EqualTo("new-refresh"));
         Assert.That(await db.Settings.CountAsync(), Is.EqualTo(1));
+        this._backgroundJobClient.Received(0)
+            .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
     }
 
     [Test]

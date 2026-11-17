@@ -1,4 +1,7 @@
 using System.Security.Claims;
+using Hangfire;
+using Hangfire.Common;
+using Hangfire.States;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,19 +14,25 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
+using osuRequestor.Common.Extensions;
 using osuRequestor.Features.Authentication.Controllers;
 using osuRequestor.Infrastructure.Configuration;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Features.Authentication.Persistence;
+using osuRequestor.Features.Authentication.Services;
 using osuRequestor.Features.Users.Persistence;
+using IAuthenticationService = Microsoft.AspNetCore.Authentication.IAuthenticationService;
 
 namespace osuRequestor.Tests.Features.Authentication;
 
 [TestFixture]
 public class OAuthControllerTests
 {
+    private IBackgroundJobClient _backgroundJobClient = null!;
+    private IFriendService _friendService = null!;
+
     private static void SetupExternalAuth(IAuthenticationService authentication,
                                           string? accessToken = "access-token", string? refreshToken = "refresh-token")
     {
@@ -48,7 +57,7 @@ public class OAuthControllerTests
             .Returns(AuthenticateResult.Success(ticket));
     }
 
-    private static Harness CreateHarness()
+    private Harness CreateHarness()
     {
         var db             = CreateDatabase();
         var osuApi         = Substitute.For<IOsuApiProvider>();
@@ -60,11 +69,12 @@ public class OAuthControllerTests
                                     Arg.Any<AuthenticationProperties>())
                       .Returns(Task.CompletedTask);
 
+        this._backgroundJobClient = Substitute.For<IBackgroundJobClient>();
+        this._friendService          = Substitute.For<IFriendService>();
         var controller = new OAuthController(
             NullLogger<OAuthController>.Instance,
             osuApi,
-            new global::osuRequestor.Features.Authentication.Services.AuthenticationService(
-                db, NullLogger<global::osuRequestor.Features.Authentication.Services.AuthenticationService>.Instance),
+            new global::osuRequestor.Features.Authentication.Services.AuthenticationService(this._backgroundJobClient, this._friendService, db, NullLogger<global::osuRequestor.Features.Authentication.Services.AuthenticationService>.Instance),
             Options.Create(new ServerConfig { HomePage = "/home" }));
 
         var services = new ServiceCollection()
@@ -143,7 +153,7 @@ public class OAuthControllerTests
         await using var db      = harness.Db;
         SetupExternalAuth(harness.Authentication);
         harness.OsuApi.GetSelfUser("access-token")
-               .Returns(Task.FromException<User?>(new HttpRequestException("osu down")));
+               .Returns(Task.FromResult(new Option<User>(new None())));
 
         var result = await harness.Controller.CompleteAuthentication();
 
@@ -157,13 +167,13 @@ public class OAuthControllerTests
         await using var db      = harness.Db;
         SetupExternalAuth(harness.Authentication, refreshToken: null);
         harness.OsuApi.GetSelfUser("access-token")
-               .Returns(new User
+               .Returns(new Some<User>(new User
                {
                    Id          = 7,
                    Username    = "alice",
                    CountryCode = "US",
                    AvatarUrl   = "https://a.ppy.sh/7"
-               });
+               }));
 
         var result = await harness.Controller.CompleteAuthentication();
 
@@ -196,13 +206,13 @@ public class OAuthControllerTests
         await db.SaveChangesAsync();
         SetupExternalAuth(harness.Authentication);
         harness.OsuApi.GetSelfUser("access-token")
-               .Returns(new User
+               .Returns(new Some<User>(new User
                {
                    Id          = 7,
                    Username    = "new-name",
                    CountryCode = "US",
                    AvatarUrl   = "https://a.ppy.sh/7"
-               });
+               }));
 
         var result = await harness.Controller.CompleteAuthentication();
 
@@ -212,6 +222,8 @@ public class OAuthControllerTests
         Assert.That(user.Username,      Is.EqualTo("new-name"));
         Assert.That(token.AccessToken,  Is.EqualTo("access-token"));
         Assert.That(token.RefreshToken, Is.EqualTo("refresh-token"));
+        this._backgroundJobClient.Received(0)
+            .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
     }
 
     /// <summary>
@@ -224,13 +236,13 @@ public class OAuthControllerTests
         await using var db      = harness.Db;
         SetupExternalAuth(harness.Authentication);
         harness.OsuApi.GetSelfUser("access-token")
-               .Returns(new User
+               .Returns(new Some<User>(new User
                {
                    Id          = 7,
                    Username    = "alice",
                    CountryCode = "US",
                    AvatarUrl   = "https://a.ppy.sh/7"
-               });
+               }));
 
         var result = await harness.Controller.CompleteAuthentication();
 
@@ -245,6 +257,8 @@ public class OAuthControllerTests
         Assert.That(token.UserId,                 Is.EqualTo(7));
         Assert.That(token.AccessToken,            Is.EqualTo("access-token"));
         Assert.That(token.RefreshToken,           Is.EqualTo("refresh-token"));
+        this._backgroundJobClient.Received(1)
+            .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
         await harness.Authentication.Received(1)
                      .SignInAsync(
                          Arg.Any<HttpContext>(), "InternalCookies", Arg.Any<ClaimsPrincipal>(),
