@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using osuRequestor.Common.Controllers;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Services;
+using osuRequestor.Features.Search.Models;
+using osuRequestor.Features.Search.Services;
 
-namespace osuRequestor.Features.Requests.Controllers;
+namespace osuRequestor.Features.Search.Controllers;
 
 [ApiController]
 [Route("api/search")]

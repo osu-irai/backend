@@ -1,6 +1,6 @@
 using osuRequestor.Common.Models;
 
-namespace osuRequestor.Features.Requests.Models;
+namespace osuRequestor.Features.Search.Models;
 
 public record SearchBeatmapResponse
 {

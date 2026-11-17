@@ -2,10 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using osu.NET;
 using osuRequestor.Common.Extensions;
 using osuRequestor.Features.Requests.Mappings;
-using osuRequestor.Features.Requests.Models;
+using osuRequestor.Features.Search.Models;
 using osuRequestor.Infrastructure.Persistence;
 
-namespace osuRequestor.Features.Requests.Services;
+namespace osuRequestor.Features.Search.Services;
 
 public class SearchService(
     DatabaseContext dbContext,

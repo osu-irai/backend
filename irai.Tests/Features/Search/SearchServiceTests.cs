@@ -4,11 +4,11 @@ using NSubstitute;
 using NUnit.Framework;
 using osu.NET;
 using osu.NET.Authorization;
-using osuRequestor.Features.Requests.Services;
+using osuRequestor.Features.Search.Services;
 using osuRequestor.Infrastructure.Persistence;
 using osuRequestor.Features.Users.Persistence;
 
-namespace osuRequestor.Tests.Features.Requests;
+namespace osuRequestor.Tests.Features.Search;
 
 [TestFixture]
 public class SearchServiceTests
