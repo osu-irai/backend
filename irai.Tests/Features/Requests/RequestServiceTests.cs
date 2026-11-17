@@ -417,6 +417,123 @@ public class RequestServiceTests
     }
 
     [Test]
+    public async Task GetRequestsByUser_WhenRequestIsDeleted_ExcludesIt()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db = db;
+        var target = AddUser(db, 2, "bob");
+        var source = AddUser(db, 1, "alice");
+        var beatmap = AddBeatmap(db);
+        db.Requests.Add(new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow,
+            IsDeleted     = true
+        });
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsByUser(1);
+
+        Assert.That(result, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetRequestsByUser_ReturnsNewestFirstWithDestination()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db = db;
+        var target = AddUser(db, 2, "bob");
+        var source = AddUser(db, 1, "alice");
+        var beatmap = AddBeatmap(db);
+        var older = new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow.AddHours(-1)
+        };
+        var newer = new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow
+        };
+        db.Requests.AddRange(older, newer);
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsByUser(1);
+
+        Assert.That(result.Select(r => r.Id), Is.EqualTo(new[] { newer.Id, older.Id }));
+        Assert.That(result.All(r => r.To.Id == 2 && r.Beatmap.BeatmapId == 100), Is.True);
+    }
+
+    [Test]
+    public async Task GetRequestsByUser_ExcludesRequestsMadeByOthers()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db = db;
+        var target = AddUser(db, 2, "bob");
+        var source = AddUser(db, 1, "alice");
+        var other = AddUser(db, 3, "carol");
+        var beatmap = AddBeatmap(db);
+        db.Requests.Add(new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = other,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow
+        });
+        db.Requests.Add(new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = source,
+            Source        = RequestSource.Website,
+            Date          = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsByUser(1);
+
+        Assert.That(result, Has.Count.EqualTo(1));
+        Assert.That(result.Single().To.Username, Is.EqualTo("bob"));
+    }
+
+    [Test]
+    public async Task GetRequestsByUser_ReturnsAtMostFifty()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db = db;
+        var target = AddUser(db, 2, "bob");
+        var source = AddUser(db, 1, "alice");
+        var beatmap = AddBeatmap(db);
+        for (var i = 0; i < 55; i++)
+        {
+            db.Requests.Add(new RequestModel
+            {
+                Beatmap       = beatmap,
+                RequestedTo   = target,
+                RequestedFrom = source,
+                Source        = RequestSource.Website,
+                Date          = DateTime.UtcNow.AddSeconds(i)
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+        var result = await service.GetRequestsByUser(1);
+
+        Assert.That(result, Has.Count.EqualTo(50));
+    }
+
+    [Test]
     public async Task DeleteRequest_WhenExists_SoftDeletes()
     {
         var (db, service, _, _) = CreateHarness();

@@ -33,6 +33,21 @@ public class OwnRequestController(
     }
 
     /// <summary>
+    /// Returns a list of beatmaps requested by the player using their oauth token
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("sent")]
+    [ProducesResponseType(typeof(SentRequestResponse), StatusCodes.Status200OK)]
+    [Authorize(Roles = "User,Proxy", AuthenticationSchemes = "Bearer,InternalCookies")]
+    public async Task<ActionResult<SentRequestResponse>> GetSentRequests()
+    {
+        var claim    = await GetOsuClaim();
+        var requests = await requestService.GetRequestsByUser(claim);
+        return Ok(requests);
+    }
+
+    /// <summary>
     /// Creates a request to a player using your oauth token
     /// </summary>
     /// <returns>HTTP 200 on success, HTTP 400 on missing parameters</returns>

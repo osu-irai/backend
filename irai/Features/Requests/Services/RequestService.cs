@@ -1,7 +1,5 @@
 using static ChiffadicErrors.Result;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using osu.NET;
 using osuRequestor.Common.Extensions;
@@ -113,6 +111,37 @@ public class RequestService(
                                              }
                                              : null,
                                   Source = x.Source
+                              })
+                              .Take(50)
+                              .ToListAsync();
+    }
+
+    public async Task<List<SentRequestResponse>> GetRequestsByUser(int id)
+    {
+        return await dbContext.Requests
+                              .AsNoTracking()
+                              .Include(requestModel => requestModel.Beatmap)
+                              .Include(requestModel => requestModel.RequestedTo)
+                              .Where(req => req.RequestedFrom!.Id == id && !req.IsDeleted)
+                              .OrderByDescending(req => req.Date)
+                              .Select(x => new SentRequestResponse
+                              {
+                                  Id = x.Id,
+                                  Beatmap = new BeatmapDTO
+                                  {
+                                      BeatmapId    = x.Beatmap.Id,
+                                      BeatmapsetId = x.Beatmap.BeatmapSet.Id,
+                                      Artist       = x.Beatmap.BeatmapSet.Artist,
+                                      Title        = x.Beatmap.BeatmapSet.Title,
+                                      Difficulty   = x.Beatmap.Version,
+                                      Stars        = x.Beatmap.StarRating
+                                  },
+                                  To = new UserDTO
+                                  {
+                                      Id        = x.RequestedTo.Id,
+                                      Username  = x.RequestedTo.Username,
+                                      AvatarUrl = x.RequestedTo.AvatarUrl
+                                  }
                               })
                               .Take(50)
                               .ToListAsync();

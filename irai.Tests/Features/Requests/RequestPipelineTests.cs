@@ -194,6 +194,43 @@ public class RequestPipelineTests : IntegrationTestBase
     }
 
     [Test]
+    public async Task OwnRequestsSent_WithoutAuthentication_ReturnsUnauthorized()
+    {
+        var response = await this.Client.GetAsync("/api/requests/own/sent");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task OwnRequestsSent_WithInternalCookie_ReturnsOnlySentRequests()
+    {
+        await SeedAsync(db =>
+        {
+            var source      = TestDataBuilder.User(1, "source");
+            var destination = TestDataBuilder.User(2, "destination");
+            var set         = TestDataBuilder.BeatmapSet(10);
+            var beatmap     = TestDataBuilder.Beatmap(100, set);
+
+            db.Users.AddRange(source, destination);
+            db.BeatmapSets.Add(set);
+            db.Beatmaps.Add(beatmap);
+            db.Requests.Add(TestDataBuilder.Request(destination, source,      beatmap));
+            db.Requests.Add(TestDataBuilder.Request(source,      destination, beatmap));
+
+            return Task.CompletedTask;
+        });
+
+        using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
+        var response = await client.GetAsync("/api/requests/own/sent");
+        response.EnsureSuccessStatusCode();
+        var requests = await response.Content.ReadFromJsonAsync<List<SentRequestResponse>>();
+
+        Assert.That(requests, Has.Count.EqualTo(1));
+        Assert.That(requests![0].To.Id, Is.EqualTo(2));
+        Assert.That(requests[0].Beatmap.BeatmapId, Is.EqualTo(100));
+    }
+
+    [Test]
     public async Task OwnRequestsPost_WithoutAuthentication_ReturnsUnauthorized()
     {
         var response = await this.Client.PostAsJsonAsync("/api/requests/own", new

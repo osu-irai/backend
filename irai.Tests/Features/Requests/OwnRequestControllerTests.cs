@@ -188,6 +188,46 @@ public class OwnRequestControllerTests
     }
 
     /// <summary>
+    /// Throw on unauthorized user
+    /// </summary>
+    [Test]
+    public void GetSentRequests_WhenNotAuthenticated_ThrowsUnauthorized()
+    {
+        var (db, controller) = CreateController();
+        using var _db = db;
+        SetUnauthenticatedContext(controller);
+
+        Assert.ThrowsAsync<UnauthorizedException>(() => controller.GetSentRequests());
+    }
+
+    /// <summary>
+    /// Happy path
+    /// </summary>
+    [Test]
+    public async Task GetSentRequests_WhenSignedIn_ReturnsOnlySentRequests()
+    {
+        var (db, controller) = CreateController();
+        await using var _db     = db;
+        var             alice   = AddUser(db, 1, "alice");
+        var             bob     = AddUser(db, 2, "bob");
+        var             beatmap = AddBeatmap(db);
+        db.Requests.AddRange(
+            NewRequest(bob,   alice, beatmap),
+            NewRequest(alice, bob,   beatmap));
+        await db.SaveChangesAsync();
+        TestControllerContext.SignIn(controller, 1);
+
+        var result = await controller.GetSentRequests();
+
+        var ok       = result.Result as OkObjectResult;
+        var requests = ok?.Value as List<SentRequestResponse>;
+        Assert.That(ok,                  Is.Not.Null);
+        Assert.That(requests,            Has.Count.EqualTo(1));
+        Assert.That(requests![0].To.Id,  Is.EqualTo(2));
+        Assert.That(requests![0].Beatmap.BeatmapId, Is.EqualTo(100));
+    }
+
+    /// <summary>
     /// Missing beatmap IDs fail validation before reaching the action
     /// </summary>
     [Test]
