@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace osuRequestor.Infrastructure.Configuration;
+namespace irai.Infrastructure.Configuration;
 
 public class AuthClient
 {

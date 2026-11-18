@@ -1,8 +1,8 @@
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Persistence;
+using irai.Features.Users.Persistence;
 
-namespace osuRequestor.Features.Requests.Services;
+namespace irai.Features.Requests.Services;
 
 public interface IRequestService
 {

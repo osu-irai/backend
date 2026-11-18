@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace osuRequestor.Infrastructure.Persistence.Migrations
+namespace irai.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class AdjustedTwitchSettings : Migration

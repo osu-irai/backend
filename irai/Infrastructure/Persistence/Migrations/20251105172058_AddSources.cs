@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using osuRequestor.Features.Requests.Persistence;
+﻿using irai.Features.Requests.Persistence;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace osuRequestor.Infrastructure.Persistence.Migrations
+namespace irai.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class AddSources : Migration

@@ -1,24 +1,25 @@
+using irai.Common.Controllers;
+using irai.Infrastructure.Configuration;
+using irai.Infrastructure.ExternalServices.TwitchApi;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using osuRequestor.Common.Controllers;
-using osuRequestor.Infrastructure.Configuration;
-using osuRequestor.Infrastructure.ExternalServices.TwitchApi;
-using IAuthenticationService = osuRequestor.Features.Authentication.Services.IAuthenticationService;
+using IAuthenticationService = irai.Features.Authentication.Services.IAuthenticationService;
+using Services_IAuthenticationService = irai.Features.Authentication.Services.IAuthenticationService;
 
-namespace osuRequestor.Features.Authentication.Controllers;
+namespace irai.Features.Authentication.Controllers;
 
 [ApiController]
 [Route("twitch/auth")]
 public class TwitchAuthController : CrudController
 {
-    private readonly IAuthenticationService _authenticationService;
+    private readonly Services_IAuthenticationService _authenticationService;
     private readonly ILogger<TwitchAuthController> _logger;
     private readonly ServerConfig _serverConfig;
     private readonly TwitchApiProvider _twitchApi;
 
-    public TwitchAuthController(ILogger<TwitchAuthController> logger, IAuthenticationService authenticationService,
+    public TwitchAuthController(ILogger<TwitchAuthController> logger, Services_IAuthenticationService authenticationService,
                                 TwitchApiProvider twitchApi, IOptions<ServerConfig> config)
     {
         this._logger                = logger;

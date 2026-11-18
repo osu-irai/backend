@@ -1,6 +1,6 @@
 ﻿using osu.NET.Enums;
 
-namespace osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
+namespace irai.Infrastructure.ExternalServices.OsuApi.Models;
 
 public enum Mode
 {

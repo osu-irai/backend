@@ -1,14 +1,14 @@
 using System.Security.Claims;
+using irai.Common.Controllers;
+using irai.Common.Exceptions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
-using osuRequestor.Common.Controllers;
-using osuRequestor.Common.Exceptions;
 
-namespace osuRequestor.Tests.Common;
+namespace irai.Tests.Common;
 
 [TestFixture]
 public class CrudControllerTests

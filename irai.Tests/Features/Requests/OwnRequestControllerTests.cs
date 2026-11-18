@@ -1,3 +1,15 @@
+using irai.Common.Exceptions;
+using irai.Features.Requests.Controllers;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Persistence;
+using irai.Features.Requests.Services;
+using irai.Features.Requests.Validators;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Infrastructure.Messaging;
+using irai.Infrastructure.Notifications;
+using irai.Infrastructure.Persistence;
+using irai.Tests.Common;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -10,20 +22,8 @@ using NSubstitute;
 using NUnit.Framework;
 using osu.NET;
 using osu.NET.Authorization;
-using osuRequestor.Common.Exceptions;
-using osuRequestor.Features.Requests.Controllers;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Requests.Services;
-using osuRequestor.Features.Requests.Validators;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Messaging;
-using osuRequestor.Infrastructure.Notifications;
-using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Tests.Common;
 
-namespace osuRequestor.Tests.Features.Requests;
+namespace irai.Tests.Features.Requests;
 
 [TestFixture]
 public class OwnRequestControllerTests

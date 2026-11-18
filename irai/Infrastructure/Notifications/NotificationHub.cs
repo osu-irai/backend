@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 
-namespace osuRequestor.Infrastructure.Notifications;
+namespace irai.Infrastructure.Notifications;
 
 public class NotificationHub : Hub<INotificationHub>
 {

@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Security.Principal;
+using irai.Common.Exceptions;
+using irai.Features.Requests.Services;
 using osu.NET;
-using osuRequestor.Common.Exceptions;
-using osuRequestor.Features.Requests.Services;
 
-namespace osuRequestor.Common.Extensions;
+namespace irai.Common.Extensions;
 
 public static class ApiExceptionHelper
 {

@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using irai.Infrastructure.Configuration;
 using NUnit.Framework;
-using osuRequestor.Infrastructure.Configuration;
 
-namespace osuRequestor.Tests.Infrastructure.Configuration;
+namespace irai.Tests.Infrastructure.Configuration;
 
 [TestFixture]
 public class DatabaseConfigTests

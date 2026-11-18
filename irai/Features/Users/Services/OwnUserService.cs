@@ -1,12 +1,12 @@
+using irai.Common.Models;
+using irai.Features.Users.Models;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.Messaging;
+using irai.Infrastructure.Notifications;
+using irai.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using osuRequestor.Common.Models;
-using osuRequestor.Features.Users.Models;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.Messaging;
-using osuRequestor.Infrastructure.Notifications;
-using osuRequestor.Infrastructure.Persistence;
 
-namespace osuRequestor.Features.Users.Services;
+namespace irai.Features.Users.Services;
 
 public class OwnUserService(
     DatabaseContext databaseContext,

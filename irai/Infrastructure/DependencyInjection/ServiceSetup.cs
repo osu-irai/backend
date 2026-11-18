@@ -1,21 +1,21 @@
 using FluentValidation;
+using irai.Features.Authentication.Services;
+using irai.Features.Bots.Services;
+using irai.Features.Bots.Validators;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Services;
+using irai.Features.Search.Services;
+using irai.Features.Users.Services;
+using irai.Infrastructure.ExternalServices.OsuApi;
+using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
+using irai.Infrastructure.ExternalServices.TwitchApi;
+using irai.Infrastructure.Messaging;
+using irai.Infrastructure.Notifications;
 using MassTransit;
 using osu.NET;
-using osuRequestor.Features.Authentication.Services;
-using osuRequestor.Features.Bots.Services;
-using osuRequestor.Features.Bots.Validators;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Services;
-using osuRequestor.Features.Search.Services;
-using osuRequestor.Features.Users.Services;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
-using osuRequestor.Infrastructure.ExternalServices.TwitchApi;
-using osuRequestor.Infrastructure.Messaging;
-using osuRequestor.Infrastructure.Notifications;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
-namespace osuRequestor.Infrastructure.DependencyInjection;
+namespace irai.Infrastructure.DependencyInjection;
 
 public static class ServiceSetup
 {

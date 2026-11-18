@@ -1,8 +1,8 @@
+using irai.Features.Requests.Models;
+using irai.Infrastructure.Messaging.Contracts;
 using MassTransit;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Infrastructure.Messaging.Contracts;
 
-namespace osuRequestor.Infrastructure.Messaging;
+namespace irai.Infrastructure.Messaging;
 
 public class MessageBusService : IMessageBusService
 {

@@ -1,11 +1,11 @@
 using System.Text;
+using irai.Common.Exceptions;
+using irai.Infrastructure.ExceptionHandling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using osuRequestor.Common.Exceptions;
-using osuRequestor.Infrastructure.ExceptionHandling;
 
-namespace osuRequestor.Tests.Infrastructure.ExceptionHandling;
+namespace irai.Tests.Infrastructure.ExceptionHandling;
 
 [TestFixture]
 public class ApiExceptionHandlerTests

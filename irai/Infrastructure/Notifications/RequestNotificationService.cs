@@ -1,8 +1,8 @@
+using irai.Features.Requests.Models;
 using Microsoft.AspNetCore.SignalR;
-using osuRequestor.Features.Requests.Mappings;
-using osuRequestor.Features.Requests.Models;
+using irai.Features.Requests.Mappings;
 
-namespace osuRequestor.Infrastructure.Notifications;
+namespace irai.Infrastructure.Notifications;
 
 public class RequestNotificationService : IRequestNotificationService
 {

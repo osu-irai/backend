@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <RootNamespace>osuRequestor</RootNamespace>
+        <RootNamespace>irai</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

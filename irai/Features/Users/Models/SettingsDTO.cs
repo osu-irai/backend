@@ -1,4 +1,4 @@
-namespace osuRequestor.Features.Users.Models;
+namespace irai.Features.Users.Models;
 
 public class SettingsDTO
 {

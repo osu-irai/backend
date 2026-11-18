@@ -1,10 +1,10 @@
+using irai.Features.Bots.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using osuRequestor.Features.Bots.Services;
 
-namespace osuRequestor.Features.Bots.Controllers;
+namespace irai.Features.Bots.Controllers;
 
 [ApiController]
 [Route("bot/irc")]

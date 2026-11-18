@@ -1,11 +1,11 @@
 using System.Net;
+using irai.Features.Search.Models;
+using irai.Tests.Infrastructure.Factories;
+using irai.Tests.Infrastructure.Fixtures;
+using irai.Tests.Infrastructure.Harness;
 using NUnit.Framework;
-using osuRequestor.Features.Search.Models;
-using osuRequestor.Tests.Infrastructure.Factories;
-using osuRequestor.Tests.Infrastructure.Fixtures;
-using osuRequestor.Tests.Infrastructure.Harness;
 
-namespace osuRequestor.Tests.Features.Search;
+namespace irai.Tests.Features.Search;
 
 [TestFixture]
 [Category("Integration")]

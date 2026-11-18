@@ -1,10 +1,10 @@
+using irai.Features.Authentication.Persistence;
+using irai.Features.Requests.Persistence;
+using irai.Features.Users.Persistence;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
 
-namespace osuRequestor.Infrastructure.Persistence;
+namespace irai.Infrastructure.Persistence;
 
 public class DatabaseContext(
     DbContextOptions<DatabaseContext> options) : DbContext(options), IDataProtectionKeyContext

@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using osuRequestor.Common.Constants;
-using osuRequestor.Common.Extensions;
-using osuRequestor.Features.Requests.Models;
+using irai.Common.Constants;
+using irai.Features.Requests.Models;
+using irai.Common.Extensions;
 
-namespace osuRequestor.Features.Requests.Services;
+namespace irai.Features.Requests.Services;
 
 public class HttpUserContext(
     IHttpContextAccessor httpContextAccessor) : IUserContext

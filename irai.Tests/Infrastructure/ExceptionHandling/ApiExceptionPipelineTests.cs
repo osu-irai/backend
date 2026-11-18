@@ -1,8 +1,8 @@
 using System.Net;
+using irai.Tests.Infrastructure.Harness;
 using NUnit.Framework;
-using osuRequestor.Tests.Infrastructure.Harness;
 
-namespace osuRequestor.Tests.Infrastructure.ExceptionHandling;
+namespace irai.Tests.Infrastructure.ExceptionHandling;
 
 [TestFixture]
 [Category("Integration")]

@@ -1,8 +1,8 @@
+using irai.Common.Exceptions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using osuRequestor.Common.Exceptions;
 
-namespace osuRequestor.Common.Controllers;
+namespace irai.Common.Controllers;
 
 /// <summary>
 /// Base class for controllers

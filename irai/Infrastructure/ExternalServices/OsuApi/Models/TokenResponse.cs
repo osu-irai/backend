@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
+namespace irai.Infrastructure.ExternalServices.OsuApi.Models;
 
 public class TokenResponse
 {

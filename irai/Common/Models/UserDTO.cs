@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace osuRequestor.Common.Models;
+namespace irai.Common.Models;
 
 public class UserDTO
 {

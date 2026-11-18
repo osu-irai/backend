@@ -1,4 +1,4 @@
-namespace osuRequestor.Features.Bots.Models;
+namespace irai.Features.Bots.Models;
 
 public class TwitchDTO
 {

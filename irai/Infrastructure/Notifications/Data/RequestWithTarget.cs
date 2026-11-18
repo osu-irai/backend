@@ -1,6 +1,6 @@
-using osuRequestor.Features.Requests.Models;
+using irai.Features.Requests.Models;
 
-namespace osuRequestor.Infrastructure.Notifications.Data;
+namespace irai.Infrastructure.Notifications.Data;
 
 public class RequestWithTarget
 {

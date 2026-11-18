@@ -1,14 +1,14 @@
+using irai.Common.Extensions;
+using irai.Features.Authentication.Persistence;
+using irai.Features.Requests.Persistence;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.Persistence;
+using irai.Tests.Infrastructure.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using osuRequestor.Common.Extensions;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Extensions;
-using osuRequestor.Tests.Infrastructure.Fixtures;
+using irai.Infrastructure.Persistence.Extensions;
 
-namespace osuRequestor.Tests.Infrastructure.Persistence;
+namespace irai.Tests.Infrastructure.Persistence;
 
 [TestFixture]
 public class DatabaseExtensionTests

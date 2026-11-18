@@ -1,18 +1,18 @@
+using irai.Features.Authentication.Persistence;
+using irai.Features.Requests.Persistence;
+using irai.Features.Users.Models;
+using irai.Features.Users.Persistence;
+using irai.Features.Users.Services;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Infrastructure.Messaging;
+using irai.Infrastructure.Notifications;
+using irai.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using NUnit.Framework;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Models;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Features.Users.Services;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Messaging;
-using osuRequestor.Infrastructure.Notifications;
-using osuRequestor.Infrastructure.Persistence;
 
-namespace osuRequestor.Tests.Features.Users;
+namespace irai.Tests.Features.Users;
 
 [TestFixture]
 public class OwnUserServiceTests

@@ -1,7 +1,7 @@
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Infrastructure.Notifications.Data;
+using irai.Features.Requests.Models;
+using irai.Infrastructure.Notifications.Data;
 
-namespace osuRequestor.Infrastructure.Notifications;
+namespace irai.Infrastructure.Notifications;
 
 public interface INotificationHub
 {

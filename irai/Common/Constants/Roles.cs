@@ -1,4 +1,4 @@
-namespace osuRequestor.Common.Constants;
+namespace irai.Common.Constants;
 
 public static class Roles
 {

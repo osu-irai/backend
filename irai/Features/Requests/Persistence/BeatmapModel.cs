@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
 using Microsoft.EntityFrameworkCore;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 
-namespace osuRequestor.Features.Requests.Persistence;
+namespace irai.Features.Requests.Persistence;
 
 /// <summary>
 /// Database model for individual beatmaps

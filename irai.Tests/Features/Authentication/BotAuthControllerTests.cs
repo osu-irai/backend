@@ -1,13 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
+using irai.Features.Authentication.Controllers;
+using irai.Features.Authentication.Models;
+using irai.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
-using osuRequestor.Features.Authentication.Controllers;
-using osuRequestor.Features.Authentication.Models;
-using osuRequestor.Infrastructure.Configuration;
 
-namespace osuRequestor.Tests.Features.Authentication;
+namespace irai.Tests.Features.Authentication;
 
 [TestFixture]
 public class BotAuthControllerTests

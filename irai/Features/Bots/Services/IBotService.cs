@@ -1,6 +1,6 @@
-using osuRequestor.Features.Bots.Models;
+using irai.Features.Bots.Models;
 
-namespace osuRequestor.Features.Bots.Services;
+namespace irai.Features.Bots.Services;
 
 public interface IBotService
 {

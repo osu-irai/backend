@@ -1,8 +1,8 @@
+using irai.Features.Bots.Models;
+using irai.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using osuRequestor.Features.Bots.Models;
-using osuRequestor.Infrastructure.Persistence;
 
-namespace osuRequestor.Features.Bots.Services;
+namespace irai.Features.Bots.Services;
 
 public class BotService(
     DatabaseContext dbContext) : IBotService

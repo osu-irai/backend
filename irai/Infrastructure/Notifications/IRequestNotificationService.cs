@@ -1,6 +1,6 @@
-using osuRequestor.Features.Requests.Models;
+using irai.Features.Requests.Models;
 
-namespace osuRequestor.Infrastructure.Notifications;
+namespace irai.Infrastructure.Notifications;
 
 public interface IRequestNotificationService
 {

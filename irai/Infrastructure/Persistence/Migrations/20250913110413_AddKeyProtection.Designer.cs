@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using osuRequestor.Infrastructure.Persistence;
+using irai.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace osuRequestor.Infrastructure.Persistence.Migrations
+namespace irai.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
     [Migration("20250913110413_AddKeyProtection")]

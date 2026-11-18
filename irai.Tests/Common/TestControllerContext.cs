@@ -1,12 +1,12 @@
 using System.Security.Claims;
+using irai.Common.Constants;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using osuRequestor.Common.Constants;
 
-namespace osuRequestor.Tests.Common;
+namespace irai.Tests.Common;
 
 internal static class TestControllerContext
 {

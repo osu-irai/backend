@@ -2,6 +2,15 @@ using System.Security.Claims;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.States;
+using irai.Common.Extensions;
+using irai.Features.Authentication.Controllers;
+using irai.Features.Authentication.Persistence;
+using irai.Features.Authentication.Services;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.Configuration;
+using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -15,19 +24,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
-using osuRequestor.Common.Extensions;
-using osuRequestor.Features.Authentication.Controllers;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Authentication.Services;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.Configuration;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Persistence;
-using AuthenticationService = osuRequestor.Features.Authentication.Services.AuthenticationService;
+using AuthenticationService = irai.Features.Authentication.Services.AuthenticationService;
 using IAuthenticationService = Microsoft.AspNetCore.Authentication.IAuthenticationService;
+using Services_AuthenticationService = irai.Features.Authentication.Services.AuthenticationService;
 
-namespace osuRequestor.Tests.Features.Authentication;
+namespace irai.Tests.Features.Authentication;
 
 [TestFixture]
 public class OAuthControllerTests
@@ -76,8 +77,8 @@ public class OAuthControllerTests
         var controller = new OAuthController(
             NullLogger<OAuthController>.Instance,
             osuApi,
-            new AuthenticationService(this._backgroundJobClient, this._friendService, db,
-                                      NullLogger<AuthenticationService>.Instance),
+            new Services_AuthenticationService(this._backgroundJobClient, this._friendService, db,
+                                               NullLogger<Services_AuthenticationService>.Instance),
             Options.Create(new ServerConfig { HomePage = "/home" }));
 
         var services = new ServiceCollection()

@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using irai.Common.Models;
+using irai.Features.Authentication.Persistence;
 using Microsoft.EntityFrameworkCore;
-using osuRequestor.Common.Models;
-using osuRequestor.Features.Authentication.Persistence;
-using User = osuRequestor.Infrastructure.ExternalServices.OsuApi.Models.User;
+using Models_User = irai.Infrastructure.ExternalServices.OsuApi.Models.User;
+using User = irai.Infrastructure.ExternalServices.OsuApi.Models.User;
 
-namespace osuRequestor.Features.Users.Persistence;
+namespace irai.Features.Users.Persistence;
 
 /// <summary>
 /// Database model for a registered user
@@ -32,9 +33,9 @@ public class UserModel
 
     public ICollection<FriendModel> Friends { get; set; } = [];
 
-    public User IntoApiModel()
+    public Models_User IntoApiModel()
     {
-        return new User
+        return new Models_User
         {
             Id          = this.Id,
             Username    = this.Username,

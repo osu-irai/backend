@@ -1,4 +1,4 @@
-namespace osuRequestor.Features.Authentication.Services;
+namespace irai.Features.Authentication.Services;
 
 public interface IFriendService
 {

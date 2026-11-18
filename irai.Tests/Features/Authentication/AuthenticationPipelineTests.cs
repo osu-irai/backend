@@ -1,10 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using irai.Tests.Infrastructure.Harness;
 using Microsoft.AspNetCore.Mvc.Testing;
 using NUnit.Framework;
-using osuRequestor.Tests.Infrastructure.Harness;
 
-namespace osuRequestor.Tests.Features.Authentication;
+namespace irai.Tests.Features.Authentication;
 
 [TestFixture]
 [Category("Integration")]

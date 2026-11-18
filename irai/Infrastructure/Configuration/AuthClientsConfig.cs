@@ -1,4 +1,4 @@
-namespace osuRequestor.Infrastructure.Configuration;
+namespace irai.Infrastructure.Configuration;
 
 public class AuthClientsConfig : Dictionary<string, AuthClient>
 {

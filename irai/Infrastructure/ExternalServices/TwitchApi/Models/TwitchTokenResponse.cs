@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace osuRequestor.Infrastructure.ExternalServices.TwitchApi.Models;
+namespace irai.Infrastructure.ExternalServices.TwitchApi.Models;
 
 public class TwitchTokenResponse
 {

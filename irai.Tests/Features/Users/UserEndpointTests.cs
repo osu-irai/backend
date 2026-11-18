@@ -1,8 +1,8 @@
 using System.Net;
+using irai.Tests.Infrastructure.Harness;
 using NUnit.Framework;
-using osuRequestor.Tests.Infrastructure.Harness;
 
-namespace osuRequestor.Tests.Features.Users;
+namespace irai.Tests.Features.Users;
 
 [TestFixture]
 [Category("Integration")]

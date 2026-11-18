@@ -1,12 +1,12 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using irai.Common.Extensions;
+using irai.Infrastructure.Configuration;
+using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
 using Microsoft.Extensions.Options;
-using osuRequestor.Common.Extensions;
-using osuRequestor.Infrastructure.Configuration;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
 
-namespace osuRequestor.Infrastructure.ExternalServices.OsuApi;
+namespace irai.Infrastructure.ExternalServices.OsuApi;
 
 /// <summary>
 /// Stolen entirely off of Relaxation Vault's wrapper until a real one exists

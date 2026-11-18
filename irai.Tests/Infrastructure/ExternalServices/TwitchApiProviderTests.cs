@@ -1,12 +1,12 @@
 using System.Net;
 using System.Text;
+using irai.Infrastructure.Configuration;
+using irai.Infrastructure.ExternalServices.TwitchApi;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
-using osuRequestor.Infrastructure.Configuration;
-using osuRequestor.Infrastructure.ExternalServices.TwitchApi;
 
-namespace osuRequestor.Tests.Infrastructure.ExternalServices;
+namespace irai.Tests.Infrastructure.ExternalServices;
 
 [TestFixture]
 public class TwitchApiProviderTests

@@ -1,12 +1,12 @@
+using irai.Features.Bots.Controllers;
+using irai.Features.Bots.Services;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using osuRequestor.Features.Bots.Controllers;
-using osuRequestor.Features.Bots.Services;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.Persistence;
 
-namespace osuRequestor.Tests.Features.Bots;
+namespace irai.Tests.Features.Bots;
 
 [TestFixture]
 public class IrcBotControllerTests

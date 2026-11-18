@@ -1,18 +1,18 @@
+using irai.Common.Exceptions;
+using irai.Features.Bots.Models;
+using irai.Features.Bots.Services;
+using irai.Features.Requests.Controllers;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Persistence;
+using irai.Features.Requests.Services;
+using irai.Infrastructure.Notifications;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using osu.NET;
-using osuRequestor.Common.Exceptions;
-using osuRequestor.Features.Bots.Models;
-using osuRequestor.Features.Bots.Services;
-using osuRequestor.Features.Requests.Controllers;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Requests.Services;
-using osuRequestor.Infrastructure.Notifications;
 
-namespace osuRequestor.Features.Bots.Controllers;
+namespace irai.Features.Bots.Controllers;
 
 [ApiController]
 [Route("twitch/info")]

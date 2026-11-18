@@ -1,4 +1,4 @@
-namespace osuRequestor.Features.Requests.Persistence;
+namespace irai.Features.Requests.Persistence;
 
 public enum RequestSource
 {

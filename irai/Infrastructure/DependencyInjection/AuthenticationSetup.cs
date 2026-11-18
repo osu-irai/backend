@@ -1,4 +1,5 @@
 using System.Text;
+using irai.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -7,9 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using osu.Game.Extensions;
-using osuRequestor.Infrastructure.Configuration;
 
-namespace osuRequestor.Infrastructure.DependencyInjection;
+namespace irai.Infrastructure.DependencyInjection;
 
 public static class AuthenticationSetup
 {

@@ -1,9 +1,9 @@
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Persistence;
+using irai.Features.Requests.Services;
 using MassTransit;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Requests.Services;
 
-namespace osuRequestor.Infrastructure.Messaging;
+namespace irai.Infrastructure.Messaging;
 
 public class MessageSubscriberService : IConsumer<PostBaseRequest>
 {

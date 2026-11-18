@@ -1,10 +1,10 @@
+using irai.Common.Extensions;
+using irai.Features.Authentication.Persistence;
+using irai.Features.Requests.Persistence;
+using irai.Features.Users.Persistence;
 using Microsoft.EntityFrameworkCore;
-using osuRequestor.Common.Extensions;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
 
-namespace osuRequestor.Infrastructure.Persistence.Extensions;
+namespace irai.Infrastructure.Persistence.Extensions;
 
 /// <summary>
 /// Extension methods for DB context. Added for DRY

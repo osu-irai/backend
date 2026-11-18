@@ -1,4 +1,4 @@
-namespace osuRequestor.Features.Requests.Services;
+namespace irai.Features.Requests.Services;
 
 public record Unit;
 

@@ -1,7 +1,7 @@
-using osuRequestor.Common.Models;
-using osuRequestor.Features.Requests.Persistence;
+using irai.Common.Models;
+using irai.Features.Requests.Persistence;
 
-namespace osuRequestor.Features.Requests.Models;
+namespace irai.Features.Requests.Models;
 
 public class ReceivedRequestResponse
 {

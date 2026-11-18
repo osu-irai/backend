@@ -1,12 +1,12 @@
+using irai.Common.Exceptions;
+using irai.Features.Authentication.Persistence;
+using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
+using irai.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication;
 using osu.NET.Authorization;
-using osuRequestor.Common.Exceptions;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
-using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Extensions;
+using irai.Infrastructure.Persistence.Extensions;
 
-namespace osuRequestor.Infrastructure.ExternalServices.OsuApi;
+namespace irai.Infrastructure.ExternalServices.OsuApi;
 
 public class OsuDatabaseAccessTokenProvider(
     DatabaseContext dbContext,

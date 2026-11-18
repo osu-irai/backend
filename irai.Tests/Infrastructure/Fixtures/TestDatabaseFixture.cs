@@ -1,7 +1,7 @@
 using Npgsql;
 using Testcontainers.PostgreSql;
 
-namespace osuRequestor.Tests.Infrastructure.Fixtures;
+namespace irai.Tests.Infrastructure.Fixtures;
 
 public sealed class TestDatabaseFixture : IAsyncDisposable
 {

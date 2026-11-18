@@ -1,11 +1,11 @@
+using irai.Features.Search.Models;
+using irai.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using osu.NET;
-using osuRequestor.Common.Extensions;
-using osuRequestor.Features.Requests.Mappings;
-using osuRequestor.Features.Search.Models;
-using osuRequestor.Infrastructure.Persistence;
+using irai.Common.Extensions;
+using irai.Features.Requests.Mappings;
 
-namespace osuRequestor.Features.Search.Services;
+namespace irai.Features.Search.Services;
 
 public class SearchService(
     DatabaseContext dbContext,

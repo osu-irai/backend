@@ -1,4 +1,14 @@
 using ChiffadicErrors;
+using irai.Common.Exceptions;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Persistence;
+using irai.Features.Requests.Services;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Infrastructure.Messaging;
+using irai.Infrastructure.Messaging.Contracts;
+using irai.Infrastructure.Notifications;
+using irai.Infrastructure.Persistence;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -6,18 +16,8 @@ using NSubstitute;
 using NUnit.Framework;
 using osu.NET;
 using osu.NET.Authorization;
-using osuRequestor.Common.Exceptions;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Requests.Services;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Messaging;
-using osuRequestor.Infrastructure.Messaging.Contracts;
-using osuRequestor.Infrastructure.Notifications;
-using osuRequestor.Infrastructure.Persistence;
 
-namespace osuRequestor.Tests.Features.Requests;
+namespace irai.Tests.Features.Requests;
 
 [TestFixture]
 public class RequestServiceTests

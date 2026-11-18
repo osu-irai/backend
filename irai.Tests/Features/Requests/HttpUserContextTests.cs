@@ -1,13 +1,13 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using irai.Common.Constants;
+using irai.Common.Exceptions;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Services;
 using Microsoft.AspNetCore.Http;
 using NUnit.Framework;
-using osuRequestor.Common.Constants;
-using osuRequestor.Common.Exceptions;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Services;
 
-namespace osuRequestor.Tests.Features.Requests;
+namespace irai.Tests.Features.Requests;
 
 /// <summary>
 /// User ID extraction from auth context

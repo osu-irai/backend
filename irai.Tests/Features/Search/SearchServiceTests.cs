@@ -1,14 +1,14 @@
+using irai.Features.Search.Services;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using NUnit.Framework;
 using osu.NET;
 using osu.NET.Authorization;
-using osuRequestor.Features.Search.Services;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.Persistence;
 
-namespace osuRequestor.Tests.Features.Search;
+namespace irai.Tests.Features.Search;
 
 [TestFixture]
 public class SearchServiceTests

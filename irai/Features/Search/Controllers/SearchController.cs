@@ -1,10 +1,10 @@
+using irai.Common.Controllers;
+using irai.Features.Search.Models;
+using irai.Features.Search.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using osuRequestor.Common.Controllers;
-using osuRequestor.Features.Search.Models;
-using osuRequestor.Features.Search.Services;
 
-namespace osuRequestor.Features.Search.Controllers;
+namespace irai.Features.Search.Controllers;
 
 [ApiController]
 [Route("search")]

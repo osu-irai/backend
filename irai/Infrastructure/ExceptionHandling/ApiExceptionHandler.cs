@@ -1,7 +1,7 @@
+using irai.Common.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
-using osuRequestor.Common.Exceptions;
 
-namespace osuRequestor.Infrastructure.ExceptionHandling;
+namespace irai.Infrastructure.ExceptionHandling;
 
 public class ApiExceptionHandler(
     ILogger<ApiExceptionHandler> logger) : IExceptionHandler

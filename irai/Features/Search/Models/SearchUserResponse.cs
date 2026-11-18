@@ -1,6 +1,6 @@
-using osuRequestor.Common.Models;
+using irai.Common.Models;
 
-namespace osuRequestor.Features.Search.Models;
+namespace irai.Features.Search.Models;
 
 public record SearchUserResponse
 {

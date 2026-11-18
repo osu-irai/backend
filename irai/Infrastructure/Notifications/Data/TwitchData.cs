@@ -1,4 +1,4 @@
-namespace osuRequestor.Infrastructure.Notifications.Data;
+namespace irai.Infrastructure.Notifications.Data;
 
 public class TwitchData
 {

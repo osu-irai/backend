@@ -1,7 +1,7 @@
-using osuRequestor.Common.Extensions;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Common.Extensions;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
 
-namespace osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
+namespace irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
 
 public interface IOsuApiProvider
 {

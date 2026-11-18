@@ -1,7 +1,7 @@
+using irai.Features.Requests.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using osuRequestor.Features.Requests.Models;
 
-namespace osuRequestor.Features.Requests.ModelBinding;
+namespace irai.Features.Requests.ModelBinding;
 
 public class RequestModelBinderProvider : IModelBinderProvider
 {

@@ -1,8 +1,8 @@
+using irai.Common.Controllers;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using osuRequestor.Common.Controllers;
 
-namespace osuRequestor.Features.Health.Controllers;
+namespace irai.Features.Health.Controllers;
 
 [ApiController]
 [Route("health")]

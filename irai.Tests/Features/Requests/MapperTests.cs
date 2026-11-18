@@ -1,10 +1,10 @@
+using irai.Common.Models;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Persistence;
 using NUnit.Framework;
-using osuRequestor.Common.Models;
-using osuRequestor.Features.Requests.Mappings;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Persistence;
+using irai.Features.Requests.Mappings;
 
-namespace osuRequestor.Tests.Features.Requests;
+namespace irai.Tests.Features.Requests;
 
 [TestFixture]
 public class MapperTests

@@ -1,4 +1,4 @@
-namespace osuRequestor.Common.Exceptions;
+namespace irai.Common.Exceptions;
 
 public abstract class ApiException(
     string message) : Exception(message)

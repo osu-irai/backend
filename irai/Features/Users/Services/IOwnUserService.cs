@@ -1,6 +1,6 @@
-using osuRequestor.Features.Users.Models;
+using irai.Features.Users.Models;
 
-namespace osuRequestor.Features.Users.Services;
+namespace irai.Features.Users.Services;
 
 public interface IOwnUserService
 {

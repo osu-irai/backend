@@ -1,13 +1,13 @@
+using irai.Common.Constants;
+using irai.Common.Controllers;
+using irai.Common.Exceptions;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using osuRequestor.Common.Constants;
-using osuRequestor.Common.Controllers;
-using osuRequestor.Common.Exceptions;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Services;
 
-namespace osuRequestor.Features.Requests.Controllers;
+namespace irai.Features.Requests.Controllers;
 
 [ApiController]
 [Route("requests/own")]

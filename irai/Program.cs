@@ -1,17 +1,17 @@
 using Hangfire;
+using irai.Features.Requests.Persistence;
+using irai.Infrastructure.Configuration;
+using irai.Infrastructure.ExceptionHandling;
+using irai.Infrastructure.Notifications;
+using irai.Infrastructure.Persistence;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Infrastructure.Configuration;
-using osuRequestor.Infrastructure.DependencyInjection;
-using osuRequestor.Infrastructure.ExceptionHandling;
-using osuRequestor.Infrastructure.Notifications;
-using osuRequestor.Infrastructure.Persistence;
+using irai.Infrastructure.DependencyInjection;
 using Scalar.AspNetCore;
 
-namespace osuRequestor;
+namespace irai;
 
 public static class Program
 {

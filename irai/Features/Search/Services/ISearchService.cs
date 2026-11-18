@@ -1,6 +1,6 @@
-using osuRequestor.Features.Search.Models;
+using irai.Features.Search.Models;
 
-namespace osuRequestor.Features.Search.Services;
+namespace irai.Features.Search.Services;
 
 public interface ISearchService
 {

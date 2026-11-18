@@ -1,8 +1,8 @@
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Features.Requests.Persistence;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
 
-namespace osuRequestor.Tests.Infrastructure.Fixtures;
+namespace irai.Tests.Infrastructure.Fixtures;
 
 public static class TestDataBuilder
 {

@@ -1,6 +1,6 @@
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
 
-namespace osuRequestor.Features.Authentication.Services;
+namespace irai.Features.Authentication.Services;
 
 public interface IAuthenticationService
 {

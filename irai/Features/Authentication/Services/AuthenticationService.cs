@@ -1,10 +1,10 @@
 using Hangfire;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Persistence;
+using irai.Features.Authentication.Persistence;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Infrastructure.Persistence;
 
-namespace osuRequestor.Features.Authentication.Services;
+namespace irai.Features.Authentication.Services;
 
 public class AuthenticationService(
     IBackgroundJobClient backgroundJobClient,

@@ -1,10 +1,10 @@
+using irai.Common.Controllers;
+using irai.Features.Users.Models;
+using irai.Features.Users.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using osuRequestor.Common.Controllers;
-using osuRequestor.Features.Users.Models;
-using osuRequestor.Features.Users.Services;
 
-namespace osuRequestor.Features.Users.Controllers;
+namespace irai.Features.Users.Controllers;
 
 [ApiController]
 [Route("users/own")]

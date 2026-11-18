@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
-using osuRequestor.Features.Users.Persistence;
+using irai.Features.Users.Persistence;
 
-namespace osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
+namespace irai.Infrastructure.ExternalServices.OsuApi.Models;
 
 public class User
 {

@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace osuRequestor.Features.Requests.Validators;
+namespace irai.Features.Requests.Validators;
 
 public class DeleteSelfRequestValidator : AbstractValidator<int?>
 {

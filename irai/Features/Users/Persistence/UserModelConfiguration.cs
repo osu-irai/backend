@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace osuRequestor.Features.Users.Persistence;
+namespace irai.Features.Users.Persistence;
 
 public class UserModelConfiguration : IEntityTypeConfiguration<UserModel>
 {

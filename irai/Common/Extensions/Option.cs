@@ -1,4 +1,4 @@
-namespace osuRequestor.Common.Extensions;
+namespace irai.Common.Extensions;
 
 public struct Some<T>
 {

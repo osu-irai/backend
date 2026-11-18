@@ -1,4 +1,11 @@
 using System.Security.Claims;
+using irai.Common.Exceptions;
+using irai.Features.Authentication.Persistence;
+using irai.Infrastructure.ExternalServices.OsuApi;
+using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Infrastructure.Persistence;
+using irai.Tests.Infrastructure.Fixtures;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -6,15 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using NUnit.Framework;
-using osuRequestor.Common.Exceptions;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Tests.Infrastructure.Fixtures;
 
-namespace osuRequestor.Tests.Infrastructure.ExternalServices;
+namespace irai.Tests.Infrastructure.ExternalServices;
 
 [TestFixture]
 public class OsuDatabaseAccessTokenProviderTests

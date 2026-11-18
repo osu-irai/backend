@@ -1,9 +1,9 @@
 using System.Net.Http.Headers;
+using irai.Infrastructure.Configuration;
+using irai.Infrastructure.ExternalServices.TwitchApi.Models;
 using Microsoft.Extensions.Options;
-using osuRequestor.Infrastructure.Configuration;
-using osuRequestor.Infrastructure.ExternalServices.TwitchApi.Models;
 
-namespace osuRequestor.Infrastructure.ExternalServices.TwitchApi;
+namespace irai.Infrastructure.ExternalServices.TwitchApi;
 
 public class TwitchApiProvider(
     IOptions<TwitchConfig> config,

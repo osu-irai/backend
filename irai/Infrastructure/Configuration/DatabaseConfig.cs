@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Npgsql;
 
-namespace osuRequestor.Infrastructure.Configuration;
+namespace irai.Infrastructure.Configuration;
 
 public class DatabaseConfig
 {

@@ -1,17 +1,17 @@
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.States;
+using irai.Features.Authentication.Persistence;
+using irai.Features.Authentication.Services;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using NUnit.Framework;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Authentication.Services;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Persistence;
 
-namespace osuRequestor.Tests.Features.Authentication;
+namespace irai.Tests.Features.Authentication;
 
 [TestFixture]
 public class AuthenticationServiceTests

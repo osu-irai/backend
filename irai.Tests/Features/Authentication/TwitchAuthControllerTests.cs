@@ -1,5 +1,10 @@
 using System.Security.Claims;
 using Hangfire;
+using irai.Features.Authentication.Controllers;
+using irai.Features.Authentication.Services;
+using irai.Infrastructure.Configuration;
+using irai.Infrastructure.ExternalServices.TwitchApi;
+using irai.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -13,15 +18,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
-using osuRequestor.Features.Authentication.Controllers;
-using osuRequestor.Features.Authentication.Services;
-using osuRequestor.Infrastructure.Configuration;
-using osuRequestor.Infrastructure.ExternalServices.TwitchApi;
-using osuRequestor.Infrastructure.Persistence;
-using AuthenticationService = osuRequestor.Features.Authentication.Services.AuthenticationService;
+using AuthenticationService = irai.Features.Authentication.Services.AuthenticationService;
 using IAuthenticationService = Microsoft.AspNetCore.Authentication.IAuthenticationService;
+using Services_AuthenticationService = irai.Features.Authentication.Services.AuthenticationService;
 
-namespace osuRequestor.Tests.Features.Authentication;
+namespace irai.Tests.Features.Authentication;
 
 [TestFixture]
 public class TwitchAuthControllerTests
@@ -59,8 +60,8 @@ public class TwitchAuthControllerTests
         this._friendService       = Substitute.For<IFriendService>();
         var controller = new TwitchAuthController(
             NullLogger<TwitchAuthController>.Instance,
-            new AuthenticationService(this._backgroundJobClient, this._friendService, db,
-                                      NullLogger<AuthenticationService>.Instance),
+            new Services_AuthenticationService(this._backgroundJobClient, this._friendService, db,
+                                               NullLogger<Services_AuthenticationService>.Instance),
             twitch,
             Options.Create(new ServerConfig { HomePage = "/home" }));
 

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace osuRequestor.Features.Users.Persistence;
+namespace irai.Features.Users.Persistence;
 
 /// <summary>
 /// Database model for user settings

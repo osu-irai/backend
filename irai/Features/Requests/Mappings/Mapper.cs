@@ -1,14 +1,14 @@
+using irai.Common.Models;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Persistence;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.Notifications.Data;
 using osu.NET.Models.Beatmaps;
 using osu.NET.Models.Users;
-using osuRequestor.Common.Models;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Notifications.Data;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
 using BeatmapSet = osu.NET.Models.Beatmaps.BeatmapSet;
 
-namespace osuRequestor.Features.Requests.Mappings;
+namespace irai.Features.Requests.Mappings;
 
 /// <summary>
 /// Type mapping extension methods

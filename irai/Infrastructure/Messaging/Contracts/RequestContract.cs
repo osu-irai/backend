@@ -1,7 +1,7 @@
+using irai.Features.Requests.Models;
 using MassTransit;
-using osuRequestor.Features.Requests.Models;
 
-namespace osuRequestor.Infrastructure.Messaging.Contracts;
+namespace irai.Infrastructure.Messaging.Contracts;
 
 [EntityName("request-contract")]
 public class RequestContract

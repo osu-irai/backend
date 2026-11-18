@@ -1,13 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using irai.Features.Authentication.Models;
+using irai.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using osuRequestor.Features.Authentication.Models;
-using osuRequestor.Infrastructure.Configuration;
 
-namespace osuRequestor.Features.Authentication.Controllers;
+namespace irai.Features.Authentication.Controllers;
 
 [ApiController]
 [Route("bot/auth")]

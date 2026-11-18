@@ -1,6 +1,6 @@
-using osuRequestor.Features.Requests.Models;
+using irai.Features.Requests.Models;
 
-namespace osuRequestor.Features.Requests.Services;
+namespace irai.Features.Requests.Services;
 
 public interface IUserContext
 {

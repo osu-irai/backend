@@ -1,3 +1,16 @@
+using irai.Features.Authentication.Persistence;
+using irai.Features.Bots.Controllers;
+using irai.Features.Bots.Models;
+using irai.Features.Bots.Services;
+using irai.Features.Requests.Controllers;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Persistence;
+using irai.Features.Requests.Services;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
+using irai.Infrastructure.Messaging;
+using irai.Infrastructure.Notifications;
+using irai.Infrastructure.Persistence;
 using MassTransit;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -6,21 +19,8 @@ using NSubstitute;
 using NUnit.Framework;
 using osu.NET;
 using osu.NET.Authorization;
-using osuRequestor.Features.Authentication.Persistence;
-using osuRequestor.Features.Bots.Controllers;
-using osuRequestor.Features.Bots.Models;
-using osuRequestor.Features.Bots.Services;
-using osuRequestor.Features.Requests.Controllers;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Requests.Services;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Models;
-using osuRequestor.Infrastructure.Messaging;
-using osuRequestor.Infrastructure.Notifications;
-using osuRequestor.Infrastructure.Persistence;
 
-namespace osuRequestor.Tests.Features.Bots;
+namespace irai.Tests.Features.Bots;
 
 [TestFixture]
 public class TwitchControllerTests

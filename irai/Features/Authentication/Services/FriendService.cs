@@ -1,8 +1,8 @@
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
-using osuRequestor.Infrastructure.Persistence;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
+using irai.Infrastructure.Persistence;
 
-namespace osuRequestor.Features.Authentication.Services;
+namespace irai.Features.Authentication.Services;
 
 public class FriendService(
     DatabaseContext context,

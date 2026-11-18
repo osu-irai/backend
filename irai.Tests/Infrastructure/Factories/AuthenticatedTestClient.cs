@@ -2,15 +2,15 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using irai.Common.Constants;
+using irai.Tests.Infrastructure.Harness;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using osuRequestor.Common.Constants;
-using osuRequestor.Tests.Infrastructure.Harness;
 
-namespace osuRequestor.Tests.Infrastructure.Factories;
+namespace irai.Tests.Infrastructure.Factories;
 
 public static class AuthenticatedTestClient
 {

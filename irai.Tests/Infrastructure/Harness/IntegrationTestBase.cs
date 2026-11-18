@@ -1,9 +1,9 @@
+using irai.Infrastructure.Persistence;
+using irai.Tests.Infrastructure.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Tests.Infrastructure.Fixtures;
 
-namespace osuRequestor.Tests.Infrastructure.Harness;
+namespace irai.Tests.Infrastructure.Harness;
 
 [NonParallelizable]
 public abstract class IntegrationTestBase

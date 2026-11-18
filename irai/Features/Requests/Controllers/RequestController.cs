@@ -1,14 +1,14 @@
+using irai.Common.Constants;
+using irai.Common.Exceptions;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using osuRequestor.Common.Constants;
-using osuRequestor.Common.Exceptions;
-using osuRequestor.Common.Extensions;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Services;
+using irai.Common.Extensions;
 
-namespace osuRequestor.Features.Requests.Controllers;
+namespace irai.Features.Requests.Controllers;
 
 [ApiController]
 [Route("request")]

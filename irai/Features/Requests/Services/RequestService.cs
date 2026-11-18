@@ -1,19 +1,19 @@
 using System.Diagnostics;
+using irai.Common.Extensions;
+using irai.Common.Models;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Persistence;
+using irai.Features.Users.Persistence;
+using irai.Infrastructure.Messaging;
+using irai.Infrastructure.Notifications;
+using irai.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using osu.NET;
-using osuRequestor.Common.Extensions;
-using osuRequestor.Common.Models;
-using osuRequestor.Features.Requests.Mappings;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Features.Users.Persistence;
-using osuRequestor.Infrastructure.Messaging;
-using osuRequestor.Infrastructure.Notifications;
-using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Infrastructure.Persistence.Extensions;
+using irai.Features.Requests.Mappings;
+using irai.Infrastructure.Persistence.Extensions;
 using static ChiffadicErrors.Result;
 
-namespace osuRequestor.Features.Requests.Services;
+namespace irai.Features.Requests.Services;
 
 public class RequestService(
     ILogger<RequestService> logger,

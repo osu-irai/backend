@@ -1,6 +1,6 @@
-using osuRequestor.Infrastructure.Configuration;
+using irai.Infrastructure.Configuration;
 
-namespace osuRequestor.Infrastructure.DependencyInjection;
+namespace irai.Infrastructure.DependencyInjection;
 
 public static class ConfigurationSetup
 {

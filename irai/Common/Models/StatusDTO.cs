@@ -1,4 +1,4 @@
-namespace osuRequestor.Common.Models;
+namespace irai.Common.Models;
 
 public enum StatusDTO
 {

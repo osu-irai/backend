@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace osuRequestor.Features.Users.Persistence;
+namespace irai.Features.Users.Persistence;
 
 [PrimaryKey(nameof(UserId), nameof(FriendId))]
 public class FriendModel

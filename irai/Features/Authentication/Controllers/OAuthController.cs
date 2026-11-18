@@ -1,16 +1,16 @@
 using System.Security.Claims;
+using irai.Common.Constants;
+using irai.Common.Extensions;
+using irai.Infrastructure.Configuration;
+using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using osuRequestor.Common.Constants;
-using osuRequestor.Common.Extensions;
-using osuRequestor.Infrastructure.Configuration;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
-using IAuthenticationService = osuRequestor.Features.Authentication.Services.IAuthenticationService;
+using IAuthenticationService = irai.Features.Authentication.Services.IAuthenticationService;
 
-namespace osuRequestor.Features.Authentication.Controllers;
+namespace irai.Features.Authentication.Controllers;
 
 [ApiController]
 [Route("oauth")]

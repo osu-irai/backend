@@ -1,6 +1,6 @@
 using MassTransit;
 
-namespace osuRequestor.Infrastructure.Messaging.Contracts;
+namespace irai.Infrastructure.Messaging.Contracts;
 
 [EntityName("irc-settings-change-contract")]
 public class IrcSettingsChangeContract

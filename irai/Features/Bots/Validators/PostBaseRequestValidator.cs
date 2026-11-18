@@ -1,7 +1,7 @@
 using FluentValidation;
-using osuRequestor.Features.Requests.Models;
+using irai.Features.Requests.Models;
 
-namespace osuRequestor.Features.Bots.Validators;
+namespace irai.Features.Bots.Validators;
 
 public class PostBaseRequestValidator : AbstractValidator<PostBaseRequest?>
 {

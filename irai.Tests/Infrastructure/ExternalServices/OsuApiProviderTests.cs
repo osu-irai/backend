@@ -1,14 +1,14 @@
 using System.Net;
 using System.Text;
+using irai.Common.Extensions;
+using irai.Infrastructure.Configuration;
+using irai.Infrastructure.ExternalServices.OsuApi;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using osu.NET.Models.Users;
-using osuRequestor.Common.Extensions;
-using osuRequestor.Infrastructure.Configuration;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi;
 
-namespace osuRequestor.Tests.Infrastructure.ExternalServices;
+namespace irai.Tests.Infrastructure.ExternalServices;
 
 [TestFixture]
 public class OsuApiProviderTests
@@ -139,7 +139,7 @@ public class OsuApiProviderTests
         var data     = await provider.GetSelfUser("token");
 
         Assert.That(
-            data, Is.EqualTo(new Option<osuRequestor.Infrastructure.ExternalServices.OsuApi.Models.User>(new None())));
+            data, Is.EqualTo(new Option<irai.Infrastructure.ExternalServices.OsuApi.Models.User>(new None())));
     }
 
     [Test]

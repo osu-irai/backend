@@ -1,3 +1,6 @@
+using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
+using irai.Infrastructure.Persistence;
+using irai.Tests.Infrastructure.Fixtures;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -8,11 +11,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using NSubstitute;
-using osuRequestor.Infrastructure.ExternalServices.OsuApi.Interfaces;
-using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Tests.Infrastructure.Fixtures;
 
-namespace osuRequestor.Tests.Infrastructure.Harness;
+namespace irai.Tests.Infrastructure.Harness;
 
 // WebApplicationFactory only needs a type from the application assembly; Program is static.
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<DatabaseContext>

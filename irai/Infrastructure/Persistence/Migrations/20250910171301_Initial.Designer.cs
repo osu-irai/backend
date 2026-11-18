@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using osuRequestor.Infrastructure.Persistence;
+using irai.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace osuRequestor.Infrastructure.Persistence.Migrations
+namespace irai.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
     [Migration("20250910171301_Initial")]
@@ -25,7 +25,7 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("osuRequestor.Features.Requests.Persistence.BeatmapModel", b =>
+            modelBuilder.Entity("irai.Features.Requests.Persistence.BeatmapModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -83,7 +83,7 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("Beatmaps");
                 });
 
-            modelBuilder.Entity("osuRequestor.Features.Requests.Persistence.BeatmapSetModel", b =>
+            modelBuilder.Entity("irai.Features.Requests.Persistence.BeatmapSetModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -107,7 +107,7 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("BeatmapSets");
                 });
 
-            modelBuilder.Entity("osuRequestor.Features.Requests.Persistence.RequestModel", b =>
+            modelBuilder.Entity("irai.Features.Requests.Persistence.RequestModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -143,7 +143,7 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("Requests");
                 });
 
-            modelBuilder.Entity("osuRequestor.Features.Authentication.Persistence.TokenModel", b =>
+            modelBuilder.Entity("irai.Features.Authentication.Persistence.TokenModel", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -164,7 +164,7 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("Tokens");
                 });
 
-            modelBuilder.Entity("osuRequestor.Features.Users.Persistence.UserModel", b =>
+            modelBuilder.Entity("irai.Features.Users.Persistence.UserModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -190,9 +190,9 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("osuRequestor.Features.Requests.Persistence.BeatmapModel", b =>
+            modelBuilder.Entity("irai.Features.Requests.Persistence.BeatmapModel", b =>
                 {
-                    b.HasOne("osuRequestor.Features.Requests.Persistence.BeatmapSetModel", "BeatmapSet")
+                    b.HasOne("irai.Features.Requests.Persistence.BeatmapSetModel", "BeatmapSet")
                         .WithMany()
                         .HasForeignKey("BeatmapSetId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -201,21 +201,21 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.Navigation("BeatmapSet");
                 });
 
-            modelBuilder.Entity("osuRequestor.Features.Requests.Persistence.RequestModel", b =>
+            modelBuilder.Entity("irai.Features.Requests.Persistence.RequestModel", b =>
                 {
-                    b.HasOne("osuRequestor.Features.Requests.Persistence.BeatmapModel", "Beatmap")
+                    b.HasOne("irai.Features.Requests.Persistence.BeatmapModel", "Beatmap")
                         .WithMany()
                         .HasForeignKey("BeatmapId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("osuRequestor.Features.Users.Persistence.UserModel", "RequestedFrom")
+                    b.HasOne("irai.Features.Users.Persistence.UserModel", "RequestedFrom")
                         .WithMany()
                         .HasForeignKey("RequestedFromId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("osuRequestor.Features.Users.Persistence.UserModel", "RequestedTo")
+                    b.HasOne("irai.Features.Users.Persistence.UserModel", "RequestedTo")
                         .WithMany()
                         .HasForeignKey("RequestedToId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -228,18 +228,18 @@ namespace osuRequestor.Infrastructure.Persistence.Migrations
                     b.Navigation("RequestedTo");
                 });
 
-            modelBuilder.Entity("osuRequestor.Features.Authentication.Persistence.TokenModel", b =>
+            modelBuilder.Entity("irai.Features.Authentication.Persistence.TokenModel", b =>
                 {
-                    b.HasOne("osuRequestor.Features.Users.Persistence.UserModel", "User")
+                    b.HasOne("irai.Features.Users.Persistence.UserModel", "User")
                         .WithOne("Token")
-                        .HasForeignKey("osuRequestor.Features.Authentication.Persistence.TokenModel", "UserId")
+                        .HasForeignKey("irai.Features.Authentication.Persistence.TokenModel", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("osuRequestor.Features.Users.Persistence.UserModel", b =>
+            modelBuilder.Entity("irai.Features.Users.Persistence.UserModel", b =>
                 {
                     b.Navigation("Token")
                         .IsRequired();

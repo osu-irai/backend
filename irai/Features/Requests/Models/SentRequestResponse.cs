@@ -1,6 +1,6 @@
-using osuRequestor.Common.Models;
+using irai.Common.Models;
 
-namespace osuRequestor.Features.Requests.Models;
+namespace irai.Features.Requests.Models;
 
 public record SentRequestResponse
 {

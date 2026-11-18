@@ -1,16 +1,16 @@
 using System.Net;
+using irai.Common.Constants;
+using irai.Features.Requests.Models;
+using irai.Features.Requests.Persistence;
+using irai.Infrastructure.Persistence;
+using irai.Tests.Infrastructure.Factories;
+using irai.Tests.Infrastructure.Fixtures;
+using irai.Tests.Infrastructure.Harness;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using osuRequestor.Common.Constants;
-using osuRequestor.Features.Requests.Models;
-using osuRequestor.Features.Requests.Persistence;
-using osuRequestor.Infrastructure.Persistence;
-using osuRequestor.Tests.Infrastructure.Factories;
-using osuRequestor.Tests.Infrastructure.Fixtures;
-using osuRequestor.Tests.Infrastructure.Harness;
 
-namespace osuRequestor.Tests.Features.Requests;
+namespace irai.Tests.Features.Requests;
 
 [TestFixture]
 [Category("Integration")]

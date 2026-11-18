@@ -1,6 +1,6 @@
-using osuRequestor.Common.Models;
+using irai.Common.Models;
 
-namespace osuRequestor.Features.Users.Models;
+namespace irai.Features.Users.Models;
 
 public record SelfUserResponse
 {

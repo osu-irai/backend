@@ -1,4 +1,4 @@
-namespace osuRequestor.Features.Authentication.Models;
+namespace irai.Features.Authentication.Models;
 
 public class TokenRequest
 {

@@ -1,6 +1,6 @@
-using osuRequestor.Features.Requests.Models;
+using irai.Features.Requests.Models;
 
-namespace osuRequestor.Infrastructure.Messaging;
+namespace irai.Infrastructure.Messaging;
 
 public interface IMessageBusService
 {
