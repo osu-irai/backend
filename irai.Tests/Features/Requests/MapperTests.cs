@@ -1,8 +1,8 @@
 using irai.Common.Models;
+using irai.Features.Requests.Mappings;
 using irai.Features.Requests.Models;
 using irai.Features.Requests.Persistence;
 using NUnit.Framework;
-using irai.Features.Requests.Mappings;
 
 namespace irai.Tests.Features.Requests;
 

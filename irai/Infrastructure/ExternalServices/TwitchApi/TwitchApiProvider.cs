@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Headers;
-using ChiffadicErrors;
 using irai.Infrastructure.Configuration;
 using irai.Infrastructure.ExternalServices.TwitchApi.Models;
 using Microsoft.Extensions.Options;
@@ -72,7 +71,7 @@ public class TwitchApiProvider(
         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
             logger.LogWarning("Twitch token rejected for user {UserId} with {StatusCode}", userId,
-                                    response.StatusCode);
+                              response.StatusCode);
             return Error<TwitchApiError>(new InvalidTwitchToken());
         }
 

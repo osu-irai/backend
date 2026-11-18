@@ -19,7 +19,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
-using AuthenticationService = irai.Features.Authentication.Services.AuthenticationService;
 using IAuthenticationService = Microsoft.AspNetCore.Authentication.IAuthenticationService;
 using Services_AuthenticationService = irai.Features.Authentication.Services.AuthenticationService;
 

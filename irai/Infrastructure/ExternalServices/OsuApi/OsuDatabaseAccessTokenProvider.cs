@@ -1,14 +1,13 @@
-using ChiffadicErrors;
 using irai.Common.Constants;
 using irai.Common.Exceptions;
 using irai.Common.Extensions;
 using irai.Features.Authentication.Persistence;
 using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using irai.Infrastructure.Persistence;
+using irai.Infrastructure.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using osu.NET.Authorization;
-using irai.Infrastructure.Persistence.Extensions;
 
 namespace irai.Infrastructure.ExternalServices.OsuApi;
 
@@ -33,7 +32,7 @@ public class OsuDatabaseAccessTokenProvider(
         {
             // This should only be hit for RabbitMQ
             return await osuApiProvider.GetUserlessTokenAsync()
-                       ?? throw new UnauthorizedException("Userless token unavailable");
+                   ?? throw new UnauthorizedException("Userless token unavailable");
         }
 
         var osuAuthResult = await ctx.AuthenticateAsync("InternalCookies");

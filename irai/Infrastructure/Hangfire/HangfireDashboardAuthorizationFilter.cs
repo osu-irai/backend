@@ -1,6 +1,4 @@
-using Hangfire;
 using Hangfire.Dashboard;
-using Microsoft.AspNetCore.SignalR;
 
 namespace irai.Infrastructure.Hangfire;
 
@@ -13,7 +11,8 @@ public class HangfireDashboardAuthorizationFilter : IDashboardAuthorizationFilte
 
     public bool Authorize(DashboardContext context)
     {
-        return context.GetHttpContext().User.Identity?.IsAuthenticated == true;
+        return context.GetHttpContext()
+                      .User.Identity?.IsAuthenticated == true;
     }
 
     #endregion

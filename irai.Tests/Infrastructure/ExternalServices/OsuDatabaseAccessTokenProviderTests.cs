@@ -98,6 +98,24 @@ public class OsuDatabaseAccessTokenProviderTests
     }
 
     [Test]
+    public async Task GetAccessTokenAsync_WhenHttpContextIsMissingAndUserlessUnavailable_ThrowsUnauthorized()
+    {
+        await using var db = CreateDatabase();
+        await db.SaveChangesAsync();
+        var api = Substitute.For<IOsuApiProvider>();
+        api.GetUserlessTokenAsync()
+           .Returns((string?)null);
+        var provider = new OsuDatabaseAccessTokenProvider(
+            db,
+            new HttpContextAccessor(),
+            api,
+            Protection,
+            NullLogger<OsuDatabaseAccessTokenProvider>.Instance);
+
+        await Assert.ThrowsAsync<UnauthorizedException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
+    }
+
+    [Test]
     public async Task GetAccessTokenAsync_WhenHttpContextIsMissing_ReturnsUserlessToken()
     {
         await using var db = CreateDatabase();
@@ -115,24 +133,6 @@ public class OsuDatabaseAccessTokenProviderTests
         var token = await provider.GetAccessTokenAsync(CancellationToken.None);
 
         Assert.That(token, Is.EqualTo("userless-access"));
-    }
-
-    [Test]
-    public async Task GetAccessTokenAsync_WhenHttpContextIsMissingAndUserlessUnavailable_ThrowsUnauthorized()
-    {
-        await using var db = CreateDatabase();
-        await db.SaveChangesAsync();
-        var api = Substitute.For<IOsuApiProvider>();
-        api.GetUserlessTokenAsync()
-           .Returns((string?)null);
-        var provider = new OsuDatabaseAccessTokenProvider(
-            db,
-            new HttpContextAccessor(),
-            api,
-            Protection,
-            NullLogger<OsuDatabaseAccessTokenProvider>.Instance);
-
-        await Assert.ThrowsAsync<UnauthorizedException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
     }
 
     [Test]
@@ -166,6 +166,20 @@ public class OsuDatabaseAccessTokenProviderTests
     }
 
     [Test]
+    public async Task GetAccessTokenAsync_WhenRefreshFails_ThrowsUnauthorized()
+    {
+        await using var db = CreateDatabase();
+        AddUserToken(db, 7, "old-access", DateTime.UtcNow.AddHours(-1));
+        await db.SaveChangesAsync();
+        var api = Substitute.For<IOsuApiProvider>();
+        api.RefreshToken("old-refresh", "old-access")
+           .Returns(Task.FromResult<TokenResponse?>(null));
+        var provider = CreateProvider(db, api, "7");
+
+        await Assert.ThrowsAsync<UnauthorizedException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
+    }
+
+    [Test]
     public async Task GetAccessTokenAsync_WhenTokenIsExpired_RefreshesAndUpdatesDatabase()
     {
         await using var db = CreateDatabase();
@@ -188,20 +202,6 @@ public class OsuDatabaseAccessTokenProviderTests
         Assert.That(stored.Expires,                          Is.GreaterThan(DateTime.UtcNow));
         await api.Received(1)
                  .RefreshToken("old-refresh", "old-access");
-    }
-
-    [Test]
-    public async Task GetAccessTokenAsync_WhenRefreshFails_ThrowsUnauthorized()
-    {
-        await using var db = CreateDatabase();
-        AddUserToken(db, 7, "old-access", DateTime.UtcNow.AddHours(-1));
-        await db.SaveChangesAsync();
-        var api = Substitute.For<IOsuApiProvider>();
-        api.RefreshToken("old-refresh", "old-access")
-           .Returns(Task.FromResult<TokenResponse?>(null));
-        var provider = CreateProvider(db, api, "7");
-
-        await Assert.ThrowsAsync<UnauthorizedException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
     }
 
     [Test]

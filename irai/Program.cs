@@ -1,15 +1,15 @@
 using Hangfire;
-using irai.Infrastructure.Hangfire;
 using irai.Features.Requests.Persistence;
 using irai.Infrastructure.Configuration;
+using irai.Infrastructure.DependencyInjection;
 using irai.Infrastructure.ExceptionHandling;
+using irai.Infrastructure.Hangfire;
 using irai.Infrastructure.Notifications;
 using irai.Infrastructure.Persistence;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using irai.Infrastructure.DependencyInjection;
 using Scalar.AspNetCore;
 
 namespace irai;
@@ -97,7 +97,8 @@ public static class Program
             app.UseHttpLogging();
         }
 
-        app.MapHub<NotificationHub>("ws/notifications").RequireAuthorization();
+        app.MapHub<NotificationHub>("ws/notifications")
+           .RequireAuthorization();
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseHangfireDashboard("/hangfire", new DashboardOptions

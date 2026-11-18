@@ -1,4 +1,3 @@
-using ChiffadicErrors;
 using irai.Common.Exceptions;
 using irai.Features.Requests.Models;
 using irai.Features.Requests.Persistence;
@@ -22,8 +21,8 @@ public class MessageSubscriberService(
         try
         {
             var result = await requestService.CreateRequest(null, context.Message.DestinationId.Value,
-                                                                  context.Message.BeatmapId.Value,
-                                                                  RequestSource.Twitch);
+                                                            context.Message.BeatmapId.Value,
+                                                            RequestSource.Twitch);
 
             if (result is ErrorVariant<RequestServiceError> { Value: var error })
             {

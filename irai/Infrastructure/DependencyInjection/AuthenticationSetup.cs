@@ -68,15 +68,15 @@ public static class AuthenticationSetup
                 .AddCookie("InternalCookies", options =>
                 {
                     // set some paths to empty to make auth not redirect API calls
-                    options.LoginPath           = "";
-                    options.AccessDeniedPath    = "";
-                    options.LogoutPath          = "";
-                    options.Cookie.Path         = "/";
-                    options.Cookie.Name     = "iraiLogin";
-                    options.Cookie.HttpOnly   = false; 
-                    options.Cookie.SameSite   = SameSiteMode.Lax; // OAuth callback is cross-site, strict doesn't work 
+                    options.LoginPath = "";
+                    options.AccessDeniedPath = "";
+                    options.LogoutPath = "";
+                    options.Cookie.Path = "/";
+                    options.Cookie.Name = "iraiLogin";
+                    options.Cookie.HttpOnly = false;
+                    options.Cookie.SameSite = SameSiteMode.Lax; // OAuth callback is cross-site, strict doesn't work 
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    options.SlidingExpiration   = true;
+                    options.SlidingExpiration = true;
                     options.Events.OnValidatePrincipal = context =>
                     {
                         var name = context.Principal?.Identity?.Name;

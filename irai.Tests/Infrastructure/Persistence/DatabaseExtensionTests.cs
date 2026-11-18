@@ -3,10 +3,10 @@ using irai.Features.Authentication.Persistence;
 using irai.Features.Requests.Persistence;
 using irai.Features.Users.Persistence;
 using irai.Infrastructure.Persistence;
+using irai.Infrastructure.Persistence.Extensions;
 using irai.Tests.Infrastructure.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using irai.Infrastructure.Persistence.Extensions;
 
 namespace irai.Tests.Infrastructure.Persistence;
 

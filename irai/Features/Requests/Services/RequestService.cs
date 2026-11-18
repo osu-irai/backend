@@ -1,17 +1,15 @@
-using System.Diagnostics;
-using irai.Common.Exceptions;
 using irai.Common.Extensions;
 using irai.Common.Models;
+using irai.Features.Requests.Mappings;
 using irai.Features.Requests.Models;
 using irai.Features.Requests.Persistence;
 using irai.Features.Users.Persistence;
 using irai.Infrastructure.Messaging;
 using irai.Infrastructure.Notifications;
 using irai.Infrastructure.Persistence;
+using irai.Infrastructure.Persistence.Extensions;
 using Microsoft.EntityFrameworkCore;
 using osu.NET;
-using irai.Features.Requests.Mappings;
-using irai.Infrastructure.Persistence.Extensions;
 using static ChiffadicErrors.Result;
 
 namespace irai.Features.Requests.Services;
@@ -35,34 +33,6 @@ public class RequestService(
 
         logger.LogInformation("Missing beatmap: {BeatmapId}", beatmapId);
         return await FetchBeatmapAsync(beatmapId);
-    }
-
-    private async Task<Result<BeatmapModel, RequestServiceError>> FetchBeatmapAsync(int beatmapId)
-    {
-        var apiResponse = await osuApiClient.GetBeatmapAsync(beatmapId);
-        if (apiResponse.IsFailure)
-        {
-            switch (apiResponse.Error.Type)
-            {
-                // This endpoint can't realistically hit anything outside BeatmapNotFound
-                case ApiErrorType.BeatmapNotFound:
-                    logger.LogInformation("Failed to find a beatmap");
-                    return Error<RequestServiceError>(new BeatmapNotFound(beatmapId));
-                case ApiErrorType.Unknown:
-                    logger.LogInformation("Unknown osu! api error, {ApiErrorDetails}", apiResponse.Error.Message);
-                    return Error<RequestServiceError>(new UpstreamError(apiResponse.Error.Message ?? ""));
-                default:
-                    return Error<RequestServiceError>(new InternalError("Unknown application error"));
-            }
-        }
-
-        if (apiResponse.Value is null)
-        {
-            return Error<RequestServiceError>(new BeatmapNotFound(beatmapId));
-        }
-
-        var onlineBeatmap = apiResponse.Value!.ToModel();
-        return Ok(onlineBeatmap);
     }
 
     public async Task<Result<UserModel, RequestServiceError>> GetUser(int userId)
@@ -153,7 +123,9 @@ public class RequestService(
 
     public async Task DeleteRequest(int id, int callerId)
     {
-        var request = await dbContext.Requests.FirstOrDefaultAsync(r => r.Id == id && (r.RequestedTo.Id == callerId || r.RequestedFrom!.Id == callerId));
+        var request = await dbContext.Requests.FirstOrDefaultAsync(r => r.Id == id &&
+                                                                        (r.RequestedTo.Id    == callerId ||
+                                                                         r.RequestedFrom!.Id == callerId));
         request?.IsDeleted = true;
 
         await dbContext.SaveChangesAsync();
@@ -207,6 +179,34 @@ public class RequestService(
 
     #endregion
 
+    private async Task<Result<BeatmapModel, RequestServiceError>> FetchBeatmapAsync(int beatmapId)
+    {
+        var apiResponse = await osuApiClient.GetBeatmapAsync(beatmapId);
+        if (apiResponse.IsFailure)
+        {
+            switch (apiResponse.Error.Type)
+            {
+                // This endpoint can't realistically hit anything outside BeatmapNotFound
+                case ApiErrorType.BeatmapNotFound:
+                    logger.LogInformation("Failed to find a beatmap");
+                    return Error<RequestServiceError>(new BeatmapNotFound(beatmapId));
+                case ApiErrorType.Unknown:
+                    logger.LogInformation("Unknown osu! api error, {ApiErrorDetails}", apiResponse.Error.Message);
+                    return Error<RequestServiceError>(new UpstreamError(apiResponse.Error.Message ?? ""));
+                default:
+                    return Error<RequestServiceError>(new InternalError("Unknown application error"));
+            }
+        }
+
+        if (apiResponse.Value is null)
+        {
+            return Error<RequestServiceError>(new BeatmapNotFound(beatmapId));
+        }
+
+        var onlineBeatmap = apiResponse.Value!.ToModel();
+        return Ok(onlineBeatmap);
+    }
+
     private async Task<int> InitializeRequest(UserModel? sourceUser, UserModel destinationUser,
                                               BeatmapModel beatmap,
                                               RequestSource source = RequestSource.Website)
@@ -222,7 +222,7 @@ public class RequestService(
 
         if (stored is not Created<RequestModel> { Value: { } created })
         {
-            return (((Updated<int>)stored.Value!)).Value;
+            return ((Updated<int>)stored.Value!).Value;
         }
 
         var notificationBody = new ReceivedRequestResponse

@@ -1,9 +1,9 @@
+using irai.Common.Extensions;
+using irai.Features.Requests.Mappings;
 using irai.Features.Search.Models;
 using irai.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using osu.NET;
-using irai.Common.Extensions;
-using irai.Features.Requests.Mappings;
 
 namespace irai.Features.Search.Services;
 

@@ -12,8 +12,11 @@ namespace irai.Features.Authentication.Controllers;
 
 [ApiController]
 [Route("twitch/auth")]
-public class TwitchAuthController(ILogger<TwitchAuthController> logger, IAuthenticationService authenticationService,
-                                                      TwitchApiProvider twitchApi, IOptions<ServerConfig> config) : CrudController
+public class TwitchAuthController(
+    ILogger<TwitchAuthController> logger,
+    IAuthenticationService authenticationService,
+    TwitchApiProvider twitchApi,
+    IOptions<ServerConfig> config) : CrudController
 {
     [HttpGet]
     public ChallengeHttpResult Login()
@@ -56,7 +59,7 @@ public class TwitchAuthController(ILogger<TwitchAuthController> logger, IAuthent
         }
 
         var userResult = await twitchApi.GetUser(twitchUserValidation.UserId, accessToken,
-                                                       twitchUserValidation.ClientId);
+                                                 twitchUserValidation.ClientId);
         if (userResult is not OkVariant<TwitchUserList> { Value: var twitchUser } ||
             twitchUser.Data.FirstOrDefault()
                       ?.Login is not { } twitchLogin)
@@ -68,7 +71,7 @@ public class TwitchAuthController(ILogger<TwitchAuthController> logger, IAuthent
         var twitchId = int.Parse(twitchUserValidation.UserId);
 
         await authenticationService.SaveTwitchLogin(id, twitchId, twitchLogin, accessToken,
-                                                          refreshToken);
+                                                    refreshToken);
 
         return TypedResults.Redirect(config.Value.HomePage);
     }

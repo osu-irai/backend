@@ -95,7 +95,8 @@ public static class DatabaseExtension
     /// </summary>
     /// <param name="dbContext">Database context</param>
     /// <param name="request">Newly added request</param>
-    public static async Task<RecordStatus<RequestModel, int>> AddRequest(this DatabaseContext dbContext, RequestModel request)
+    public static async Task<RecordStatus<RequestModel, int>> AddRequest(
+        this DatabaseContext dbContext, RequestModel request)
     {
         var requestedFromId = request.RequestedFrom?.Id;
         var existing = await dbContext.Requests
@@ -104,10 +105,11 @@ public static class DatabaseExtension
                                       .Include(req => req.RequestedTo)
                                       .Include(req => req.RequestedFrom)
                                       .FirstOrDefaultAsync(req =>
-                                                               !req.IsDeleted                                              &&
-                                                               req.Beatmap.Id     == request.Beatmap.Id                    &&
-                                                               req.RequestedTo.Id == request.RequestedTo.Id                &&
-                                                               ((requestedFromId == null && req.RequestedFrom == null) ||
+                                                               !req.IsDeleted &&
+                                                               req.Beatmap.Id == request.Beatmap.Id &&
+                                                               req.RequestedTo.Id == request.RequestedTo.Id &&
+                                                               ((requestedFromId == null &&
+                                                                 req.RequestedFrom == null) ||
                                                                 (requestedFromId != null && req.RequestedFrom != null &&
                                                                  req.RequestedFrom.Id == requestedFromId)));
         if (existing is not null)

@@ -13,6 +13,7 @@ public record UpstreamError(
 
 public record NotAuthorized;
 
-public record InternalError(string Details);
+public record InternalError(
+    string Details);
 
 public union RequestServiceError(BeatmapNotFound, UserNotFound, UpstreamError, NotAuthorized, InternalError);

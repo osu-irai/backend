@@ -2,7 +2,6 @@ using irai.Features.Authentication.Persistence;
 using irai.Features.Bots.Controllers;
 using irai.Features.Bots.Models;
 using irai.Features.Bots.Services;
-using irai.Features.Requests.Controllers;
 using irai.Features.Requests.Models;
 using irai.Features.Requests.Persistence;
 using irai.Features.Requests.Services;

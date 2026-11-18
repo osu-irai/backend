@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.SignalR;
 namespace irai.Infrastructure.Notifications;
 
 [Authorize(AuthenticationSchemes = "Bearer,InternalCookies", Roles = Roles.USER_OR_PROXY)]
-public class NotificationHub(ILogger<NotificationHub> logger) : Hub<INotificationHub>
+public class NotificationHub(
+    ILogger<NotificationHub> logger) : Hub<INotificationHub>
 {
     public async Task JoinUserGroup(int userId)
     {

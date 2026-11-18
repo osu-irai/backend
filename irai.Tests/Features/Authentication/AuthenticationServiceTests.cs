@@ -82,11 +82,11 @@ public class AuthenticationServiceTests
 
         var storedUser  = await db.Users.SingleAsync();
         var storedToken = await db.Tokens.SingleAsync();
-        Assert.That(storedUser.Username,                        Is.EqualTo("new-name"));
-        Assert.That(storedUser.CountryCode,                     Is.EqualTo("DE"));
+        Assert.That(storedUser.Username,                           Is.EqualTo("new-name"));
+        Assert.That(storedUser.CountryCode,                        Is.EqualTo("DE"));
         Assert.That(Protector.Unprotect(storedToken.AccessToken),  Is.EqualTo("new-access"));
         Assert.That(Protector.Unprotect(storedToken.RefreshToken), Is.EqualTo("new-refresh"));
-        Assert.That(await db.Settings.CountAsync(), Is.EqualTo(1));
+        Assert.That(await db.Settings.CountAsync(),                Is.EqualTo(1));
         this._backgroundJobClient.Received(0)
             .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
     }
@@ -116,8 +116,8 @@ public class AuthenticationServiceTests
         Assert.That(token.UserId,                            Is.EqualTo(1));
         Assert.That(Protector.Unprotect(token.AccessToken),  Is.EqualTo("access"));
         Assert.That(Protector.Unprotect(token.RefreshToken), Is.EqualTo("refresh"));
-        Assert.That(expiration,         Is.GreaterThanOrEqualTo(before.AddDays(1)));
-        Assert.That(expiration,         Is.LessThanOrEqualTo(DateTime.UtcNow.AddDays(1)));
+        Assert.That(expiration,                              Is.GreaterThanOrEqualTo(before.AddDays(1)));
+        Assert.That(expiration,                              Is.LessThanOrEqualTo(DateTime.UtcNow.AddDays(1)));
         this._backgroundJobClient.Received(1)
             .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
     }
@@ -142,7 +142,7 @@ public class AuthenticationServiceTests
 
         var twitch   = await db.Twitch.SingleAsync();
         var settings = await db.Settings.SingleAsync();
-        Assert.That(twitch.Username,                           Is.EqualTo("new_tv"));
+        Assert.That(twitch.Username,                          Is.EqualTo("new_tv"));
         Assert.That(twitch.TwitchId,                          Is.EqualTo(99));
         Assert.That(Protector.Unprotect(twitch.AccessToken),  Is.EqualTo("new-access"));
         Assert.That(Protector.Unprotect(twitch.RefreshToken), Is.EqualTo("new-refresh"));

@@ -74,14 +74,6 @@ public class BotsIntegrationTests : IntegrationTestBase
         Assert.That(names, Is.EquivalentTo(new[] { "alice" }));
     }
 
-    [Test]
-    public async Task IrcNames_WithoutToken_ReturnsUnauthorized()
-    {
-        var response = await this.Client.GetAsync("/bot/irc");
-
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
-    }
-
     /// <summary>
     /// Controller permission mismatch
     /// </summary>
@@ -93,6 +85,14 @@ public class BotsIntegrationTests : IntegrationTestBase
         var response = await client.GetAsync("/bot/irc");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+    }
+
+    [Test]
+    public async Task IrcNames_WithoutToken_ReturnsUnauthorized()
+    {
+        var response = await this.Client.GetAsync("/bot/irc");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
 
     /// <summary>

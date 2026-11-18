@@ -18,24 +18,6 @@ public class AuthenticationIntegrationTests : IntegrationTestBase
         });
     }
 
-    [Test]
-    public async Task BotLogin_WithValidCredentials_ReturnsJwt()
-    {
-        var response = await this.Client.PostAsJsonAsync("/bot/auth", new
-        {
-            name         = "Irc",
-            clientSecret = "irc-test-secret"
-        });
-
-        response.EnsureSuccessStatusCode();
-        var token = await response.Content.ReadAsStringAsync();
-        var jwt   = new JwtSecurityTokenHandler().ReadJwtToken(token);
-
-        Assert.That(token,         Is.Not.Null.And.Not.Empty);
-        Assert.That(jwt.Issuer,    Is.EqualTo("https://tests.local/"));
-        Assert.That(jwt.Audiences, Has.Member("http://localhost:5076/bot/irc"));
-    }
-
     /// <summary>
     /// Happy path
     /// </summary>
@@ -58,18 +40,6 @@ public class AuthenticationIntegrationTests : IntegrationTestBase
         Assert.That(jwt.Audiences, Has.Member("http://localhost:5076/bot/twitch"));
     }
 
-    [Test]
-    public async Task BotLogin_WithWrongSecret_ReturnsUnauthorized()
-    {
-        var response = await this.Client.PostAsJsonAsync("/bot/auth", new
-        {
-            name         = "Irc",
-            clientSecret = "wrong"
-        });
-
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
-    }
-
     /// <summary>
     /// Login failure returns HTTP 401 without unrelated data
     /// </summary>
@@ -86,6 +56,36 @@ public class AuthenticationIntegrationTests : IntegrationTestBase
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
         Assert.That(body,                Does.Not.Contain("KeyNotFoundException"));
         Assert.That(body,                Does.Not.Contain("   at "));
+    }
+
+    [Test]
+    public async Task BotLogin_WithValidCredentials_ReturnsJwt()
+    {
+        var response = await this.Client.PostAsJsonAsync("/bot/auth", new
+        {
+            name         = "Irc",
+            clientSecret = "irc-test-secret"
+        });
+
+        response.EnsureSuccessStatusCode();
+        var token = await response.Content.ReadAsStringAsync();
+        var jwt   = new JwtSecurityTokenHandler().ReadJwtToken(token);
+
+        Assert.That(token,         Is.Not.Null.And.Not.Empty);
+        Assert.That(jwt.Issuer,    Is.EqualTo("https://tests.local/"));
+        Assert.That(jwt.Audiences, Has.Member("http://localhost:5076/bot/irc"));
+    }
+
+    [Test]
+    public async Task BotLogin_WithWrongSecret_ReturnsUnauthorized()
+    {
+        var response = await this.Client.PostAsJsonAsync("/bot/auth", new
+        {
+            name         = "Irc",
+            clientSecret = "wrong"
+        });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
 
     [Test]

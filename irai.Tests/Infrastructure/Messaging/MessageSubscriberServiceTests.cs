@@ -58,17 +58,17 @@ public class MessageSubscriberServiceTests
     }
 
     [Test]
-    public async Task Consume_WhenServiceThrowsUnauthorized_DoesNotThrow()
+    public async Task Consume_WhenServiceThrowsServerError_DoesNotThrow()
     {
-        var (sut, _) = CreateHarness(failure: new UnauthorizedException());
+        var (sut, _) = CreateHarness(failure: new ServerErrorException("upstream"));
 
         await Assert.DoesNotThrowAsync(() => sut.Consume(CreateContext()));
     }
 
     [Test]
-    public async Task Consume_WhenServiceThrowsServerError_DoesNotThrow()
+    public async Task Consume_WhenServiceThrowsUnauthorized_DoesNotThrow()
     {
-        var (sut, _) = CreateHarness(failure: new ServerErrorException("upstream"));
+        var (sut, _) = CreateHarness(failure: new UnauthorizedException());
 
         await Assert.DoesNotThrowAsync(() => sut.Consume(CreateContext()));
     }

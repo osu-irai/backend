@@ -26,7 +26,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
-using AuthenticationService = irai.Features.Authentication.Services.AuthenticationService;
 using IAuthenticationService = Microsoft.AspNetCore.Authentication.IAuthenticationService;
 using Services_AuthenticationService = irai.Features.Authentication.Services.AuthenticationService;
 
@@ -76,7 +75,7 @@ public class OAuthControllerTests
 
         this._backgroundJobClient = Substitute.For<IBackgroundJobClient>();
         this._friendService       = Substitute.For<IFriendService>();
-        var protection            = DataProtectionProvider.Create("irai-tests");
+        var protection = DataProtectionProvider.Create("irai-tests");
         var controller = new OAuthController(
             NullLogger<OAuthController>.Instance,
             osuApi,
@@ -226,8 +225,8 @@ public class OAuthControllerTests
 
         var user  = await db.Users.SingleAsync();
         var token = await db.Tokens.SingleAsync();
-        Assert.That(result.Result,                        Is.InstanceOf<RedirectHttpResult>());
-        Assert.That(user.Username,                        Is.EqualTo("new-name"));
+        Assert.That(result.Result,                                   Is.InstanceOf<RedirectHttpResult>());
+        Assert.That(user.Username,                                   Is.EqualTo("new-name"));
         Assert.That(harness.Protector.Unprotect(token.AccessToken),  Is.EqualTo("access-token"));
         Assert.That(harness.Protector.Unprotect(token.RefreshToken), Is.EqualTo("refresh-token"));
         this._backgroundJobClient.Received(0)
@@ -258,12 +257,12 @@ public class OAuthControllerTests
                            .SingleAsync();
         var token    = await db.Tokens.SingleAsync();
         var redirect = result.Result as RedirectHttpResult;
-        Assert.That(redirect,           Is.Not.Null);
-        Assert.That(redirect!.Url,      Is.EqualTo("/home"));
-        Assert.That(user.Id,            Is.EqualTo(7));
-        Assert.That(user.Username,      Is.EqualTo("alice"));
-        Assert.That(user.Settings,      Is.Not.Null);
-        Assert.That(token.UserId,                                Is.EqualTo(7));
+        Assert.That(redirect,                                        Is.Not.Null);
+        Assert.That(redirect!.Url,                                   Is.EqualTo("/home"));
+        Assert.That(user.Id,                                         Is.EqualTo(7));
+        Assert.That(user.Username,                                   Is.EqualTo("alice"));
+        Assert.That(user.Settings,                                   Is.Not.Null);
+        Assert.That(token.UserId,                                    Is.EqualTo(7));
         Assert.That(harness.Protector.Unprotect(token.AccessToken),  Is.EqualTo("access-token"));
         Assert.That(harness.Protector.Unprotect(token.RefreshToken), Is.EqualTo("refresh-token"));
         this._backgroundJobClient.Received(1)

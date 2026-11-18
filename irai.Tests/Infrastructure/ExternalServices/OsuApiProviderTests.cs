@@ -102,7 +102,7 @@ public class OsuApiProviderTests
     public async Task GetSelfUser_WhenSuccessful_ReturnsUserAndSendsBearerToken()
     {
         var handler = new StubHandler(_ => Json(
-                                              """{"id":7,"username":"alice","country_code":"US","avatar_url":"https://a.ppy.sh/7"}"""));
+                                          """{"id":7,"username":"alice","country_code":"US","avatar_url":"https://a.ppy.sh/7"}"""));
         var provider = CreateProvider(handler);
 
         var user = await provider.GetSelfUser("token");
@@ -120,23 +120,18 @@ public class OsuApiProviderTests
     }
 
     [Test]
-    public async Task RefreshToken_WhenResponseIsNotSuccessful_ReturnsNull()
+    public async Task GetUserlessTokenAsync_WhenResponseIsNotSuccessful_ReturnsNull()
     {
-        var handler = new StubHandler(request =>
-                                          request.Method == HttpMethod.Post && HandlerForRefresh(request)
-                                              ? new HttpResponseMessage(HttpStatusCode.BadRequest)
-                                              : Json("""{"access_token":"new-access","expires_in":3600}"""));
+        var handler  = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
         var provider = CreateProvider(handler);
 
-        var token = await provider.RefreshToken("refresh-token", "old-access");
-
-        Assert.That(token, Is.Null);
+        Assert.That(await provider.GetUserlessTokenAsync(), Is.Null);
     }
 
     [Test]
     public async Task GetUserlessTokenAsync_WhenSuccessful_ReturnsTokenAndCachesIt()
     {
-        var calls   = 0;
+        var calls = 0;
         var handler = new StubHandler(_ =>
         {
             calls++;
@@ -153,12 +148,17 @@ public class OsuApiProviderTests
     }
 
     [Test]
-    public async Task GetUserlessTokenAsync_WhenResponseIsNotSuccessful_ReturnsNull()
+    public async Task RefreshToken_WhenResponseIsNotSuccessful_ReturnsNull()
     {
-        var handler  = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        var handler = new StubHandler(request =>
+                                          request.Method == HttpMethod.Post && HandlerForRefresh(request)
+                                              ? new HttpResponseMessage(HttpStatusCode.BadRequest)
+                                              : Json("""{"access_token":"new-access","expires_in":3600}"""));
         var provider = CreateProvider(handler);
 
-        Assert.That(await provider.GetUserlessTokenAsync(), Is.Null);
+        var token = await provider.RefreshToken("refresh-token", "old-access");
+
+        Assert.That(token, Is.Null);
     }
 
     [Test]

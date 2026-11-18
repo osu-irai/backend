@@ -16,6 +16,7 @@ public class AuthenticationService(
     ILogger<AuthenticationService> logger) : IAuthenticationService
 {
     private readonly IDataProtector _protector = protectionProvider.CreateProtector(TokenProtection.PURPOSE);
+
     #region IAuthenticationService Members
 
     public async Task<DateTime> SaveOsuLogin(User user, string accessToken, string refreshToken)

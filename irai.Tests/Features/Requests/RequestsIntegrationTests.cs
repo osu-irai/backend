@@ -150,23 +150,6 @@ public class RequestsIntegrationTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task OwnRequestsDelete_WithInternalCookie_MarksRequestDeleted()
-    {
-        var requestId = await SeedAsyncWithRequestId();
-
-        using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
-
-        var response = await client.DeleteAsync($"/requests/own?requestId={requestId}");
-
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-
-        using var scope  = this.Factory.Services.CreateScope();
-        var       db     = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        var       stored = await db.Requests.SingleAsync(r => r.Id == requestId);
-        Assert.That(stored.IsDeleted, Is.True);
-    }
-
-    [Test]
     public async Task OwnRequestsDelete_ForAnotherUsersRequest_DoesNotDelete()
     {
         var requestId = await SeedAsyncWithRequestId();
@@ -181,6 +164,23 @@ public class RequestsIntegrationTests : IntegrationTestBase
         var       db     = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
         var       stored = await db.Requests.SingleAsync(r => r.Id == requestId);
         Assert.That(stored.IsDeleted, Is.False);
+    }
+
+    [Test]
+    public async Task OwnRequestsDelete_WithInternalCookie_MarksRequestDeleted()
+    {
+        var requestId = await SeedAsyncWithRequestId();
+
+        using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 1);
+
+        var response = await client.DeleteAsync($"/requests/own?requestId={requestId}");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        using var scope  = this.Factory.Services.CreateScope();
+        var       db     = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var       stored = await db.Requests.SingleAsync(r => r.Id == requestId);
+        Assert.That(stored.IsDeleted, Is.True);
     }
 
     [Test]

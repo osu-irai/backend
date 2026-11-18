@@ -243,30 +243,6 @@ public class RequestServiceTests
     }
 
     [Test]
-    public async Task DeleteRequest_WhenExists_SoftDeletes()
-    {
-        var (db, service, _, _) = CreateHarness();
-        await using var _db     = db;
-        var             target  = AddUser(db, 2, "bob");
-        var             beatmap = AddBeatmap(db);
-        var request = new RequestModel
-        {
-            Beatmap       = beatmap,
-            RequestedTo   = target,
-            RequestedFrom = null,
-            Source        = RequestSource.Twitch,
-            Date          = DateTime.UtcNow
-        };
-        db.Requests.Add(request);
-        await db.SaveChangesAsync();
-
-        await service.DeleteRequest(request.Id, 2);
-
-        var stored = await db.Requests.SingleAsync();
-        Assert.That(stored.IsDeleted, Is.True);
-    }
-
-    [Test]
     public async Task DeleteRequest_WhenBelongsToAnotherUser_DoesNotDelete()
     {
         var (db, service, _, _) = CreateHarness();
@@ -288,6 +264,30 @@ public class RequestServiceTests
 
         var stored = await db.Requests.SingleAsync();
         Assert.That(stored.IsDeleted, Is.False);
+    }
+
+    [Test]
+    public async Task DeleteRequest_WhenExists_SoftDeletes()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             beatmap = AddBeatmap(db);
+        var request = new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = null,
+            Source        = RequestSource.Twitch,
+            Date          = DateTime.UtcNow
+        };
+        db.Requests.Add(request);
+        await db.SaveChangesAsync();
+
+        await service.DeleteRequest(request.Id, 2);
+
+        var stored = await db.Requests.SingleAsync();
+        Assert.That(stored.IsDeleted, Is.True);
     }
 
     [Test]

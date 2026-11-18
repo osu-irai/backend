@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using osu.NET;
 
 namespace irai.Features.Bots.Controllers;
 
@@ -36,7 +35,7 @@ public class TwitchController(
         logger.LogInformation("Found {destinationName} and {beatmapId}", destinationId, beatmapId);
 
         await requestSource.CreateRequest(null, destinationId!.Value, beatmapId!.Value, RequestSource.Twitch)
-                            .ThrowIfRequestError();
+                           .ThrowIfRequestError();
 
         return TypedResults.Ok();
     }

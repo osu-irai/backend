@@ -82,26 +82,6 @@ public class TwitchApiProviderTests
     }
 
     [Test]
-    public void GetUser_WhenServerErrors_ThrowsHttpRequestException()
-    {
-        var handler  = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
-        var provider = CreateProvider(handler);
-
-        Assert.ThrowsAsync<HttpRequestException>(() => provider.GetUser("42", "token", "client-id"));
-    }
-
-    [Test]
-    public async Task GetUser_WhenTokenIsRejected_ReturnsInvalidTokenError()
-    {
-        var handler  = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized));
-        var provider = CreateProvider(handler);
-
-        var result = await provider.GetUser("42", "token", "client-id");
-
-        Assert.That(result is ErrorVariant<TwitchApiError> { Value: InvalidTwitchToken }, Is.True);
-    }
-
-    [Test]
     public async Task GetUser_WhenResponseIsNull_ReturnsEmptyUserList()
     {
         var handler  = new StubHandler(_ => Json("null"));
@@ -116,6 +96,15 @@ public class TwitchApiProviderTests
         }
 
         Assert.That(empty.Data, Is.Empty);
+    }
+
+    [Test]
+    public void GetUser_WhenServerErrors_ThrowsHttpRequestException()
+    {
+        var handler  = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        var provider = CreateProvider(handler);
+
+        Assert.ThrowsAsync<HttpRequestException>(() => provider.GetUser("42", "token", "client-id"));
     }
 
     [Test]
@@ -145,12 +134,12 @@ public class TwitchApiProviderTests
     }
 
     [Test]
-    public async Task ValidateUser_WhenTokenIsRejected_ReturnsInvalidTokenError()
+    public async Task GetUser_WhenTokenIsRejected_ReturnsInvalidTokenError()
     {
         var handler  = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized));
         var provider = CreateProvider(handler);
 
-        var result = await provider.ValidateUser("token");
+        var result = await provider.GetUser("42", "token", "client-id");
 
         Assert.That(result is ErrorVariant<TwitchApiError> { Value: InvalidTwitchToken }, Is.True);
     }
@@ -176,5 +165,16 @@ public class TwitchApiProviderTests
         Assert.That(request.RequestUri, Is.EqualTo(new Uri("https://id.twitch.tv/oauth2/validate")));
         Assert.That(request.Headers.Authorization!.Scheme, Is.EqualTo("Bearer"));
         Assert.That(request.Headers.Authorization.Parameter, Is.EqualTo("token"));
+    }
+
+    [Test]
+    public async Task ValidateUser_WhenTokenIsRejected_ReturnsInvalidTokenError()
+    {
+        var handler  = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized));
+        var provider = CreateProvider(handler);
+
+        var result = await provider.ValidateUser("token");
+
+        Assert.That(result is ErrorVariant<TwitchApiError> { Value: InvalidTwitchToken }, Is.True);
     }
 }

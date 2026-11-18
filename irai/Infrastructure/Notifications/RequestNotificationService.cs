@@ -1,6 +1,6 @@
+using irai.Features.Requests.Mappings;
 using irai.Features.Requests.Models;
 using Microsoft.AspNetCore.SignalR;
-using irai.Features.Requests.Mappings;
 
 namespace irai.Infrastructure.Notifications;
 

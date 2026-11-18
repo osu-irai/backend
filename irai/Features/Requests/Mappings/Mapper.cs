@@ -2,10 +2,10 @@ using irai.Common.Models;
 using irai.Features.Requests.Models;
 using irai.Features.Requests.Persistence;
 using irai.Features.Users.Persistence;
+using irai.Infrastructure.ExternalServices.OsuApi.Models;
 using irai.Infrastructure.Notifications.Data;
 using osu.NET.Models.Beatmaps;
 using osu.NET.Models.Users;
-using irai.Infrastructure.ExternalServices.OsuApi.Models;
 using BeatmapSet = osu.NET.Models.Beatmaps.BeatmapSet;
 
 namespace irai.Features.Requests.Mappings;

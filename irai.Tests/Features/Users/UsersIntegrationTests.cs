@@ -108,6 +108,30 @@ public class UsersIntegrationTests : IntegrationTestBase
     }
 
     [Test]
+    public async Task OwnSettings_WithoutAuthentication_ReturnsUnauthorized()
+    {
+        var response = await this.Client.GetAsync("/users/own/settings");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task OwnTwitch_WithoutAuthentication_ReturnsUnauthorized()
+    {
+        var response = await this.Client.GetAsync("/users/own/twitch");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task OwnUser_WithoutAuthentication_ReturnsUnauthorized()
+    {
+        var response = await this.Client.GetAsync("/users/own");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
     public async Task PostOwnSettings_WithInternalCookie_PersistsChanges()
     {
         await SeedAsync(db =>
@@ -132,29 +156,5 @@ public class UsersIntegrationTests : IntegrationTestBase
 
         Assert.That(stored.EnableIrc,    Is.True);
         Assert.That(stored.EnableTwitch, Is.True);
-    }
-
-    [Test]
-    public async Task OwnSettings_WithoutAuthentication_ReturnsUnauthorized()
-    {
-        var response = await this.Client.GetAsync("/users/own/settings");
-
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
-    }
-
-    [Test]
-    public async Task OwnTwitch_WithoutAuthentication_ReturnsUnauthorized()
-    {
-        var response = await this.Client.GetAsync("/users/own/twitch");
-
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
-    }
-
-    [Test]
-    public async Task OwnUser_WithoutAuthentication_ReturnsUnauthorized()
-    {
-        var response = await this.Client.GetAsync("/users/own");
-
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
 }

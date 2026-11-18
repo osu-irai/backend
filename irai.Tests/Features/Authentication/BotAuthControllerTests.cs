@@ -48,7 +48,7 @@ public class BotAuthControllerTests
             ClientSecret = "irc-secret"
         });
 
-        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(((ContentHttpResult)result.Result!).ResponseContent);
+        var jwt      = new JwtSecurityTokenHandler().ReadJwtToken(((ContentHttpResult)result.Result!).ResponseContent);
         var expected = DateTime.UtcNow.AddMinutes(60);
         Assert.That(jwt.ValidTo, Is.EqualTo(expected)
                                    .Within(TimeSpan.FromSeconds(10)));

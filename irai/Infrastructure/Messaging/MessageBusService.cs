@@ -4,8 +4,10 @@ using MassTransit;
 
 namespace irai.Infrastructure.Messaging;
 
-public class MessageBusService(IPublishEndpoint publish, ISendEndpointProvider endpointProvider,
-                               ILogger<MessageBusService> logger) : IMessageBusService
+public class MessageBusService(
+    IPublishEndpoint publish,
+    ISendEndpointProvider endpointProvider,
+    ILogger<MessageBusService> logger) : IMessageBusService
 {
     #region IMessageBusService Members
 
@@ -29,7 +31,7 @@ public class MessageBusService(IPublishEndpoint publish, ISendEndpointProvider e
     {
         var endpoint = await endpointProvider.GetSendEndpoint(new Uri("queue:twitch-settings"));
         logger.LogInformation("Changing Twitch settings of {Username}, enabled: {isEnabled}", twitchUserId,
-                                    isEnabled);
+                              isEnabled);
         await endpoint.Send(new TwitchSettingsChangeContract
                                 { TwitchUserId = twitchUserId, OsuId = osuId, IsEnabled = isEnabled });
     }
