@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using ChiffadicErrors;
 using irai.Infrastructure.Configuration;
 using irai.Infrastructure.ExternalServices.TwitchApi.Models;
 using Microsoft.Extensions.Options;

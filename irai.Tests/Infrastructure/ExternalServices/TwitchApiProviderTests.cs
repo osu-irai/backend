@@ -89,7 +89,7 @@ public class TwitchApiProviderTests
 
         var result = await provider.GetUser("42", "token", "client-id");
 
-        if (result is not OkVariant<TwitchUserList> { Value: var empty })
+        if (result is not Ok<TwitchUserList> { Value: var empty })
         {
             Assert.Fail("Expected Ok result");
             return;
@@ -116,7 +116,7 @@ public class TwitchApiProviderTests
 
         var result = await provider.GetUser("42", "token", "client-id");
 
-        if (result is not OkVariant<TwitchUserList> { Value: var users })
+        if (result is not Ok<TwitchUserList> { Value: var users })
         {
             Assert.Fail("Expected Ok result");
             return;
@@ -141,7 +141,7 @@ public class TwitchApiProviderTests
 
         var result = await provider.GetUser("42", "token", "client-id");
 
-        Assert.That(result is ErrorVariant<TwitchApiError> { Value: InvalidTwitchToken }, Is.True);
+        Assert.That(result is Error<TwitchApiError> { Value: InvalidTwitchToken }, Is.True);
     }
 
     [Test]
@@ -153,7 +153,7 @@ public class TwitchApiProviderTests
 
         var result = await provider.ValidateUser("token");
 
-        if (result is not OkVariant<TwitchValidation> { Value: var validation })
+        if (result is not Ok<TwitchValidation> { Value: var validation })
         {
             Assert.Fail("Expected Ok result");
             return;
@@ -175,6 +175,6 @@ public class TwitchApiProviderTests
 
         var result = await provider.ValidateUser("token");
 
-        Assert.That(result is ErrorVariant<TwitchApiError> { Value: InvalidTwitchToken }, Is.True);
+        Assert.That(result is Error<TwitchApiError> { Value: InvalidTwitchToken }, Is.True);
     }
 }

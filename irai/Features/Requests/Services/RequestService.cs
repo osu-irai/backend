@@ -1,3 +1,4 @@
+using ChiffadicErrors;
 using irai.Common.Extensions;
 using irai.Common.Models;
 using irai.Features.Requests.Mappings;
@@ -156,7 +157,7 @@ public class RequestService(
 
         var result = await InitializeRequest(sourceUser, destinationUser, beatmap, source);
 
-        return new OkVariant<int>(result);
+        return new Ok<int>(result);
     }
 
     public async Task<Result<int, RequestServiceError>> CreateRequest(int? sourceId, string destinationName,
@@ -174,7 +175,7 @@ public class RequestService(
 
         var result = await InitializeRequest(sourceUser, destinationUser, beatmap, source);
 
-        return new OkVariant<int>(result);
+        return new Ok<int>(result);
     }
 
     #endregion
@@ -220,10 +221,12 @@ public class RequestService(
         };
         var stored = await dbContext.AddRequest(request);
 
-        if (stored is not Created<RequestModel> { Value: { } created })
+        if (stored is Updated<int> updated)
         {
-            return ((Updated<int>)stored.Value!).Value;
+            return updated.Value;
         }
+
+        var created = (stored.Value as Created<RequestModel>)!.Value;
 
         var notificationBody = new ReceivedRequestResponse
         {
@@ -243,6 +246,6 @@ public class RequestService(
             logger.LogWarning(exception, "Failed to publish request {RequestId} to the message bus", created.Id);
         }
 
-        return ((Created<RequestModel>)stored.Value).Value.Id;
+        return created.Id;
     }
 }

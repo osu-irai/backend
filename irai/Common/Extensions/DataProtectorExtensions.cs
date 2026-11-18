@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using ChiffadicErrors;
 using irai.Features.Requests.Services;
 using Microsoft.AspNetCore.DataProtection;
 using static ChiffadicErrors.Result;

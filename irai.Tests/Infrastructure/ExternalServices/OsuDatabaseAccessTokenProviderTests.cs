@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using ChiffadicErrors;
 using irai.Common.Constants;
 using irai.Common.Exceptions;
 using irai.Features.Authentication.Persistence;
@@ -226,6 +227,6 @@ public class OsuDatabaseAccessTokenProviderTests
         await using var db       = CreateDatabase();
         var             provider = CreateProvider(db, Substitute.For<IOsuApiProvider>(), "999");
 
-        await Assert.ThrowsAsync<NullReferenceException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
+        await Assert.ThrowsAsync<OptionException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
     }
 }

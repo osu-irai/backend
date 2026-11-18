@@ -52,7 +52,7 @@ public class TwitchAuthController(
         }
 
         var validationResult = await twitchApi.ValidateUser(accessToken);
-        if (validationResult is not OkVariant<TwitchValidation> { Value: var twitchUserValidation })
+        if (validationResult is not ChiffadicErrors.Ok<TwitchValidation> { Value: var twitchUserValidation })
         {
             logger.LogWarning("Failed to validate a Twitch user");
             return TypedResults.Unauthorized();
@@ -60,7 +60,7 @@ public class TwitchAuthController(
 
         var userResult = await twitchApi.GetUser(twitchUserValidation.UserId, accessToken,
                                                  twitchUserValidation.ClientId);
-        if (userResult is not OkVariant<TwitchUserList> { Value: var twitchUser } ||
+        if (userResult is not ChiffadicErrors.Ok<TwitchUserList> { Value: var twitchUser } ||
             twitchUser.Data.FirstOrDefault()
                       ?.Login is not { } twitchLogin)
         {

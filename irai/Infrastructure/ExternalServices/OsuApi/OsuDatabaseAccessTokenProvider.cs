@@ -1,3 +1,4 @@
+using ChiffadicErrors;
 using irai.Common.Constants;
 using irai.Common.Exceptions;
 using irai.Common.Extensions;
@@ -55,8 +56,8 @@ public class OsuDatabaseAccessTokenProvider(
         logger.LogInformation("Found valid user by claim id {Id}", id);
         var token = user.Unwrap()
                         .Token;
-        if (this._protector.UnprotectToken(token.AccessToken) is not OkVariant<string> { Value: var accessToken } ||
-            this._protector.UnprotectToken(token.RefreshToken) is not OkVariant<string> { Value: var refreshToken })
+        if (this._protector.UnprotectToken(token.AccessToken) is not Ok<string> { Value: var accessToken } ||
+            this._protector.UnprotectToken(token.RefreshToken) is not Ok<string> { Value: var refreshToken })
         {
             // Stored before at-rest encryption shipped — force re-login instead of 500ing forever.
             throw new UnauthorizedException();
@@ -64,36 +65,36 @@ public class OsuDatabaseAccessTokenProvider(
 
         logger.LogInformation("Current time is {Time}, Token for {User} expires at {Expires}", DateTime.UtcNow, id,
                               token?.Expires);
-        if (DateTime.UtcNow > token?.Expires)
+        if (!(DateTime.UtcNow > token?.Expires))
         {
-            await RefreshLock.WaitAsync(cancellationToken);
-            try
-            {
-                logger.LogInformation("Refreshing token for {User}", id);
-                var newToken = await osuApiProvider.RefreshToken(refreshToken, accessToken);
-                if (newToken is null)
-                {
-                    // Refresh token revoked or expired — force re-login instead of 500ing forever.
-                    throw new UnauthorizedException();
-                }
-
-                await dbContext.UpdateToken(id, new TokenModel
-                {
-                    UserId       = id,
-                    AccessToken  = this._protector.Protect(newToken.AccessToken),
-                    RefreshToken = this._protector.Protect(refreshToken),
-                    Expires      = DateTime.UtcNow.AddSeconds(newToken.ExpiresIn),
-                    User         = user.Unwrap()
-                });
-                return newToken.AccessToken;
-            }
-            finally
-            {
-                RefreshLock.Release();
-            }
+            return accessToken;
         }
 
-        return accessToken;
+        await RefreshLock.WaitAsync(cancellationToken);
+        try
+        {
+            logger.LogInformation("Refreshing token for {User}", id);
+            var newToken = await osuApiProvider.RefreshToken(refreshToken, accessToken);
+            if (newToken is null)
+            {
+                // Refresh token revoked or expired — force re-login instead of 500ing forever.
+                throw new UnauthorizedException();
+            }
+
+            await dbContext.UpdateToken(id, new TokenModel
+            {
+                UserId       = id,
+                AccessToken  = this._protector.Protect(newToken.AccessToken),
+                RefreshToken = this._protector.Protect(refreshToken),
+                Expires      = DateTime.UtcNow.AddSeconds(newToken.ExpiresIn),
+                User         = user.Unwrap()
+            });
+            return newToken.AccessToken;
+        }
+        finally
+        {
+            RefreshLock.Release();
+        }
     }
 
     #endregion

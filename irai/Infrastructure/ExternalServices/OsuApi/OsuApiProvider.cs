@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using ChiffadicErrors;
 using irai.Common.Extensions;
 using irai.Infrastructure.Configuration;
 using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;

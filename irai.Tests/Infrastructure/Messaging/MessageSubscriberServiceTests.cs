@@ -28,7 +28,7 @@ public class MessageSubscriberServiceTests
         }
         else
         {
-            call.Returns(result ?? new OkVariant<int>(1));
+            call.Returns(result ?? new Ok<int>(1));
         }
 
         return (new MessageSubscriberService(NullLogger<MessageSubscriberService>.Instance, requests), requests);

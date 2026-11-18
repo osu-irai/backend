@@ -1,3 +1,4 @@
+using ChiffadicErrors;
 using irai.Common.Constants;
 using irai.Common.Extensions;
 using irai.Features.Users.Persistence;
@@ -26,7 +27,7 @@ public class FriendService(
             return;
         }
 
-        if (this._protector.UnprotectToken(token.AccessToken) is not OkVariant<string> { Value: var accessToken })
+        if (this._protector.UnprotectToken(token.AccessToken) is not Ok<string> { Value: var accessToken })
         {
             logger.LogWarning("Skipping friend sync for {UserId}, stored token cannot be decrypted", userId);
             return;

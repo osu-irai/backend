@@ -14,7 +14,7 @@ public class IrcBotController(
     : ControllerBase
 {
     [HttpGet]
-    public async Task<Results<Ok<IList<string>>, UnauthorizedHttpResult, ForbidHttpResult>> GetNames()
+    public async Task<Results<Microsoft.AspNetCore.Http.HttpResults.Ok<IList<string>>, UnauthorizedHttpResult, ForbidHttpResult>> GetNames()
     {
         return TypedResults.Ok(await botService.GetIrcUsers());
     }

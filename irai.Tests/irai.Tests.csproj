@@ -11,7 +11,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="coverlet.collector" Version="10.1.0">
+        <PackageReference Include="ChiffadicErrors" Version="0.2.0" />
+        <PackageReference Include="coverlet.collector" Version="10.1.1">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -21,7 +22,7 @@
         <PackageReference Include="NSubstitute" Version="6.2.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="11.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0"/>
-        <PackageReference Include="Testcontainers.PostgreSql" Version="4.16.0"/>
+        <PackageReference Include="Testcontainers.PostgreSql" Version="4.17.0" />
     </ItemGroup>
 
     <ItemGroup>

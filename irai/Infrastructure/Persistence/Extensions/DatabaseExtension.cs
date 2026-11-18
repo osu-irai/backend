@@ -1,3 +1,4 @@
+using ChiffadicErrors;
 using irai.Common.Exceptions;
 using irai.Common.Extensions;
 using irai.Common.Models;

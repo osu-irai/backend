@@ -1,3 +1,4 @@
+using ChiffadicErrors;
 using irai.Common.Exceptions;
 using irai.Features.Requests.Models;
 using irai.Features.Requests.Persistence;
@@ -24,7 +25,7 @@ public class MessageSubscriberService(
                                                             context.Message.BeatmapId.Value,
                                                             RequestSource.Twitch);
 
-            if (result is ErrorVariant<RequestServiceError> { Value: var error })
+            if (result is Error<RequestServiceError> { Value: var error })
             {
                 logger.LogWarning("Failed to create a request from Twitch: {Error}", error);
             }

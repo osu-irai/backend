@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using ChiffadicErrors;
 using irai.Common.Extensions;
 using irai.Infrastructure.Configuration;
 using irai.Infrastructure.ExternalServices.OsuApi;

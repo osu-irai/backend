@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using ChiffadicErrors;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.States;

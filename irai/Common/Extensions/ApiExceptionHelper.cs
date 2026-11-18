@@ -1,4 +1,5 @@
 using System.Security.Principal;
+using ChiffadicErrors;
 using irai.Common.Exceptions;
 using irai.Features.Requests.Services;
 using osu.NET;
@@ -12,16 +13,16 @@ public static class ApiExceptionHelper
     {
         return await value switch
         {
-            ErrorVariant<RequestServiceError> { Value: BeatmapNotFound val } =>
+            Error<RequestServiceError> { Value: BeatmapNotFound val } =>
                 throw new NotFoundException($"Beatmap {val.Id}"),
-            ErrorVariant<RequestServiceError> { Value: UserNotFound val } =>
+            Error<RequestServiceError> { Value: UserNotFound val } =>
                 throw new NotFoundException($"User {val.Id}"),
-            ErrorVariant<RequestServiceError> { Value: UpstreamError val } =>
+            Error<RequestServiceError> { Value: UpstreamError val } =>
                 throw new ServerErrorException(val.Details),
-            ErrorVariant<RequestServiceError> { Value: NotAuthorized } =>
+            Error<RequestServiceError> { Value: NotAuthorized } =>
                 throw new UnauthorizedException(),
-            ErrorVariant<RequestServiceError> { Value: InternalError } => throw new ServerErrorException("Internal"),
-            OkVariant<T> okVariant                                     => okVariant.Value
+            Error<RequestServiceError> { Value: InternalError } => throw new ServerErrorException("Internal"),
+            Ok<T> Ok                                     => Ok.Value
         };
     }
 

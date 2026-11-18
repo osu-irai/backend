@@ -1,4 +1,4 @@
-using irai.Common.Extensions;
+using ChiffadicErrors;
 using irai.Infrastructure.ExternalServices.OsuApi.Models;
 
 namespace irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
