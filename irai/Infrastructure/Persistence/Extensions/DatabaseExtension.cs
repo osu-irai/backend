@@ -1,4 +1,6 @@
+using irai.Common.Exceptions;
 using irai.Common.Extensions;
+using irai.Common.Models;
 using irai.Features.Authentication.Persistence;
 using irai.Features.Requests.Persistence;
 using irai.Features.Users.Persistence;
@@ -32,7 +34,7 @@ public static class DatabaseExtension
     public static async Task<Option<UserModel>> GetUserByName(this DatabaseContext dbContext, string name)
     {
         return await dbContext.Users
-                              .FirstOrDefaultAsync(u => u.Username == name)
+                              .FirstOrDefaultAsync(u => u.Username.ToLower() == name.ToLower())
                               .IntoOptionAsync();
     }
 
@@ -76,42 +78,54 @@ public static class DatabaseExtension
     /// <param name="token">New token</param>
     public static async Task UpdateToken(this DatabaseContext dbContext, int id, TokenModel token)
     {
-        var tok = await dbContext.Tokens.FirstAsync(t => t.UserId == id);
+        var tok = await dbContext.Tokens.FirstOrDefaultAsync(t => t.UserId == id);
+        if (tok is null)
+        {
+            throw new UnauthorizedException();
+        }
+
         tok.AccessToken = token.AccessToken;
         tok.Expires     = token.Expires;
         await dbContext.SaveChangesAsync();
     }
 
     /// <summary>
-    /// Store a beatmap request
+    /// Store a beatmap request. Re-requesting the same map to the same player from the same sender
+    /// only bumps the date instead of adding a row. Returns the stored row (existing or new).
     /// </summary>
     /// <param name="dbContext">Database context</param>
     /// <param name="request">Newly added request</param>
-    public static async Task AddRequest(this DatabaseContext dbContext, RequestModel request)
+    public static async Task<RecordStatus<RequestModel, int>> AddRequest(this DatabaseContext dbContext, RequestModel request)
     {
-        var requestedFrom = request.RequestedFrom?.Id ?? null;
-        var existing = await dbContext.Requests.FirstOrDefaultAsync(req =>
-                                                                        // req.RequestedFrom.Id == requestedFrom
-                                                                        // && 
-                                                                        req.Beatmap.Id == request.Beatmap.Id
-                                                                        && req.RequestedTo.Id ==
-                                                                        request.RequestedTo.Id);
+        var requestedFromId = request.RequestedFrom?.Id;
+        var existing = await dbContext.Requests
+                                      .Include(req => req.Beatmap)
+                                      .ThenInclude(beatmap => beatmap.BeatmapSet)
+                                      .Include(req => req.RequestedTo)
+                                      .Include(req => req.RequestedFrom)
+                                      .FirstOrDefaultAsync(req =>
+                                                               !req.IsDeleted                                              &&
+                                                               req.Beatmap.Id     == request.Beatmap.Id                    &&
+                                                               req.RequestedTo.Id == request.RequestedTo.Id                &&
+                                                               ((requestedFromId == null && req.RequestedFrom == null) ||
+                                                                (requestedFromId != null && req.RequestedFrom != null &&
+                                                                 req.RequestedFrom.Id == requestedFromId)));
         if (existing is not null)
         {
             existing.Date = DateTime.UtcNow;
+            await dbContext.SaveChangesAsync();
+            return new Updated<int>(existing.Id);
         }
-        else
+
+        request.Date = DateTime.UtcNow;
+        var bms = await dbContext.BeatmapSets.FirstOrDefaultAsync(bms => bms.Id == request.Beatmap.BeatmapSet.Id);
+        if (bms is not null)
         {
-            request.Date = DateTime.UtcNow;
-            var bms = await dbContext.BeatmapSets.FirstOrDefaultAsync(bms => bms.Id == request.Beatmap.BeatmapSet.Id);
-            if (bms is not null)
-            {
-                request.Beatmap.BeatmapSet = bms;
-            }
-
-            dbContext.Requests.Add(request);
+            request.Beatmap.BeatmapSet = bms;
         }
 
+        dbContext.Requests.Add(request);
         await dbContext.SaveChangesAsync();
+        return new Created<RequestModel>(request);
     }
 }

@@ -1,7 +1,10 @@
+using System.Net;
 using System.Net.Http.Headers;
+using ChiffadicErrors;
 using irai.Infrastructure.Configuration;
 using irai.Infrastructure.ExternalServices.TwitchApi.Models;
 using Microsoft.Extensions.Options;
+using static ChiffadicErrors.Result;
 
 namespace irai.Infrastructure.ExternalServices.TwitchApi;
 
@@ -10,24 +13,33 @@ public class TwitchApiProvider(
     HttpClient httpClient,
     ILogger<TwitchApiProvider> logger)
 {
-    private const string OauthRoot = "https://id.twitch.tv/oauth2";
+    private const string OAUTH_ROOT = "https://id.twitch.tv/oauth2";
     private readonly TwitchConfig _config = config.Value;
-    private readonly ILogger<TwitchApiProvider> _logger = logger;
 
-    public async Task<TwitchValidation?> ValidateUser(string token)
+    public async Task<Result<TwitchValidation, TwitchApiError>> ValidateUser(string token)
     {
         var requestMessage = new HttpRequestMessage
         {
             Method     = HttpMethod.Get,
-            RequestUri = new Uri(OauthRoot + "/validate"),
+            RequestUri = new Uri(OAUTH_ROOT + "/validate"),
             Headers    = { Authorization = new AuthenticationHeaderValue("Bearer", token) }
         };
 
         var response = await httpClient.SendAsync(requestMessage);
 
+        // Invalid or expired token.
+        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            logger.LogWarning("Twitch token rejected with {StatusCode}", response.StatusCode);
+            return Error<TwitchApiError>(new InvalidTwitchToken());
+        }
+
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<TwitchValidation>();
+        var validation = await response.Content.ReadFromJsonAsync<TwitchValidation>();
+        return validation is null
+                   ? Error<TwitchApiError>(new InvalidTwitchToken())
+                   : Ok(validation);
     }
 
     public async Task<TwitchTokenResponse?> GetClientCredentials()
@@ -39,13 +51,13 @@ public class TwitchApiProvider(
             new KeyValuePair<string, string>("grant_type",    "client_credentials")
         });
 
-        var url      = new Uri(OauthRoot + "/token");
+        var url      = new Uri(OAUTH_ROOT + "/token");
         var response = await httpClient.PostAsync(url, content);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<TwitchTokenResponse>();
     }
 
-    public async Task<TwitchUserList> GetUser(string userId, string token, string clientId)
+    public async Task<Result<TwitchUserList, TwitchApiError>> GetUser(string userId, string token, string clientId)
     {
         var requestMessage = new HttpRequestMessage
         {
@@ -57,8 +69,16 @@ public class TwitchApiProvider(
 
         var response = await httpClient.SendAsync(requestMessage);
 
+        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            logger.LogWarning("Twitch token rejected for user {UserId} with {StatusCode}", userId,
+                                    response.StatusCode);
+            return Error<TwitchApiError>(new InvalidTwitchToken());
+        }
+
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<TwitchUserList>() ?? new TwitchUserList();
+        var users = await response.Content.ReadFromJsonAsync<TwitchUserList>();
+        return Ok(users ?? new TwitchUserList());
     }
 }

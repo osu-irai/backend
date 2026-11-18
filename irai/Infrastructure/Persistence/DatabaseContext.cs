@@ -32,12 +32,12 @@ public class DatabaseContext(
     /// <summary>
     /// Table with osu! settings
     /// </summary>
-    public DbSet<SettingsModel> Settings { get; set; } = null;
+    public DbSet<SettingsModel> Settings { get; set; } = null!;
 
     /// <summary>
     /// Table with Twitch authentication/integration settings
     /// </summary>
-    public DbSet<TwitchModel> Twitch { get; set; }
+    public DbSet<TwitchModel> Twitch { get; set; } = null!;
 
     /// <summary>
     /// Table with osu! authentication tokens

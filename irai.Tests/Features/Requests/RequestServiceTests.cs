@@ -132,7 +132,7 @@ public class RequestServiceTests
     }
 
     [Test]
-    public async Task CreateRequest_WhenDuplicate_UpdatesDateWithoutAddingRowAndStillNotifies()
+    public async Task CreateRequest_WhenDuplicate_UpdatesDateWithoutAddingRowAndDoesNotNotify()
     {
         var (db, service, notification, _) = CreateHarness();
         await using var _db     = db;
@@ -155,7 +155,7 @@ public class RequestServiceTests
         var stored = await db.Requests.SingleAsync();
         Assert.That(result.IsOk(), Is.True, $"Expected Ok, received {result.GetType()}");
         Assert.That(stored.Date,   Is.GreaterThan(oldDate));
-        await notification.Received(1)
+        await notification.Received(0)
                           .NotifyUserAsync("bob", Arg.Any<ReceivedRequestResponse>());
     }
 
@@ -260,10 +260,34 @@ public class RequestServiceTests
         db.Requests.Add(request);
         await db.SaveChangesAsync();
 
-        await service.DeleteRequest(request.Id);
+        await service.DeleteRequest(request.Id, 2);
 
         var stored = await db.Requests.SingleAsync();
         Assert.That(stored.IsDeleted, Is.True);
+    }
+
+    [Test]
+    public async Task DeleteRequest_WhenBelongsToAnotherUser_DoesNotDelete()
+    {
+        var (db, service, _, _) = CreateHarness();
+        await using var _db     = db;
+        var             target  = AddUser(db, 2, "bob");
+        var             beatmap = AddBeatmap(db);
+        var request = new RequestModel
+        {
+            Beatmap       = beatmap,
+            RequestedTo   = target,
+            RequestedFrom = null,
+            Source        = RequestSource.Twitch,
+            Date          = DateTime.UtcNow
+        };
+        db.Requests.Add(request);
+        await db.SaveChangesAsync();
+
+        await service.DeleteRequest(request.Id, 1);
+
+        var stored = await db.Requests.SingleAsync();
+        Assert.That(stored.IsDeleted, Is.False);
     }
 
     [Test]
@@ -272,7 +296,7 @@ public class RequestServiceTests
         var (db, service, _, _) = CreateHarness();
         await using var _db = db;
 
-        await Assert.DoesNotThrowAsync(() => service.DeleteRequest(404));
+        await Assert.DoesNotThrowAsync(() => service.DeleteRequest(404, 2));
     }
 
     [Test]

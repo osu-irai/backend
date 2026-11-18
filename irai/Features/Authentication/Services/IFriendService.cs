@@ -2,5 +2,5 @@ namespace irai.Features.Authentication.Services;
 
 public interface IFriendService
 {
-    public Task GetFriends(int userId, string token);
+    public Task GetFriends(int userId);
 }

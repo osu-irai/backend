@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using irai.Infrastructure.ExternalServices.OsuApi.Models;
 
 namespace irai.Features.Requests.Persistence;
 
@@ -16,15 +15,4 @@ public class BeatmapSetModel
     public string Title { get; set; } = null!;
 
     public int CreatorId { get; set; }
-
-    public BeatmapSet IntoApiModel()
-    {
-        return new BeatmapSet
-        {
-            Id        = this.Id,
-            Artist    = this.Artist,
-            Title     = this.Title,
-            CreatorId = this.CreatorId
-        };
-    }
 }

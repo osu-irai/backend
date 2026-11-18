@@ -1,11 +1,13 @@
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.States;
+using irai.Common.Constants;
 using irai.Features.Authentication.Persistence;
 using irai.Features.Authentication.Services;
 using irai.Features.Users.Persistence;
 using irai.Infrastructure.ExternalServices.OsuApi.Models;
 using irai.Infrastructure.Persistence;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
@@ -16,6 +18,9 @@ namespace irai.Tests.Features.Authentication;
 [TestFixture]
 public class AuthenticationServiceTests
 {
+    private static readonly IDataProtectionProvider Protection = DataProtectionProvider.Create("irai-tests");
+    private static readonly IDataProtector Protector = Protection.CreateProtector(TokenProtection.PURPOSE);
+
     private IBackgroundJobClient _backgroundJobClient;
     private IFriendService _friendService;
 
@@ -33,7 +38,7 @@ public class AuthenticationServiceTests
     {
         this._backgroundJobClient = Substitute.For<IBackgroundJobClient>();
         this._friendService       = Substitute.For<IFriendService>();
-        return new AuthenticationService(this._backgroundJobClient, this._friendService, db,
+        return new AuthenticationService(this._backgroundJobClient, this._friendService, db, Protection,
                                          NullLogger<AuthenticationService>.Instance);
     }
 
@@ -77,10 +82,10 @@ public class AuthenticationServiceTests
 
         var storedUser  = await db.Users.SingleAsync();
         var storedToken = await db.Tokens.SingleAsync();
-        Assert.That(storedUser.Username,            Is.EqualTo("new-name"));
-        Assert.That(storedUser.CountryCode,         Is.EqualTo("DE"));
-        Assert.That(storedToken.AccessToken,        Is.EqualTo("new-access"));
-        Assert.That(storedToken.RefreshToken,       Is.EqualTo("new-refresh"));
+        Assert.That(storedUser.Username,                        Is.EqualTo("new-name"));
+        Assert.That(storedUser.CountryCode,                     Is.EqualTo("DE"));
+        Assert.That(Protector.Unprotect(storedToken.AccessToken),  Is.EqualTo("new-access"));
+        Assert.That(Protector.Unprotect(storedToken.RefreshToken), Is.EqualTo("new-refresh"));
         Assert.That(await db.Settings.CountAsync(), Is.EqualTo(1));
         this._backgroundJobClient.Received(0)
             .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
@@ -104,13 +109,13 @@ public class AuthenticationServiceTests
         var user = await db.Users.Include(u => u.Settings)
                            .SingleAsync();
         var token = await db.Tokens.SingleAsync();
-        Assert.That(user.Id,            Is.EqualTo(1));
-        Assert.That(user.Username,      Is.EqualTo("alice"));
-        Assert.That(user.CountryCode,   Is.EqualTo("PL"));
-        Assert.That(user.Settings,      Is.Not.Null);
-        Assert.That(token.UserId,       Is.EqualTo(1));
-        Assert.That(token.AccessToken,  Is.EqualTo("access"));
-        Assert.That(token.RefreshToken, Is.EqualTo("refresh"));
+        Assert.That(user.Id,                                 Is.EqualTo(1));
+        Assert.That(user.Username,                           Is.EqualTo("alice"));
+        Assert.That(user.CountryCode,                        Is.EqualTo("PL"));
+        Assert.That(user.Settings,                           Is.Not.Null);
+        Assert.That(token.UserId,                            Is.EqualTo(1));
+        Assert.That(Protector.Unprotect(token.AccessToken),  Is.EqualTo("access"));
+        Assert.That(Protector.Unprotect(token.RefreshToken), Is.EqualTo("refresh"));
         Assert.That(expiration,         Is.GreaterThanOrEqualTo(before.AddDays(1)));
         Assert.That(expiration,         Is.LessThanOrEqualTo(DateTime.UtcNow.AddDays(1)));
         this._backgroundJobClient.Received(1)
@@ -118,7 +123,7 @@ public class AuthenticationServiceTests
     }
 
     [Test]
-    public async Task SaveTwitchLogin_WhenLinkExists_UpdatesOnlyUsernameAndEnablesSettings()
+    public async Task SaveTwitchLogin_WhenLinkExists_UpdatesTokensAndUsernameAndEnablesSettings()
     {
         await using var db = CreateDatabase();
         AddUser(db, 1, "alice", new SettingsModel { EnableTwitch = false });
@@ -127,8 +132,8 @@ public class AuthenticationServiceTests
             UserId       = 1,
             TwitchId     = 55,
             Username     = "old_tv",
-            AccessToken  = "old-access",
-            RefreshToken = "old-refresh"
+            AccessToken  = Protector.Protect("old-access"),
+            RefreshToken = Protector.Protect("old-refresh")
         });
         await db.SaveChangesAsync();
         var service = CreateService(db);
@@ -137,11 +142,11 @@ public class AuthenticationServiceTests
 
         var twitch   = await db.Twitch.SingleAsync();
         var settings = await db.Settings.SingleAsync();
-        Assert.That(twitch.Username,       Is.EqualTo("new_tv"));
-        Assert.That(twitch.TwitchId,       Is.EqualTo(55));
-        Assert.That(twitch.AccessToken,    Is.EqualTo("old-access"));
-        Assert.That(twitch.RefreshToken,   Is.EqualTo("old-refresh"));
-        Assert.That(settings.EnableTwitch, Is.True);
+        Assert.That(twitch.Username,                           Is.EqualTo("new_tv"));
+        Assert.That(twitch.TwitchId,                          Is.EqualTo(99));
+        Assert.That(Protector.Unprotect(twitch.AccessToken),  Is.EqualTo("new-access"));
+        Assert.That(Protector.Unprotect(twitch.RefreshToken), Is.EqualTo("new-refresh"));
+        Assert.That(settings.EnableTwitch,                    Is.True);
     }
 
     [Test]
@@ -156,11 +161,11 @@ public class AuthenticationServiceTests
 
         var twitch   = await db.Twitch.SingleAsync();
         var settings = await db.Settings.SingleAsync();
-        Assert.That(twitch.UserId,         Is.EqualTo(1));
-        Assert.That(twitch.TwitchId,       Is.EqualTo(55));
-        Assert.That(twitch.Username,       Is.EqualTo("alice_tv"));
-        Assert.That(twitch.AccessToken,    Is.EqualTo("access"));
-        Assert.That(twitch.RefreshToken,   Is.EqualTo("refresh"));
-        Assert.That(settings.EnableTwitch, Is.True);
+        Assert.That(twitch.UserId,                            Is.EqualTo(1));
+        Assert.That(twitch.TwitchId,                          Is.EqualTo(55));
+        Assert.That(twitch.Username,                          Is.EqualTo("alice_tv"));
+        Assert.That(Protector.Unprotect(twitch.AccessToken),  Is.EqualTo("access"));
+        Assert.That(Protector.Unprotect(twitch.RefreshToken), Is.EqualTo("refresh"));
+        Assert.That(settings.EnableTwitch,                    Is.True);
     }
 }

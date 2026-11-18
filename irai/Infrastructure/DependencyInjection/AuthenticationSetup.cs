@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using osu.Game.Extensions;
 
 namespace irai.Infrastructure.DependencyInjection;
 
@@ -73,8 +72,9 @@ public static class AuthenticationSetup
                     options.AccessDeniedPath    = "";
                     options.LogoutPath          = "";
                     options.Cookie.Path         = "/";
-                    options.Cookie.Name         = "iraiLogin";
-                    options.Cookie.HttpOnly     = false;
+                    options.Cookie.Name     = "iraiLogin";
+                    options.Cookie.HttpOnly   = false; 
+                    options.Cookie.SameSite   = SameSiteMode.Lax; // OAuth callback is cross-site, strict doesn't work 
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.SlidingExpiration   = true;
                     options.Events.OnValidatePrincipal = context =>
@@ -145,7 +145,10 @@ public static class AuthenticationSetup
                     options.ClientId              = cfg.ClientId;
                     options.ClientSecret          = cfg.ClientSecret;
                     options.CallbackPath          = cfg.RedirectUrl;
-                    options.Scope.AddRange(["user:read:chat", "user:write:chat", "user:bot", "channel:bot"]);
+                    options.Scope.Add("user:read:chat");
+                    options.Scope.Add("user:write:chat");
+                    options.Scope.Add("user:bot");
+                    options.Scope.Add("channel:bot");
 
                     options.SaveTokens = true;
 

@@ -6,12 +6,14 @@ using irai.Features.Requests.Models;
 using irai.Features.Requests.Services;
 using irai.Features.Search.Services;
 using irai.Features.Users.Services;
+using irai.Infrastructure.Configuration;
 using irai.Infrastructure.ExternalServices.OsuApi;
 using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using irai.Infrastructure.ExternalServices.TwitchApi;
 using irai.Infrastructure.Messaging;
 using irai.Infrastructure.Notifications;
 using MassTransit;
+using Microsoft.Extensions.Options;
 using osu.NET;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
@@ -46,10 +48,10 @@ public static class ServiceSetup
             var provider      = serviceProvider.GetRequiredService<OsuDatabaseAccessTokenProvider>();
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             return new OsuApiClient(provider,
-                                    loggerFactory.CreateLogger("UserTokenOsuApiClient") as ILogger<OsuApiClient>);
+                                    loggerFactory.CreateLogger<OsuApiClient>());
         });
-        services.AddSingleton<IOsuApiProvider, OsuApiProvider>();
-        services.AddSingleton<TwitchApiProvider>();
+        services.AddScoped<IOsuApiProvider, OsuApiProvider>();
+        services.AddScoped<TwitchApiProvider>();
         services.AddMassTransit(cfg =>
         {
             cfg.SetKebabCaseEndpointNameFormatter();
@@ -57,14 +59,16 @@ public static class ServiceSetup
 
             cfg.UsingRabbitMq((context, bus) =>
             {
+                var broker = context.GetRequiredService<IOptions<MessageBrokerConfig>>()
+                                    .Value;
                 bus.UseRawJsonSerializer();
                 bus.UseRawJsonDeserializer();
-                bus.Host("localhost", h =>
+                bus.Host(broker.Host, h =>
                 {
-                    h.Username("irai");
-                    h.Password("iraipass");
+                    h.Username(broker.Username);
+                    h.Password(broker.Password);
                 });
-                bus.Message<PostBaseRequest>(x => { x.SetEntityName("request-exchange"); });
+                bus.Message<PostBaseRequest>(x => { x.SetEntityName(broker.Exchange); });
                 bus.ReceiveEndpoint("send-request-userless", e => { e.Consumer<MessageSubscriberService>(context); });
             });
         });

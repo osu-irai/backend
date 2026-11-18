@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.States;
+using irai.Common.Constants;
 using irai.Common.Extensions;
 using irai.Features.Authentication.Controllers;
 using irai.Features.Authentication.Persistence;
@@ -12,6 +13,7 @@ using irai.Infrastructure.ExternalServices.OsuApi.Interfaces;
 using irai.Infrastructure.ExternalServices.OsuApi.Models;
 using irai.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -74,10 +76,12 @@ public class OAuthControllerTests
 
         this._backgroundJobClient = Substitute.For<IBackgroundJobClient>();
         this._friendService       = Substitute.For<IFriendService>();
+        var protection            = DataProtectionProvider.Create("irai-tests");
         var controller = new OAuthController(
             NullLogger<OAuthController>.Instance,
             osuApi,
             new Services_AuthenticationService(this._backgroundJobClient, this._friendService, db,
+                                               protection,
                                                NullLogger<Services_AuthenticationService>.Instance),
             Options.Create(new ServerConfig { HomePage = "/home" }));
 
@@ -98,7 +102,8 @@ public class OAuthControllerTests
             }
         };
 
-        return new Harness(db, controller, osuApi, authentication);
+        return new Harness(db, controller, osuApi, authentication,
+                           protection.CreateProtector(TokenProtection.PURPOSE));
     }
 
     private static DatabaseContext CreateDatabase()
@@ -115,7 +120,8 @@ public class OAuthControllerTests
         DatabaseContext Db,
         OAuthController Controller,
         IOsuApiProvider OsuApi,
-        IAuthenticationService Authentication);
+        IAuthenticationService Authentication,
+        IDataProtector Protector);
 
     /// <summary>
     /// Happy path
@@ -220,10 +226,10 @@ public class OAuthControllerTests
 
         var user  = await db.Users.SingleAsync();
         var token = await db.Tokens.SingleAsync();
-        Assert.That(result.Result,      Is.InstanceOf<RedirectHttpResult>());
-        Assert.That(user.Username,      Is.EqualTo("new-name"));
-        Assert.That(token.AccessToken,  Is.EqualTo("access-token"));
-        Assert.That(token.RefreshToken, Is.EqualTo("refresh-token"));
+        Assert.That(result.Result,                        Is.InstanceOf<RedirectHttpResult>());
+        Assert.That(user.Username,                        Is.EqualTo("new-name"));
+        Assert.That(harness.Protector.Unprotect(token.AccessToken),  Is.EqualTo("access-token"));
+        Assert.That(harness.Protector.Unprotect(token.RefreshToken), Is.EqualTo("refresh-token"));
         this._backgroundJobClient.Received(0)
             .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
     }
@@ -257,9 +263,9 @@ public class OAuthControllerTests
         Assert.That(user.Id,            Is.EqualTo(7));
         Assert.That(user.Username,      Is.EqualTo("alice"));
         Assert.That(user.Settings,      Is.Not.Null);
-        Assert.That(token.UserId,       Is.EqualTo(7));
-        Assert.That(token.AccessToken,  Is.EqualTo("access-token"));
-        Assert.That(token.RefreshToken, Is.EqualTo("refresh-token"));
+        Assert.That(token.UserId,                                Is.EqualTo(7));
+        Assert.That(harness.Protector.Unprotect(token.AccessToken),  Is.EqualTo("access-token"));
+        Assert.That(harness.Protector.Unprotect(token.RefreshToken), Is.EqualTo("refresh-token"));
         this._backgroundJobClient.Received(1)
             .Create(Arg.Is<Job>(j => j.Method.Name == nameof(IFriendService.GetFriends)), Arg.Any<EnqueuedState>());
         await harness.Authentication.Received(1)

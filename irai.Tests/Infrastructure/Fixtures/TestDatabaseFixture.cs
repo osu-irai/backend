@@ -66,7 +66,7 @@ public sealed class TestDatabaseFixture : IAsyncDisposable
 
         await using var command = new NpgsqlCommand(
             """
-            TRUNCATE TABLE "Requests", "Beatmaps", "BeatmapSets", "Users", "Settings", "Twitch", "Tokens", "DataProtectionKeys"
+            TRUNCATE TABLE "Requests", "Beatmaps", "BeatmapSets", "Users", "Settings", "Twitch", "Tokens", "Friends", "DataProtectionKeys"
             RESTART IDENTITY CASCADE;
             """,
             connection);

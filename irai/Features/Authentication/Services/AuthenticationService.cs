@@ -1,8 +1,10 @@
 using Hangfire;
+using irai.Common.Constants;
 using irai.Features.Authentication.Persistence;
 using irai.Features.Users.Persistence;
 using irai.Infrastructure.ExternalServices.OsuApi.Models;
 using irai.Infrastructure.Persistence;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace irai.Features.Authentication.Services;
 
@@ -10,8 +12,10 @@ public class AuthenticationService(
     IBackgroundJobClient backgroundJobClient,
     IFriendService friendService,
     DatabaseContext databaseContext,
+    IDataProtectionProvider protectionProvider,
     ILogger<AuthenticationService> logger) : IAuthenticationService
 {
+    private readonly IDataProtector _protector = protectionProvider.CreateProtector(TokenProtection.PURPOSE);
     #region IAuthenticationService Members
 
     public async Task<DateTime> SaveOsuLogin(User user, string accessToken, string refreshToken)
@@ -28,7 +32,7 @@ public class AuthenticationService(
                 CountryCode = user.CountryCode,
                 Settings    = new SettingsModel()
             });
-            backgroundJobClient.Enqueue(() => friendService.GetFriends(user.Id, accessToken));
+            backgroundJobClient.Enqueue(() => friendService.GetFriends(user.Id));
         }
         else
         {
@@ -44,8 +48,8 @@ public class AuthenticationService(
         var existingTokens = await databaseContext.Tokens.FindAsync(user.Id);
         if (existingTokens is not null)
         {
-            existingTokens.AccessToken  = accessToken;
-            existingTokens.RefreshToken = refreshToken;
+            existingTokens.AccessToken  = this._protector.Protect(accessToken);
+            existingTokens.RefreshToken = this._protector.Protect(refreshToken);
             existingTokens.Expires      = tokenExpiration;
 
             databaseContext.Tokens.Update(existingTokens);
@@ -55,8 +59,8 @@ public class AuthenticationService(
             await databaseContext.Tokens.AddAsync(new TokenModel
             {
                 UserId       = user.Id,
-                AccessToken  = accessToken,
-                RefreshToken = refreshToken,
+                AccessToken  = this._protector.Protect(accessToken),
+                RefreshToken = this._protector.Protect(refreshToken),
                 Expires      = tokenExpiration
             });
         }
@@ -76,14 +80,17 @@ public class AuthenticationService(
             {
                 UserId       = osuId,
                 Username     = username,
-                AccessToken  = accessToken,
-                RefreshToken = refreshToken,
+                AccessToken  = this._protector.Protect(accessToken),
+                RefreshToken = this._protector.Protect(refreshToken),
                 TwitchId     = twitchId
             });
         }
         else
         {
-            twitchUserModel.Username = username;
+            twitchUserModel.Username     = username;
+            twitchUserModel.TwitchId     = twitchId;
+            twitchUserModel.AccessToken  = this._protector.Protect(accessToken);
+            twitchUserModel.RefreshToken = this._protector.Protect(refreshToken);
         }
 
         var settings = await databaseContext.Settings.FindAsync(osuId);

@@ -168,7 +168,7 @@ public class DatabaseExtensionTests
     }
 
     [Test]
-    public async Task GetUserByName_MatchesExactlyAndIsCaseSensitive()
+    public async Task GetUserByName_MatchesCaseInsensitively()
     {
         await using var db = CreateDatabase();
         AddUser(db, 7, "Alice");
@@ -180,7 +180,8 @@ public class DatabaseExtensionTests
         Assert.That(exact, Is.TypeOf<Option<UserModel>>());
         Assert.That(exact.Unwrap()
                          .Id, Is.EqualTo(7));
-        Assert.That(otherCase is None);
+        Assert.That(otherCase.Unwrap()
+                             .Id, Is.EqualTo(7));
     }
 
     [Test]

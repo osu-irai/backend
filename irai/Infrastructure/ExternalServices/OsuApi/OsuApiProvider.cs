@@ -29,9 +29,6 @@ public class OsuApiProvider : IOsuApiProvider
         this._config     = config.Value;
         this._httpClient = httpClient;
         this._logger     = logger;
-
-        RefreshUserlessToken()
-            .Wait();
     }
 
     #region IOsuApiProvider Members
@@ -52,8 +49,9 @@ public class OsuApiProvider : IOsuApiProvider
             return await response.Content.ReadFromJsonAsync<User>()
                                  .IntoOptionAsync();
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
+            this._logger.LogWarning(exception, "Failed to fetch osu! user");
             return new None();
         }
     }
@@ -74,8 +72,9 @@ public class OsuApiProvider : IOsuApiProvider
 
             return await response.Content.ReadFromJsonAsync<User[]>() ?? [];
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
+            this._logger.LogWarning(exception, "Failed to fetch osu! friends");
             return [];
         }
     }
@@ -108,13 +107,11 @@ public class OsuApiProvider : IOsuApiProvider
         return await response.Content.ReadFromJsonAsync<TokenResponse>();
     }
 
-    #endregion
-
-    private async Task RefreshUserlessToken()
+    public async Task<string?> GetUserlessTokenAsync()
     {
-        if (this._userlessTokenExpiration > DateTime.UtcNow)
+        if (this._userlessTokenExpiration > DateTime.UtcNow && this._userlessToken is not null)
         {
-            return;
+            return this._userlessToken.AccessToken;
         }
 
         var requestModel = new GetUserlessTokenRequest
@@ -135,19 +132,21 @@ public class OsuApiProvider : IOsuApiProvider
 
         if (!response.IsSuccessStatusCode)
         {
-            this._logger.Log(LogLevel.Error, "Couldn't update userless token! Status code: {Code}",
-                             response.StatusCode);
-            return;
+            this._logger.LogWarning("Couldn't update userless token, status code: {Code}", response.StatusCode);
+            return null;
         }
 
         this._userlessToken = await response.Content.ReadFromJsonAsync<TokenResponse>();
         if (this._userlessToken == null)
         {
-            this._logger.Log(LogLevel.Error, "Couldn't parse userless token! {Json}",
-                             await response.Content.ReadAsStringAsync());
-            return;
+            this._logger.LogWarning("Couldn't parse userless token: {Json}",
+                                    await response.Content.ReadAsStringAsync());
+            return null;
         }
 
         this._userlessTokenExpiration = DateTime.UtcNow.AddSeconds(this._userlessToken.ExpiresIn);
+        return this._userlessToken.AccessToken;
     }
+
+    #endregion
 }

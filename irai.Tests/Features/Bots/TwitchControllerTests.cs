@@ -44,9 +44,7 @@ public class TwitchControllerTests
 
         return new TwitchController(
             requestService,
-            osuClient,
-            NullLogger<OwnRequestController>.Instance,
-            Substitute.For<IRequestNotificationService>(),
+            NullLogger<TwitchController>.Instance,
             botService);
     }
 

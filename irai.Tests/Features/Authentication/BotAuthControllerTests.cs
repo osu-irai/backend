@@ -49,10 +49,9 @@ public class BotAuthControllerTests
         });
 
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(((ContentHttpResult)result.Result!).ResponseContent);
-        var expected = DateTime.Today.AddMinutes(60)
-                               .ToUniversalTime();
+        var expected = DateTime.UtcNow.AddMinutes(60);
         Assert.That(jwt.ValidTo, Is.EqualTo(expected)
-                                   .Within(TimeSpan.FromSeconds(2)));
+                                   .Within(TimeSpan.FromSeconds(10)));
     }
 
     /// <summary>

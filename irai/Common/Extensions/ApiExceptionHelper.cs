@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Security.Principal;
 using irai.Common.Exceptions;
 using irai.Features.Requests.Services;
@@ -8,22 +7,6 @@ namespace irai.Common.Extensions;
 
 public static class ApiExceptionHelper
 {
-    public static async Task<T> ThrowIfUnauthorized<T>(this Task<Result<T, RequestServiceError>> value)
-        where T : notnull
-    {
-        return await value switch
-        {
-            OkVariant<T> okVariant => okVariant.Value,
-            ErrorVariant<RequestServiceError> { Value: BeatmapNotFound val } =>
-                throw new UnreachableException(),
-            ErrorVariant<RequestServiceError> { Value: UserNotFound val } =>
-                throw new UnauthorizedException(),
-            ErrorVariant<RequestServiceError> { Value: UpstreamError val } =>
-                throw new BadGatewayException(val.Details),
-            ErrorVariant<RequestServiceError> { Value: InternalError } => throw new ServerErrorException("Internal")
-        };
-    }
-
     public static async Task<T> ThrowIfRequestError<T>(this Task<Result<T, RequestServiceError>> value)
         where T : notnull
     {
@@ -35,14 +18,11 @@ public static class ApiExceptionHelper
                 throw new NotFoundException($"User {val.Id}"),
             ErrorVariant<RequestServiceError> { Value: UpstreamError val } =>
                 throw new ServerErrorException(val.Details),
+            ErrorVariant<RequestServiceError> { Value: NotAuthorized } =>
+                throw new UnauthorizedException(),
             ErrorVariant<RequestServiceError> { Value: InternalError } => throw new ServerErrorException("Internal"),
             OkVariant<T> okVariant                                     => okVariant.Value
         };
-    }
-
-    public static void OrNotFound<T>(this T value)
-    {
-        throw new NotFoundException($"{typeof(T)}");
     }
 
     public static T OrBadRequest<T>(this T? value, string message)
@@ -86,17 +66,6 @@ public static class ApiExceptionHelper
         }
 
         return val;
-    }
-
-    public static async Task<T?> OrBadGateway<T>(this Task<ApiResult<T>> value, string message) where T : class
-    {
-        var val = await value;
-        if (val.IsFailure)
-        {
-            throw new BadGatewayException($"Upstream error with {message}");
-        }
-
-        return val.Value;
     }
 
     public static IIdentity ThrowIfUnauthorized(this IIdentity? identity)

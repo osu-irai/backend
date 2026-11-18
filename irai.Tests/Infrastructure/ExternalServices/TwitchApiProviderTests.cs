@@ -1,7 +1,9 @@
 using System.Net;
 using System.Text;
+using ChiffadicErrors;
 using irai.Infrastructure.Configuration;
 using irai.Infrastructure.ExternalServices.TwitchApi;
+using irai.Infrastructure.ExternalServices.TwitchApi.Models;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
@@ -80,12 +82,23 @@ public class TwitchApiProviderTests
     }
 
     [Test]
-    public void GetUser_WhenResponseIsNotSuccessful_ThrowsHttpRequestException()
+    public void GetUser_WhenServerErrors_ThrowsHttpRequestException()
     {
         var handler  = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
         var provider = CreateProvider(handler);
 
         Assert.ThrowsAsync<HttpRequestException>(() => provider.GetUser("42", "token", "client-id"));
+    }
+
+    [Test]
+    public async Task GetUser_WhenTokenIsRejected_ReturnsInvalidTokenError()
+    {
+        var handler  = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized));
+        var provider = CreateProvider(handler);
+
+        var result = await provider.GetUser("42", "token", "client-id");
+
+        Assert.That(result is ErrorVariant<TwitchApiError> { Value: InvalidTwitchToken }, Is.True);
     }
 
     [Test]
@@ -96,8 +109,13 @@ public class TwitchApiProviderTests
 
         var result = await provider.GetUser("42", "token", "client-id");
 
-        Assert.That(result,      Is.Not.Null);
-        Assert.That(result.Data, Is.Empty);
+        if (result is not OkVariant<TwitchUserList> { Value: var empty })
+        {
+            Assert.Fail("Expected Ok result");
+            return;
+        }
+
+        Assert.That(empty.Data, Is.Empty);
     }
 
     [Test]
@@ -109,8 +127,14 @@ public class TwitchApiProviderTests
 
         var result = await provider.GetUser("42", "token", "client-id");
 
-        Assert.That(result.Data, Has.Count.EqualTo(1));
-        Assert.That(result.Data[0].Login, Is.EqualTo("bot"));
+        if (result is not OkVariant<TwitchUserList> { Value: var users })
+        {
+            Assert.Fail("Expected Ok result");
+            return;
+        }
+
+        Assert.That(users.Data, Has.Count.EqualTo(1));
+        Assert.That(users.Data[0].Login, Is.EqualTo("bot"));
         var request = handler.Requests.Single();
         Assert.That(request.Method, Is.EqualTo(HttpMethod.Get));
         Assert.That(request.RequestUri, Is.EqualTo(new Uri("https://api.twitch.tv/helix/users?id=42")));
@@ -121,12 +145,14 @@ public class TwitchApiProviderTests
     }
 
     [Test]
-    public void ValidateUser_WhenResponseIsNotSuccessful_ThrowsHttpRequestException()
+    public async Task ValidateUser_WhenTokenIsRejected_ReturnsInvalidTokenError()
     {
         var handler  = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized));
         var provider = CreateProvider(handler);
 
-        Assert.ThrowsAsync<HttpRequestException>(() => provider.ValidateUser("token"));
+        var result = await provider.ValidateUser("token");
+
+        Assert.That(result is ErrorVariant<TwitchApiError> { Value: InvalidTwitchToken }, Is.True);
     }
 
     [Test]
@@ -138,8 +164,13 @@ public class TwitchApiProviderTests
 
         var result = await provider.ValidateUser("token");
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result!.UserId, Is.EqualTo("42"));
+        if (result is not OkVariant<TwitchValidation> { Value: var validation })
+        {
+            Assert.Fail("Expected Ok result");
+            return;
+        }
+
+        Assert.That(validation.UserId, Is.EqualTo("42"));
         var request = handler.Requests.Single();
         Assert.That(request.Method, Is.EqualTo(HttpMethod.Get));
         Assert.That(request.RequestUri, Is.EqualTo(new Uri("https://id.twitch.tv/oauth2/validate")));

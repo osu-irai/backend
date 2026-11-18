@@ -1,4 +1,5 @@
 using Hangfire;
+using irai.Infrastructure.Hangfire;
 using irai.Features.Requests.Persistence;
 using irai.Infrastructure.Configuration;
 using irai.Infrastructure.ExceptionHandling;
@@ -96,10 +97,13 @@ public static class Program
             app.UseHttpLogging();
         }
 
-        app.MapHub<NotificationHub>("ws/notifications");
+        app.MapHub<NotificationHub>("ws/notifications").RequireAuthorization();
         app.UseAuthentication();
         app.UseAuthorization();
-        app.UseHangfireDashboard();
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions
+        {
+            Authorization = [new HangfireDashboardAuthorizationFilter()]
+        });
         app.MapControllers();
 
         app.Run();

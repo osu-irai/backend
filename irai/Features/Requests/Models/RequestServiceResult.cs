@@ -11,6 +11,8 @@ public record UserNotFound(
 public record UpstreamError(
     string Details);
 
-public record InternalError;
+public record NotAuthorized;
 
-public union RequestServiceError(BeatmapNotFound, UserNotFound, UpstreamError, InternalError);
+public record InternalError(string Details);
+
+public union RequestServiceError(BeatmapNotFound, UserNotFound, UpstreamError, NotAuthorized, InternalError);

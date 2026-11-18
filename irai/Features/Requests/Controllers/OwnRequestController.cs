@@ -1,6 +1,6 @@
 using irai.Common.Constants;
 using irai.Common.Controllers;
-using irai.Common.Exceptions;
+using irai.Common.Extensions;
 using irai.Features.Requests.Models;
 using irai.Features.Requests.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -28,7 +28,7 @@ public class OwnRequestController(
         logger.LogInformation("Received request list");
         var claim    = await GetOsuClaim();
         var requests = await requestService.GetRequestsToUser(claim);
-        logger.LogInformation($"Found requests for {claim}: {requests.Count}");
+        logger.LogInformation("Found requests for {UserId}: {Count}", claim, requests.Count);
         return TypedResults.Ok(requests);
     }
 
@@ -62,12 +62,8 @@ public class OwnRequestController(
 
         logger.LogInformation("Found destination {destinationId} and map {beatmapId}", destinationId, beatmapId);
 
-        var result = await requestService.CreateRequest(sourceId, destinationId!.Value, beatmapId!.Value);
-
-        if (result.Value is InternalError)
-        {
-            throw new ServerErrorException("Failed to create a request");
-        }
+        await requestService.CreateRequest(sourceId, destinationId!.Value, beatmapId!.Value)
+                            .ThrowIfRequestError();
 
         return TypedResults.Ok();
     }
@@ -78,16 +74,17 @@ public class OwnRequestController(
     /// <param name="requestId">request ID to delete</param>
     /// <returns>200/400</returns>
     [HttpDelete]
+    [Authorize(Roles = Roles.USER_OR_PROXY, AuthenticationSchemes = "Bearer,InternalCookies")]
     public async Task<Results<Ok, BadRequest, UnauthorizedHttpResult, InternalServerError>>
         DeleteSelfRequest(int? requestId)
     {
-        await TryAuthenticateOsu();
         if (requestId is null)
         {
             return TypedResults.BadRequest();
         }
 
-        await requestService.DeleteRequest(requestId.Value);
+        var callerId = await GetOsuClaim();
+        await requestService.DeleteRequest(requestId.Value, callerId);
         return TypedResults.Ok();
     }
 }

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using irai.Common.Exceptions;
 using irai.Common.Extensions;
 using irai.Common.Models;
 using irai.Features.Requests.Models;
@@ -33,6 +34,11 @@ public class RequestService(
         }
 
         logger.LogInformation("Missing beatmap: {BeatmapId}", beatmapId);
+        return await FetchBeatmapAsync(beatmapId);
+    }
+
+    private async Task<Result<BeatmapModel, RequestServiceError>> FetchBeatmapAsync(int beatmapId)
+    {
         var apiResponse = await osuApiClient.GetBeatmapAsync(beatmapId);
         if (apiResponse.IsFailure)
         {
@@ -46,7 +52,7 @@ public class RequestService(
                     logger.LogInformation("Unknown osu! api error, {ApiErrorDetails}", apiResponse.Error.Message);
                     return Error<RequestServiceError>(new UpstreamError(apiResponse.Error.Message ?? ""));
                 default:
-                    throw new UnreachableException();
+                    return Error<RequestServiceError>(new InternalError("Unknown application error"));
             }
         }
 
@@ -88,8 +94,6 @@ public class RequestService(
     {
         return await dbContext.Requests
                               .AsNoTracking()
-                              .Include(requestModel => requestModel.Beatmap)
-                              .Include(requestModel => requestModel.RequestedTo)
                               .Where(req => req.RequestedTo.Id == id && !req.IsDeleted)
                               .OrderByDescending(req => req.Date)
                               .Select(x => new ReceivedRequestResponse
@@ -122,8 +126,6 @@ public class RequestService(
     {
         return await dbContext.Requests
                               .AsNoTracking()
-                              .Include(requestModel => requestModel.Beatmap)
-                              .Include(requestModel => requestModel.RequestedTo)
                               .Where(req => req.RequestedFrom!.Id == id && !req.IsDeleted)
                               .OrderByDescending(req => req.Date)
                               .Select(x => new SentRequestResponse
@@ -149,13 +151,10 @@ public class RequestService(
                               .ToListAsync();
     }
 
-    public async Task DeleteRequest(int id)
+    public async Task DeleteRequest(int id, int callerId)
     {
-        var request = await dbContext.Requests.FirstOrDefaultAsync(r => r.Id == id);
-        if (request is not null)
-        {
-            request.IsDeleted = true;
-        }
+        var request = await dbContext.Requests.FirstOrDefaultAsync(r => r.Id == id && (r.RequestedTo.Id == callerId || r.RequestedFrom!.Id == callerId));
+        request?.IsDeleted = true;
 
         await dbContext.SaveChangesAsync();
     }
@@ -219,18 +218,31 @@ public class RequestService(
             RequestedTo   = destinationUser,
             Source        = source
         };
-        await dbContext.AddRequest(request);
+        var stored = await dbContext.AddRequest(request);
+
+        if (stored is not Created<RequestModel> { Value: { } created })
+        {
+            return (((Updated<int>)stored.Value!)).Value;
+        }
+
         var notificationBody = new ReceivedRequestResponse
         {
-            Id      = request.Id,
-            Beatmap = request.Beatmap.IntoDTO(),
-            From    = request.RequestedFrom?.IntoDTO(),
-            Source  = request.Source
+            Id      = created.Id,
+            Beatmap = created.Beatmap.IntoDTO(),
+            From    = created.RequestedFrom?.IntoDTO(),
+            Source  = created.Source
         };
 
         await notification.NotifyUserAsync(destinationUser.Username, notificationBody);
-        await messageBus.SubmitRequestAsync(destinationUser.Username, notificationBody);
+        try
+        {
+            await messageBus.SubmitRequestAsync(destinationUser.Username, notificationBody);
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Failed to publish request {RequestId} to the message bus", created.Id);
+        }
 
-        return request.Id;
+        return ((Created<RequestModel>)stored.Value).Value.Id;
     }
 }

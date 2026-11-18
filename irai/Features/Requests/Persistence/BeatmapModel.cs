@@ -1,13 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using irai.Infrastructure.ExternalServices.OsuApi.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace irai.Features.Requests.Persistence;
 
 /// <summary>
 /// Database model for individual beatmaps
 /// </summary>
-[PrimaryKey(nameof(Id))]
 public class BeatmapModel
 {
     [Key]

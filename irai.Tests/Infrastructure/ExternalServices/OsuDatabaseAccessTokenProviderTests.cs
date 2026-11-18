@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using irai.Common.Constants;
 using irai.Common.Exceptions;
 using irai.Features.Authentication.Persistence;
 using irai.Infrastructure.ExternalServices.OsuApi;
@@ -7,6 +8,7 @@ using irai.Infrastructure.ExternalServices.OsuApi.Models;
 using irai.Infrastructure.Persistence;
 using irai.Tests.Infrastructure.Fixtures;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +21,8 @@ namespace irai.Tests.Infrastructure.ExternalServices;
 [TestFixture]
 public class OsuDatabaseAccessTokenProviderTests
 {
-    private const int HardCodedUserId = 11482346;
+    private static readonly IDataProtectionProvider Protection = DataProtectionProvider.Create("irai-tests");
+    private static readonly IDataProtector Protector = Protection.CreateProtector(TokenProtection.PURPOSE);
 
     private static OsuDatabaseAccessTokenProvider CreateProvider(
         DatabaseContext db,
@@ -57,6 +60,7 @@ public class OsuDatabaseAccessTokenProviderTests
             db,
             accessor,
             api,
+            Protection,
             NullLogger<OsuDatabaseAccessTokenProvider>.Instance);
     }
 
@@ -77,8 +81,8 @@ public class OsuDatabaseAccessTokenProviderTests
         db.Tokens.Add(new TokenModel
         {
             UserId       = userId,
-            AccessToken  = accessToken,
-            RefreshToken = "old-refresh",
+            AccessToken  = Protector.Protect(accessToken),
+            RefreshToken = Protector.Protect("old-refresh"),
             Expires      = expires,
             User         = user
         });
@@ -90,27 +94,45 @@ public class OsuDatabaseAccessTokenProviderTests
         await using var db = CreateDatabase();
         var provider = CreateProvider(db, Substitute.For<IOsuApiProvider>(), AuthenticateResult.Fail("bad"));
 
-        Assert.ThrowsAsync<UnauthorizedException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
+        await Assert.ThrowsAsync<UnauthorizedException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
     }
 
     [Test]
-    public async Task GetAccessTokenAsync_WhenHttpContextIsMissing_UsesHardCodedUserId()
+    public async Task GetAccessTokenAsync_WhenHttpContextIsMissing_ReturnsUserlessToken()
     {
         await using var db = CreateDatabase();
-        AddUserToken(db, HardCodedUserId, "userless-access", DateTime.UtcNow.AddHours(1));
         await db.SaveChangesAsync();
         var api = Substitute.For<IOsuApiProvider>();
+        api.GetUserlessTokenAsync()
+           .Returns("userless-access");
         var provider = new OsuDatabaseAccessTokenProvider(
             db,
             new HttpContextAccessor(),
             api,
+            Protection,
             NullLogger<OsuDatabaseAccessTokenProvider>.Instance);
 
         var token = await provider.GetAccessTokenAsync(CancellationToken.None);
 
         Assert.That(token, Is.EqualTo("userless-access"));
-        await api.DidNotReceive()
-                 .RefreshToken(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task GetAccessTokenAsync_WhenHttpContextIsMissingAndUserlessUnavailable_ThrowsUnauthorized()
+    {
+        await using var db = CreateDatabase();
+        await db.SaveChangesAsync();
+        var api = Substitute.For<IOsuApiProvider>();
+        api.GetUserlessTokenAsync()
+           .Returns((string?)null);
+        var provider = new OsuDatabaseAccessTokenProvider(
+            db,
+            new HttpContextAccessor(),
+            api,
+            Protection,
+            NullLogger<OsuDatabaseAccessTokenProvider>.Instance);
+
+        await Assert.ThrowsAsync<UnauthorizedException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
     }
 
     [Test]
@@ -162,10 +184,24 @@ public class OsuDatabaseAccessTokenProviderTests
 
         Assert.That(token, Is.EqualTo("new-access"));
         var stored = await db.Tokens.SingleAsync(t => t.UserId == 7);
-        Assert.That(stored.AccessToken, Is.EqualTo("new-access"));
-        Assert.That(stored.Expires,     Is.GreaterThan(DateTime.UtcNow));
+        Assert.That(Protector.Unprotect(stored.AccessToken), Is.EqualTo("new-access"));
+        Assert.That(stored.Expires,                          Is.GreaterThan(DateTime.UtcNow));
         await api.Received(1)
                  .RefreshToken("old-refresh", "old-access");
+    }
+
+    [Test]
+    public async Task GetAccessTokenAsync_WhenRefreshFails_ThrowsUnauthorized()
+    {
+        await using var db = CreateDatabase();
+        AddUserToken(db, 7, "old-access", DateTime.UtcNow.AddHours(-1));
+        await db.SaveChangesAsync();
+        var api = Substitute.For<IOsuApiProvider>();
+        api.RefreshToken("old-refresh", "old-access")
+           .Returns(Task.FromResult<TokenResponse?>(null));
+        var provider = CreateProvider(db, api, "7");
+
+        await Assert.ThrowsAsync<UnauthorizedException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
     }
 
     [Test]
@@ -190,6 +226,6 @@ public class OsuDatabaseAccessTokenProviderTests
         await using var db       = CreateDatabase();
         var             provider = CreateProvider(db, Substitute.For<IOsuApiProvider>(), "999");
 
-        Assert.ThrowsAsync<NullReferenceException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
+        await Assert.ThrowsAsync<NullReferenceException>(() => provider.GetAccessTokenAsync(CancellationToken.None));
     }
 }

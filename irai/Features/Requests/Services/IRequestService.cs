@@ -11,7 +11,7 @@ public interface IRequestService
     Task<Result<UserModel, RequestServiceError>> GetUser(string userName);
     Task<List<ReceivedRequestResponse>> GetRequestsToUser(int id);
     Task<List<SentRequestResponse>> GetRequestsByUser(int id);
-    Task DeleteRequest(int id);
+    Task DeleteRequest(int id, int callerId);
 
     Task<Result<int, RequestServiceError>> CreateRequest(int? sourceId, int destinationId, int beatmapId,
                                                          RequestSource source = RequestSource.Website);

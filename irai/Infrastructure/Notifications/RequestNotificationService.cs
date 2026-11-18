@@ -20,7 +20,7 @@ public class RequestNotificationService : IRequestNotificationService
 
     public async Task NotifyUserAsync(string destinationUsername, ReceivedRequestResponse request)
     {
-        this._logger.LogInformation($"Sending request to {destinationUsername}");
+        this._logger.LogInformation("Sending request {RequestId} to {Username}", request.Id, destinationUsername);
         await this._hub.Clients.Group($"user_{destinationUsername}")
                   .ReceiveRequest(request);
 
@@ -28,15 +28,9 @@ public class RequestNotificationService : IRequestNotificationService
                   .ReceiveFullRequest(request.ToRequest(destinationUsername));
     }
 
-    public async Task NotifyAllAsync(string message)
-    {
-        this._logger.LogInformation($"Notifying all users with {message}");
-        await this._hub.Clients.All.ReceiveGlobalNotification(message);
-    }
-
     public async Task NotifyAboutIrcChange(string username, bool newIrcStatus)
     {
-        this._logger.LogInformation($"User {username} toggled IRC");
+        this._logger.LogInformation("User {Username} toggled IRC to {Status}", username, newIrcStatus);
         await this._hub.Clients.Group("service")
                   .ReceiveIrcSettingsChange(username, newIrcStatus);
     }

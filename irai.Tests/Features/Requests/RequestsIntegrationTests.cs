@@ -167,6 +167,23 @@ public class RequestsIntegrationTests : IntegrationTestBase
     }
 
     [Test]
+    public async Task OwnRequestsDelete_ForAnotherUsersRequest_DoesNotDelete()
+    {
+        var requestId = await SeedAsyncWithRequestId();
+
+        using var client = AuthenticatedTestClient.CreateInternalCookiesClient(this.Factory, 999);
+
+        var response = await client.DeleteAsync($"/requests/own?requestId={requestId}");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        using var scope  = this.Factory.Services.CreateScope();
+        var       db     = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var       stored = await db.Requests.SingleAsync(r => r.Id == requestId);
+        Assert.That(stored.IsDeleted, Is.False);
+    }
+
+    [Test]
     public async Task OwnRequestsDelete_WithoutAuthentication_ReturnsUnauthorized()
     {
         var response = await this.Client.DeleteAsync("/requests/own?requestId=1");
@@ -325,7 +342,7 @@ public class RequestsIntegrationTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task PostRequest_WithRolelessIrcToken_ReturnsForbidden()
+    public async Task PostRequest_WithProxyTokenWithoutSourceId_ReturnsBadRequest()
     {
         using var client = await AuthenticatedTestClient.CreateIrcClientAsync(this.Factory);
 
@@ -335,7 +352,7 @@ public class RequestsIntegrationTests : IntegrationTestBase
             beatmapId     = 100
         });
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }
 
     [Test]

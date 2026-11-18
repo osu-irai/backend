@@ -6,6 +6,7 @@ using irai.Infrastructure.Configuration;
 using irai.Infrastructure.ExternalServices.TwitchApi;
 using irai.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -61,6 +62,7 @@ public class TwitchAuthControllerTests
         var controller = new TwitchAuthController(
             NullLogger<TwitchAuthController>.Instance,
             new Services_AuthenticationService(this._backgroundJobClient, this._friendService, db,
+                                               DataProtectionProvider.Create("irai-tests"),
                                                NullLogger<Services_AuthenticationService>.Instance),
             twitch,
             Options.Create(new ServerConfig { HomePage = "/home" }));

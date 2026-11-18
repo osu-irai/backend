@@ -1,5 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
+using irai.Common.Constants;
 using irai.Features.Authentication.Models;
 using irai.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -34,7 +36,8 @@ public class BotAuthController(
 
         var token = new JwtSecurityToken(this._config.Issuer,
                                          $"{this._config.Audience.TrimEnd('/')}/{client.Name.ToLowerInvariant()}",
-                                         expires: DateTime.Today.AddMinutes(this._config.ExpirationMinutes),
+                                         [new Claim(ClaimTypes.Role, Roles.PROXY)],
+                                         expires: DateTime.UtcNow.AddMinutes(this._config.ExpirationMinutes),
                                          signingCredentials: signingCreds);
 
         return TypedResults.Text(new JwtSecurityTokenHandler().WriteToken(token));

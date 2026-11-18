@@ -51,23 +51,22 @@ public class OAuthController(
 
         var accessToken  = await this.HttpContext.GetTokenAsync("ExternalCookies", "access_token");
         var refreshToken = await this.HttpContext.GetTokenAsync("ExternalCookies", "refresh_token");
+        if (accessToken is null || refreshToken is null)
+        {
+            return TypedResults.Forbid();
+        }
 
-        var apiUser = await osuApiDataService.GetSelfUser(accessToken!);
+        var apiUser = await osuApiDataService.GetSelfUser(accessToken);
         if (apiUser is None)
         {
             logger.LogError("osu!api provider error!");
             return TypedResults.Forbid();
         }
 
-        if (accessToken is null || refreshToken is null)
-        {
-            return TypedResults.Forbid();
-        }
-
         var user = apiUser.Unwrap();
 
         var tokenExpiration = await authenticationService.SaveOsuLogin(user, accessToken, refreshToken);
-        logger.LogInformation($"Token expires at {tokenExpiration}");
+        logger.LogInformation("Token expires at {TokenExpiration}", tokenExpiration);
 
         var claims = new List<Claim>
         {

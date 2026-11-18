@@ -6,6 +6,11 @@ public static class ConfigurationSetup
 {
     public static void AddConfiguration(this WebApplicationBuilder builder)
     {
+        builder.Services.AddOptions<MessageBrokerConfig>()
+               .Bind(builder.Configuration.GetSection(MessageBrokerConfig.POSITION))
+               .ValidateDataAnnotations()
+               .ValidateOnStart();
+
         builder.Services.AddOptions<DatabaseConfig>()
                .Bind(builder.Configuration.GetSection(DatabaseConfig.Position))
                .ValidateDataAnnotations()

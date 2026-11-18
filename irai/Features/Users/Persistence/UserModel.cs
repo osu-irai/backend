@@ -2,8 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using irai.Common.Models;
 using irai.Features.Authentication.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Models_User = irai.Infrastructure.ExternalServices.OsuApi.Models.User;
-using User = irai.Infrastructure.ExternalServices.OsuApi.Models.User;
 
 namespace irai.Features.Users.Persistence;
 
@@ -32,17 +30,6 @@ public class UserModel
     public TwitchModel? TwitchSettings { get; set; } = null;
 
     public ICollection<FriendModel> Friends { get; set; } = [];
-
-    public Models_User IntoApiModel()
-    {
-        return new Models_User
-        {
-            Id          = this.Id,
-            Username    = this.Username,
-            CountryCode = this.CountryCode,
-            AvatarUrl   = this.AvatarUrl
-        };
-    }
 
     public UserDTO IntoDTO()
     {

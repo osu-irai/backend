@@ -29,7 +29,7 @@ public class RequestController(
         var id = playerId ?? throw new BadRequestException("Request player ID is null");
 
         var requests = await requestService.GetRequestsToUser(id);
-        logger.LogInformation($"Found requests for {id}: {requests.Count}");
+        logger.LogInformation("Found requests for {PlayerId}: {Count}", id, requests.Count);
         return TypedResults.Ok(requests);
     }
 
