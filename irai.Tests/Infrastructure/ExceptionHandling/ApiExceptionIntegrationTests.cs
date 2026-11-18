@@ -6,7 +6,7 @@ namespace irai.Tests.Infrastructure.ExceptionHandling;
 
 [TestFixture]
 [Category("Integration")]
-public class ApiExceptionPipelineTests : IntegrationTestBase
+public class ApiExceptionIntegrationTests : IntegrationTestBase
 {
     [Test]
     public async Task ApiException_IsMappedToStatusAndResponseMessage()

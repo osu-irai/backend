@@ -14,7 +14,7 @@ namespace irai.Tests.Features.Requests;
 
 [TestFixture]
 [Category("Integration")]
-public class RequestPipelineTests : IntegrationTestBase
+public class RequestsIntegrationTests : IntegrationTestBase
 {
     private static Task SeedSourceDestinationAndBeatmap(DatabaseContext db)
     {

@@ -9,7 +9,7 @@ namespace irai.Tests.Features.Search;
 
 [TestFixture]
 [Category("Integration")]
-public class SearchPipelineTests : IntegrationTestBase
+public class SearchIntegrationTests : IntegrationTestBase
 {
     [Test]
     public async Task SearchBeatmaps_WithoutInternalCookie_ReturnsUnauthorized()
