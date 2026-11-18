@@ -11,7 +11,7 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "irai.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS run
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS run
 USER $APP_UID
 WORKDIR /app
 EXPOSE 5076
